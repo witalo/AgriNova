@@ -16,7 +16,7 @@ import javax.inject.Singleton
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_preferences")
 @Singleton
 class UsePreferences @Inject constructor(
-    private val context: Context
+    context: Context
 ) {
     private val dataStore = context.dataStore
 

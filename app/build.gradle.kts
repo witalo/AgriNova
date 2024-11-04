@@ -76,10 +76,13 @@ dependencies {
     // Datastore
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     // Room
-    implementation("androidx.room:room-runtime:2.5.2")
-    kapt("androidx.room:room-compiler:2.5.2")
-    implementation("androidx.room:room-ktx:2.5.2")
-    implementation("androidx.room:room-paging:2.5.2")
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    implementation("androidx.room:room-paging:2.6.1")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // Asegúrate de usar la última versión
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3") // Para Android
     //Apollo
     implementation(libs.apollo.runtime)
 }

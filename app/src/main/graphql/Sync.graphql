@@ -1,38 +1,38 @@
-#
-#query GetEmpresaData($empresaId: ID!) {
-#    empresaById(pk: $empresaId) {
-#        id
-#        ruc
-#        razonSocial
-#        correo
-#        telefono
-#        direccion
-#        userSet{
-#            id
-#            firstName
-#            lastName
-#            document
-#            email
-#            phone
-#            isActive
-#        }
-#        zonaSet{
-#            id
-#            codigo
-#            nombre
-#            activo
-#            empresaId
-#            fundoSet{
-#                id
-#                codigo
-#                nombre
-#                activo
-#                zonaId
-#                userFundoSet{
-#                    userId
-#                    fundoId
-#                }
-#            }
-#        }
-#    }
-#}
+
+query GetEmpresaData($empresaId: ID!) {
+    empresaById(pk: $empresaId) {
+        id
+        ruc
+        razonSocial
+        correo
+        telefono
+        direccion
+        userSet{
+            id
+            firstName
+            lastName
+            document
+            email
+            phone
+            isActive
+        }
+        zonaSet{
+            id
+            codigo
+            nombre
+            activo
+            empresaId
+            fundoSet{
+                id
+                codigo
+                nombre
+                activo
+                zonaId
+                userFundoSet{
+                    userId
+                    fundoId
+                }
+            }
+        }
+    }
+}
