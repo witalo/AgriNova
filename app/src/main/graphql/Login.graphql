@@ -1,0 +1,14 @@
+#mutation LoginEmpresa($ruc: String!, $email: String!, $password: String!) {
+#    loginEmpresa(ruc: $ruc, correo: $email, password: $password) {
+#        success
+#        message
+#        empresa{
+#            id
+#            ruc
+#            razonSocial
+#            correo
+#            telefono
+#            direccion
+#        }
+#    }
+#}
