@@ -3,6 +3,7 @@ package com.example.agrinova.di
 import android.content.Context
 import com.example.agrinova.data.local.AppDatabase
 import com.example.agrinova.data.local.dao.EmpresaDao
+import com.example.agrinova.data.local.dao.FundoDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,4 +32,15 @@ object AppModule {
     fun provideUserPreferences(@ApplicationContext context: Context): UsePreferences {
         return UsePreferences(context)
     }
+//    @Provides
+//    @Singleton
+//    fun provideFundoRepository(fundoDao: FundoDao): FundoRepository {
+//        return FundoRepository(fundoDao)
+//    }
+
+//    @Provides
+//    @Singleton
+//    fun provideFundoDao(appDatabase: AppDatabase): FundoDao {
+//        return appDatabase.fundoDao() // Asegúrate de que tienes este método en tu AppDatabase
+//    }
 }

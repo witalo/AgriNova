@@ -11,8 +11,6 @@ import com.example.agrinova.data.remote.model.UsuarioFundoDataModel
 import com.example.agrinova.data.remote.model.ZonaDataModel
 import com.example.agrinova.data.remote.model.FundoDataModel
 import com.example.agrinova.GetEmpresaDataQuery
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class EmpresaRepository(
     private val empresaDao: EmpresaDao,

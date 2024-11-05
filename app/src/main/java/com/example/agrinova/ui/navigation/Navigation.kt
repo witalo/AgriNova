@@ -5,12 +5,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.agrinova.di.UsePreferences
+import com.example.agrinova.ui.home.HomeScreen
 import com.example.agrinova.ui.login.first.FirstLoginScreen
+import com.example.agrinova.ui.login.second.SecondLoginScreen
 import kotlinx.coroutines.launch
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import javax.inject.Inject
@@ -48,16 +49,16 @@ class AppNavigator @Inject constructor(
                 )
             }
 
-//            composable("second_login") {
-//                SecondLoginScreen(
-//                    viewModel = hiltViewModel(),
-//                    onNavigateToHome = {
-//                        navController.navigate("home") {
-//                            popUpTo("second_login") { inclusive = true }
-//                        }
-//                    }
-//                )
-//            }
+            composable("second_login") {
+                SecondLoginScreen(
+                    viewModel = hiltViewModel(),
+                    onNavigateToHome = {
+                        navController.navigate("home") {
+                            popUpTo("second_login") { inclusive = true }
+                        }
+                    }
+                )
+            }
 //
 //            composable("home") {
 //                HomeScreen(

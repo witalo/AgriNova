@@ -1,6 +1,4 @@
 package com.example.agrinova.ui.login.first
-
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agrinova.GetEmpresaDataQuery
@@ -60,12 +58,13 @@ class FirstLoginViewModel @Inject constructor(
                     _loginState.value = LoginState.Error("Error en el inicio de sesión")
                 } else {
                     val empresaData = response.data?.loginEmpresa?.empresa
+//                    Log.d("Italo", empresaData.toString())
                     if (empresaData != null) {
                         // Almacena el nombre y el ID de la empresa en UserPreferences
                         userPreferences.saveCompanyData(empresaData.razonSocial!!, empresaData.id!!)
 
                         // Sincroniza los datos de la empresa
-//                        getEmpresaData(empresaData.id)
+                        getEmpresaData(empresaData.id)
 
                         _loginState.value = LoginState.Success(companyName = empresaData.razonSocial, companyId = empresaData.id)
                     } else {

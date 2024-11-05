@@ -22,9 +22,9 @@ fun FirstLoginScreen(
     viewModel: FirstLoginViewModel = hiltViewModel(), // Change to hiltViewModel()
     onLoginSuccess: (String, Int) -> Unit
 ){
-    var ruc by remember { mutableStateOf("") }
-    var correo by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var ruc by remember { mutableStateOf("20451152549") }
+    var correo by remember { mutableStateOf("empresa@gmail.com") }
+    var password by remember { mutableStateOf("empresa") }
     var isLoading by remember { mutableStateOf(false) }
 
     Column(
@@ -35,10 +35,10 @@ fun FirstLoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.ic_launcher_background),
+            painter = painterResource(id = R.drawable.ic_launcher_foreground),
             contentDescription = "Imagen de login",
             modifier = Modifier
-                .height(200.dp)
+                .height(100.dp)
                 .fillMaxWidth()
         )
 

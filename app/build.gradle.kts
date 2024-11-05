@@ -72,7 +72,7 @@ dependencies {
     //Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
-    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     // Datastore
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     // Room
