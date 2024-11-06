@@ -1,4 +1,5 @@
 package com.example.agrinova.ui.login.second
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agrinova.di.models.FundoDomainModel
@@ -32,27 +33,30 @@ class SecondLoginViewModel @Inject constructor(
     private val _syncState = MutableStateFlow<SyncState>(SyncState.Idle)
     val syncState: StateFlow<SyncState> = _syncState.asStateFlow()
 
-//    init {
-//        // Cargar fundos automáticamente cuando se inicializa el ViewModel
-//        viewModelScope.launch {
-//            companyId.collect { id ->
-//                id?.let { loadFundos() }
-//            }
-//        }
-//    }
-//
-//    fun loadFundos() {
-//        viewModelScope.launch {
-//            try {
+    init {
+        Log.d("Llegue", "Uno")
+        // Cargar fundos automáticamente cuando se inicializa el ViewModel
+        viewModelScope.launch {
+            Log.d("Llegue", "Dos")
+            companyId.collect { id ->
+                id?.let { loadFundos() }
+            }
+        }
+    }
+
+    fun loadFundos() {
+        viewModelScope.launch {
+            try {
+                Log.d("Llegue", "Suerte")
 //                fundoRepository.getFundos().collect { fundosList ->
 //                    _fundos.value = fundosList
 //                }
-//            } catch (e: Exception) {
-//                // Manejar el error si es necesario
-//                _fundos.value = emptyList()
-//            }
-//        }
-//    }
+            } catch (e: Exception) {
+                // Manejar el error si es necesario
+                _fundos.value = emptyList()
+            }
+        }
+    }
 
     fun syncData(empresaId: Int) {
         viewModelScope.launch {
