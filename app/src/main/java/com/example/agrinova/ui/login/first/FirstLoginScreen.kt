@@ -26,82 +26,97 @@ fun FirstLoginScreen(
     var correo by remember { mutableStateOf("empresa@gmail.com") }
     var password by remember { mutableStateOf("empresa") }
     var isLoading by remember { mutableStateOf(false) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentDescription = "Imagen de login",
+        Box(
             modifier = Modifier
-                .height(100.dp)
-                .fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = ruc,
-            onValueChange = { newValue ->
-                if (newValue.all { it.isDigit() }) {
-                    ruc = newValue
-                }
-            },
-            label = { Text("RUC de Empresa") },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Next
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = correo,
-            onValueChange = { correo = it },
-            label = { Text("Correo electrónico") },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Email,
-                imeAction = ImeAction.Next
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Contraseña") },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
-            ),
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                isLoading = true
-                viewModel.loginEmpresa(ruc, correo, password)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            enabled = !isLoading
+                .widthIn(max = 400.dp) // Establece un ancho máximo para el contenido
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Text(text = "Registrar", color = MaterialTheme.colorScheme.onPrimary)
-        }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center, // Centra verticalmente
+                horizontalAlignment = Alignment.CenterHorizontally // Centra horizontalmente
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.planta),
+                    contentDescription = "Imagen de login",
+                    modifier = Modifier
+                        .height(150.dp)
+                        .fillMaxWidth()
+                )
 
-        if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = ruc,
+                    onValueChange = { newValue ->
+                        if (newValue.all { it.isDigit() }) {
+                            ruc = newValue
+                        }
+                    },
+                    label = { Text("RUC de Empresa") },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = correo,
+                    onValueChange = { correo = it },
+                    label = { Text("Correo electrónico") },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Contraseña") },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done
+                    ),
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        isLoading = true
+                        viewModel.loginEmpresa(ruc, correo, password)
+                    },
+                    modifier = Modifier.widthIn(min = 150.dp, max = 250.dp).padding(bottom = 16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+        //            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onBackground),
+                    enabled = !isLoading
+                ) {
+                    Text(text = "Registrar", color = MaterialTheme.colorScheme.onPrimary)
+                }
+
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+                }
+            }
         }
     }
 

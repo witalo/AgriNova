@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -19,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -42,16 +44,17 @@ fun SecondLoginScreen(
     val empresaName by viewModel.companyName.collectAsState(initial = null)
 
     Box(
-        modifier = Modifier.fillMaxSize(), // Ocupa todo el espacio disponible
-        contentAlignment = Alignment.Center // Centra el contenido dentro del Box
+        modifier = Modifier.widthIn(max = 400.dp) // Establece un ancho máximo para el contenido
+        .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.Center
     ) {
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalArrangement = Arrangement.Center, // Centra verticalmente
+            horizontalAlignment = Alignment.CenterHorizontally // Centra horizontalmente
         ) {
             Spacer(modifier = Modifier.height(24.dp))
             Text(
@@ -91,22 +94,21 @@ fun SecondLoginScreen(
                 onValueChange = { dni = it },
                 label = { Text("Ingrese su DNI") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(start = 32.dp, end = 32.dp)
             )
-
+            Spacer(modifier = Modifier.height(6.dp))
             // Botón Ingresar
-
-
             Button(
                 onClick = {
                     viewModel.validateUser(dni, selectedFundo?.id)
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.widthIn(min = 150.dp, max = 250.dp).padding(bottom = 4.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
             ) {
                 Text("Ingresar")
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Botón Sincronizar
             Button(
@@ -115,7 +117,8 @@ fun SecondLoginScreen(
                         viewModel.syncData(id)
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.widthIn(min = 150.dp, max = 250.dp).padding(bottom = 4.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
             ) {
                 Text("Sincronizar")
             }
