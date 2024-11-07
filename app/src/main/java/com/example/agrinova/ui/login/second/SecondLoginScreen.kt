@@ -133,16 +133,24 @@ fun SecondLoginScreen(
 //            )
             // Selector de Fundo
             if (fundos.isNotEmpty()) {
-                AutocompleteTextField(
-                    suggestions = fundos.map { it.nombre },  // Asegúrate de que 'nombre' esté en tu modelo de datos
-                    onSuggestionClick = { selectedFundoNombre ->
-                        // Buscar el fundo completo por nombre
-                        selectedFundo = fundos.firstOrNull { it.nombre == selectedFundoNombre }
-                    }
-                )
+//                AutocompleteTextField(
+//                    suggestions = fundos.map { it.nombre },  // Asegúrate de que 'nombre' esté en tu modelo de datos
+//                    onSuggestionClick = { selectedFundoNombre ->
+//                        // Buscar el fundo completo por nombre
+//                        selectedFundo = fundos.firstOrNull { it.nombre == selectedFundoNombre }
+//                    }
+//                )
             } else {
                 Text("No se encontraron fundos")
             }
+            FundoComboBox(
+                label = "Fundo",
+                fundos = fundos,
+                onFundoSelected = { fundo ->
+                    selectedFundo = fundo
+//                    println("Selected fundo: ${fundo.id} - ${fundo.nombre}")
+                }
+            )
             Spacer(modifier = Modifier.height(8.dp))
 
             // Campo para el DNI
@@ -259,119 +267,71 @@ fun SecondLoginScreen(
     }
     }
 }
-@Composable
-fun SimpleComboBox(
-    label: String,
-    suggestions: List<String>,
-    selectedValue: String,
-    onValueSelected: (String) -> Unit
-) {
-    var isDropdownExpanded by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .padding(start = 32.dp, end = 32.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                .clickable { isDropdownExpanded = !isDropdownExpanded }
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-        ) {
-            Text(
-                text = if (selectedValue.isNotBlank()) selectedValue else label,
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (selectedValue.isNotBlank()) MaterialTheme.colorScheme.onSurface else Color.Gray
-            )
-            Icon(
-                imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = "Dropdown Arrow",
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.align(Alignment.CenterEnd)
-            )
-        }
-
-        DropdownMenu(
-            expanded = isDropdownExpanded,
-            onDismissRequest = { isDropdownExpanded = false }
-        ) {
-            suggestions.forEach { suggestion ->
-                DropdownMenuItem(
-                    onClick = {
-                        onValueSelected(suggestion)
-                        isDropdownExpanded = false
-                    },
-                    text = { Text(text = suggestion) }
-                )
-            }
-        }
-    }
-}
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AutocompleteTextField(
-    suggestions: List<String>,
-    onSuggestionClick: (String) -> Unit
-) {
-    var text by remember { mutableStateOf(TextFieldValue("")) }
-    var isDropdownExpanded by remember { mutableStateOf(false) }
-
-    Column(
-        modifier = Modifier
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { isDropdownExpanded = true } // Abre el menú desplegable al hacer clic
-                .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            // Componente TextField con propiedades de Material3 y sin permitir la edición
-            TextField(
-                value = text,
-                onValueChange = { /* No hace nada para deshabilitar entrada de texto */ },
-                enabled = false,  // Deshabilita la entrada de texto
-                label = { Text("Fundo") },
-                trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "Dropdown Arrow",
-                        modifier = Modifier.clickable {
-                            isDropdownExpanded = !isDropdownExpanded
-                        }
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color.White,  // Fondo blanco completamente opaco
-                    cursorColor = MaterialTheme.colorScheme.primary, // Color del cursor
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // Color del texto cuando está deshabilitado
-                    focusedLabelColor = MaterialTheme.colorScheme.primary, // Color de la etiqueta cuando está enfocado
-                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) // Color de la etiqueta cuando no está enfocado
-                ),
-                shape = RoundedCornerShape(8.dp) // Asegura que el borde esté redondeado
-            )
-        }
-
-        // Menú desplegable que muestra las opciones
-        DropdownMenu(
-            expanded = isDropdownExpanded,
-            onDismissRequest = { isDropdownExpanded = false }
-        ) {
-            suggestions.forEach { suggestion ->
-                DropdownMenuItem(
-                    onClick = {
-                        text = TextFieldValue(suggestion)
-                        onSuggestionClick(suggestion)
-                        isDropdownExpanded = false
-                    },
-                    text = { Text(text = suggestion) }
-                )
-            }
-        }
-    }
-}
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun AutocompleteTextField(
+//    suggestions: List<String>,
+//    onSuggestionClick: (String) -> Unit
+//) {
+//    var text by remember { mutableStateOf(TextFieldValue("")) }
+//    var isDropdownExpanded by remember { mutableStateOf(false) }
+//
+//    Column(
+//        modifier = Modifier
+//    ) {
+//        Box(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .clickable { isDropdownExpanded = true } // Abre el menú desplegable al hacer clic
+//                .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+//                .padding(horizontal = 16.dp, vertical = 8.dp)
+//        ) {
+//            // Componente TextField con propiedades de Material3 y sin permitir la edición
+//            TextField(
+//                value = text,
+//                onValueChange = { /* No hace nada para deshabilitar entrada de texto */ },
+//                enabled = false,  // Deshabilita la entrada de texto
+//                label = { Text("Fundo") },
+//                trailingIcon = {
+//                    Icon(
+//                        imageVector = Icons.Default.ArrowDropDown,
+//                        contentDescription = "Dropdown Arrow",
+//                        modifier = Modifier.clickable {
+//                            isDropdownExpanded = !isDropdownExpanded
+//                        }
+//                    )
+//                },
+//                modifier = Modifier.fillMaxWidth(),
+//                colors = TextFieldDefaults.textFieldColors(
+//                    containerColor = Color.White,  // Fondo blanco completamente opaco
+//                    cursorColor = MaterialTheme.colorScheme.primary, // Color del cursor
+//                    disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // Color del texto cuando está deshabilitado
+//                    focusedLabelColor = MaterialTheme.colorScheme.primary, // Color de la etiqueta cuando está enfocado
+//                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) // Color de la etiqueta cuando no está enfocado
+//                ),
+//                shape = RoundedCornerShape(8.dp) // Asegura que el borde esté redondeado
+//            )
+//        }
+//
+//        // Menú desplegable que muestra las opciones
+//        DropdownMenu(
+//            expanded = isDropdownExpanded,
+//            onDismissRequest = { isDropdownExpanded = false }
+//        ) {
+//            suggestions.forEach { suggestion ->
+//                DropdownMenuItem(
+//                    onClick = {
+//                        text = TextFieldValue(suggestion)
+//                        onSuggestionClick(suggestion)
+//                        isDropdownExpanded = false
+//                    },
+//                    text = { Text(text = suggestion) }
+//                )
+//            }
+//        }
+//    }
+//}
 
 @Composable
 fun StyledSpinner(
@@ -445,124 +405,145 @@ fun StyledSpinner(
         }
     }
 }
-
 //@Composable
-//fun AutocompleteTextField(
-//    suggestions: List<String>,
-//    onSuggestionClick: (String) -> Unit
+//fun FundoAutocomplete(
+//    label: String,
+//    fundos: List<FundoDomainModel>,
+//    onFundoSelected: (FundoDomainModel) -> Unit
 //) {
-//    var text by remember { mutableStateOf(TextFieldValue("")) }
-//    var filteredSuggestions by remember { mutableStateOf(suggestions) }
-//    var isDropdownExpanded by remember { mutableStateOf(false) }
+//    var isOpen by remember { mutableStateOf(false) }
+//    var searchTerm by remember { mutableStateOf("") }
+//    var isFocused by remember { mutableStateOf(false) }
 //
-//    Column (
+//    // Si el campo de búsqueda está vacío, muestra todos los fundos; de lo contrario, filtra según el término de búsqueda
+//    val filteredFundos = if (searchTerm.isEmpty()) fundos else fundos.filter {
+//        it.nombre.contains(searchTerm, ignoreCase = true)
+//    }
+//
+//    OutlinedTextField(
+//        value = searchTerm,
+//        onValueChange = {
+//            searchTerm = it
+//            isOpen = true
+//        },
+//        label = { Text(label) },
 //        modifier = Modifier
-//            .padding(start = 32.dp, end = 32.dp) // Agrega padding para reducir el ancho
-//    ){
-//        TextField(
-//            value = text,
-//            onValueChange = { newText ->
-//                text = newText
-//                filteredSuggestions = suggestions.filter {
-//                    it.contains(newText.text, ignoreCase = true)
-//                }
-//                isDropdownExpanded = filteredSuggestions.isNotEmpty()
+//            .fillMaxWidth()
+//            .onFocusChanged { state ->
+//                isFocused = state.isFocused
 //            },
-//            label = { Text("Fundo") },
+//        trailingIcon = {
+//            Icon(
+//                imageVector = Icons.Default.ArrowDropDown,
+//                contentDescription = "Toggle Dropdown",
+//                modifier = Modifier.clickable {
+//                    isOpen = !isOpen // Cambia el estado de isOpen al hacer clic en el icono
+//                }
+//            )
+//        }
+//    )
+//
+//    if (isOpen && isFocused && filteredFundos.isNotEmpty()) {
+//        LazyColumn(
 //            modifier = Modifier
 //                .fillMaxWidth()
-//                .onFocusChanged { focusState ->
-//                    isDropdownExpanded = focusState.isFocused && filteredSuggestions.isNotEmpty()
-//                }
-//        )
-//
-//        DropdownMenu(
-//            expanded = isDropdownExpanded,
-//            onDismissRequest = { isDropdownExpanded = false }
+//                .padding(top = 8.dp, bottom = 8.dp)
 //        ) {
-//            filteredSuggestions.forEach { suggestion ->
-//                DropdownMenuItem(
+//            items(filteredFundos) { fundo ->
+//                DropdownOption(
+//                    text = fundo.nombre,
 //                    onClick = {
-//                        text = TextFieldValue(suggestion)
-//                        onSuggestionClick(suggestion)
-//                        isDropdownExpanded = false
-//                    },
-//                    text = { Text(text = suggestion) }
+//                        onFundoSelected(fundo)
+//                        searchTerm = fundo.nombre // Muestra el nombre seleccionado en el campo de texto
+//                        isOpen = false
+//                    }
 //                )
 //            }
 //        }
 //    }
 //}
 //@Composable
-//fun Spinner(
-//    label: String,
-//    value: String,
-//    isDropdownOpen: Boolean,
-//    onDropdownToggle: (Boolean) -> Unit,
-//    onValueChange: (String) -> Unit,
-//    items: List<String>
+//fun DropdownOption(
+//    text: String,
+//    onClick: () -> Unit
 //) {
-//    Box(
+//    Text(
+//        text = text,
 //        modifier = Modifier
-////            .padding(horizontal = 2.dp)
-//            .width(250.dp)  // Ajusta el ancho aquí, o usa fillMaxWidth() si quieres que se ajuste al espacio disponible
-//            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-//            .clickable { onDropdownToggle(!isDropdownOpen) }
-//            .padding(horizontal = 16.dp, vertical = 12.dp)
-//    ) {
-//        Column {
-//            Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-//            Row(
-//                verticalAlignment = Alignment.CenterVertically,
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                Text(
-//                    text = if (value.isNotBlank()) value else "Seleccionar...",
-//                    style = MaterialTheme.typography.bodyLarge,
-//                    color = if (value.isNotBlank()) MaterialTheme.colorScheme.onSurface else Color.Gray
-//                )
-//                Spacer(modifier = Modifier.weight(1f))
-//                Icon(
-//                    imageVector = Icons.Default.ArrowDropDown,
-//                    contentDescription = "Dropdown Arrow",
-//                    tint = MaterialTheme.colorScheme.onSurface
-//                )
-//            }
-//        }
-//
-//        if (isDropdownOpen) {
-//            Dialog(
-//                onDismissRequest = { onDropdownToggle(false) }
-//            ) {
-//                Surface(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(horizontal = 40.dp)
-//                        .padding(top = 55.dp)  // Ajusta la posición vertical del dropdown
-//                        .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-//                        .padding(16.dp),
-//                    shadowElevation = 4.dp,
-//                    shape = RoundedCornerShape(8.dp)
-//                ) {
-//                    Column (
-//                        modifier = Modifier.padding(horizontal = 10.dp)  // Espaciado interno en la lista
-//                    ){
-//                        items.forEach { item ->
-//                            Text(
-//                                text = item,
-//                                style = MaterialTheme.typography.bodyMedium,
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .clickable {
-//                                        onValueChange(item)
-//                                        onDropdownToggle(false)
-//                                    }
-//                                    .padding(vertical = 8.dp)
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
+//            .fillMaxWidth()
+//            .padding(vertical = 12.dp, horizontal = 16.dp)
+//            .clickable { onClick() },
+//        style = MaterialTheme.typography.bodyMedium
+//    )
 //}
+
+@Composable
+fun FundoComboBox(
+    label: String,
+    fundos: List<FundoDomainModel>,
+    onFundoSelected: (FundoDomainModel) -> Unit
+) {
+    var isOpen by remember { mutableStateOf(false) }
+    var selectedFundo by remember { mutableStateOf<FundoDomainModel?>(null) }
+
+    // Caja para contener todo y evitar que los elementos se empujen
+    Box(
+        modifier = Modifier.fillMaxWidth() // Para que el combo ocupe todo el ancho disponible
+    ) {
+        // Campo de selección
+        OutlinedTextField(
+            value = selectedFundo?.nombre ?: "",
+            onValueChange = {}, // Campo solo lectura
+            label = { Text(label) },
+            readOnly = true,
+            modifier = Modifier
+                .fillMaxWidth()  // El campo ocupa el 100% del ancho disponible
+                .clickable { isOpen = !isOpen },
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Toggle Dropdown",
+                    modifier = Modifier.clickable { isOpen = !isOpen }
+                )
+            }
+        )
+
+        // Menú desplegable con fondo blanco y ancho ajustado al tamaño del OutlinedTextField
+        // Ahora usamos BoxWithConstraints para obtener el ancho del OutlinedTextField y ajustar el Dropdown
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            val dropdownWidth = this.maxWidth // Obtiene el ancho del Box
+
+            DropdownMenu(
+                expanded = isOpen,
+                onDismissRequest = { isOpen = false },
+                modifier = Modifier
+                    .width(dropdownWidth)  // El ancho del dropdown es igual al del OutlinedTextField
+                    .background(Color.White) // Fondo blanco para el dropdown
+                    .border(1.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(10.dp)) // Borde del dropdown
+            ) {
+                fundos.forEach { fundo ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = fundo.nombre,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        },
+                        onClick = {
+                            selectedFundo = fundo
+                            onFundoSelected(fundo)
+                            isOpen = false
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()  // Asegura que el item ocupe todo el ancho disponible
+                            .background(Color.White) // Fondo blanco para el item
+                            .padding(vertical = 8.dp, horizontal = 16.dp) // Espaciado para los elementos
+                    )
+                }
+            }
+        }
+    }
+}
