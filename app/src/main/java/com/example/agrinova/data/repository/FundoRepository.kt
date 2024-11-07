@@ -3,9 +3,8 @@
 //import com.example.agrinova.data.local.entity.FundoEntity
 //import kotlinx.coroutines.flow.Flow
 //import kotlinx.coroutines.flow.map
-//import javax.inject.Inject
 //
-//class FundoRepository @Inject constructor(
+//class FundoRepository (
 //    private val fundoDao: FundoDao
 //) {
 //    // Mapeo de FundoEntity a FundoDomainModel

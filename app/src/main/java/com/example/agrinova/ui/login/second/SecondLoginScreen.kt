@@ -1,5 +1,10 @@
 package com.example.agrinova.ui.login.second
 
+import android.util.Log
+import android.widget.Spinner
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -7,8 +12,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -22,22 +30,40 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.agrinova.di.models.FundoDomainModel
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SecondLoginScreen(
     viewModel: SecondLoginViewModel = hiltViewModel(),
     onNavigateToHome: () -> Unit  // Cambiado para recibir solo la función de navegación
 ) {
-    val fundus by viewModel.fundos.collectAsState() // Lista de fundos
+    val fundos by viewModel.fundos.collectAsState() // Lista de fundos
     val validationState by viewModel.validationState.collectAsState() // Estado de validación
     val syncState by viewModel.syncState.collectAsState() // Estado de sincronización
 
     var dni by remember { mutableStateOf("") }
     var selectedFundo by remember { mutableStateOf<FundoDomainModel?>(null) }
+    var selectedModule by remember { mutableStateOf<String?>(null) }
+    var isModuleDropdownOpen by remember { mutableStateOf(false) }
+    var isFundoDropdownOpen by remember { mutableStateOf(false) }
 
     // Observa companyId directamente desde el ViewModel
     val empresaId by viewModel.companyId.collectAsState(initial = null)
@@ -68,25 +94,46 @@ fun SecondLoginScreen(
                 textAlign = TextAlign.Center
             )
 
+            // Selector de Modulo
+            Spinner(
+//                label = "Seleccionar Módulo",
+                value = selectedModule ?: "Seleccionar Módulo",
+                isDropdownOpen = isModuleDropdownOpen,
+                onDropdownToggle = { isModuleDropdownOpen = it },
+                onValueChange = { value ->
+                    selectedModule = value
+                    isModuleDropdownOpen = false
+                    // Hacer algo con el módulo seleccionado
+                },
+                items = listOf("Módulo 1", "Módulo 2", "Módulo 3")
+            )
+            Spacer(modifier = Modifier.height(8.dp))
             // Selector de Fundo
-            Text("Seleccione el Fundo:")
-            LazyColumn(
-                modifier = Modifier.height(200.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(fundus) { fundo ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        RadioButton(
-                            selected = selectedFundo == fundo,
-                            onClick = { selectedFundo = fundo }
-                        )
-                        Text(fundo.nombre)
+//            Spinner(
+//                label = "Seleccionar Fundo",
+//                value = selectedFundo?.nombre ?: "Seleccionar Fundo",
+//                isDropdownOpen = isFundoDropdownOpen,
+//                onDropdownToggle = { isFundoDropdownOpen = it },
+//                onValueChange = { value ->
+//                    selectedFundo = fundos.find { it.nombre == value }
+//                    isFundoDropdownOpen = false
+//                    // Hacer algo con el fundo seleccionado
+//                },
+//                items = fundos.map { it.nombre }
+//            )
+            // Selector de Fundo
+            if (fundos.isNotEmpty()) {
+                AutocompleteTextField(
+                    suggestions = fundos.map { it.nombre },  // Asegúrate de que 'nombre' esté en tu modelo de datos
+                    onSuggestionClick = { selectedFundoNombre ->
+                        // Buscar el fundo completo por nombre
+                        selectedFundo = fundos.firstOrNull { it.nombre == selectedFundoNombre }
                     }
-                }
+                )
+            } else {
+                Text("No se encontraron fundos")
             }
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Campo para el DNI
             TextField(
@@ -94,13 +141,34 @@ fun SecondLoginScreen(
                 onValueChange = { dni = it },
                 label = { Text("Ingrese su DNI") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth().padding(start = 32.dp, end = 32.dp)
+                modifier = Modifier
+                    .fillMaxWidth() // Ocupa todo el ancho disponible
+                    .padding(start = 32.dp, end = 32.dp) // Padding a los lados
+                    .border(1.dp, color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f), shape = RoundedCornerShape(8.dp)), // Borde delgado y más sutil
+                textStyle = TextStyle(
+                    color = MaterialTheme.colorScheme.onSurface, // Color del texto
+                    fontSize = 16.sp // Tamaño de la fuente
+                ),
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = Color.White, // Fondo blanco
+                    focusedIndicatorColor = Color.Transparent, // Sin borde inferior cuando está enfocado
+                    unfocusedIndicatorColor = Color.Transparent, // Sin borde inferior cuando no está enfocado
+                    cursorColor = MaterialTheme.colorScheme.primary, // Color del cursor
+                    disabledIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f) // Color del indicador cuando está deshabilitado
+                ),
             )
+
+
+
+
             Spacer(modifier = Modifier.height(6.dp))
             // Botón Ingresar
             Button(
                 onClick = {
-                    viewModel.validateUser(dni, selectedFundo?.id)
+                    // Verifica que el fundo esté seleccionado antes de llamar a la función
+                    selectedFundo?.id?.let { id ->
+                        viewModel.validateUser(dni, id)
+                    }
                 },
                 modifier = Modifier.widthIn(min = 150.dp, max = 250.dp).padding(bottom = 4.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
@@ -166,6 +234,242 @@ fun SecondLoginScreen(
                 }
 
                 else -> {}
+            }
+        }
+    }
+}
+@Composable
+fun SimpleComboBox(
+    label: String,
+    suggestions: List<String>,
+    selectedValue: String,
+    onValueSelected: (String) -> Unit
+) {
+    var isDropdownExpanded by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .padding(start = 32.dp, end = 32.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                .clickable { isDropdownExpanded = !isDropdownExpanded }
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Text(
+                text = if (selectedValue.isNotBlank()) selectedValue else label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (selectedValue.isNotBlank()) MaterialTheme.colorScheme.onSurface else Color.Gray
+            )
+            Icon(
+                imageVector = Icons.Default.ArrowDropDown,
+                contentDescription = "Dropdown Arrow",
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
+        }
+
+        DropdownMenu(
+            expanded = isDropdownExpanded,
+            onDismissRequest = { isDropdownExpanded = false }
+        ) {
+            suggestions.forEach { suggestion ->
+                DropdownMenuItem(
+                    onClick = {
+                        onValueSelected(suggestion)
+                        isDropdownExpanded = false
+                    },
+                    text = { Text(text = suggestion) }
+                )
+            }
+        }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AutocompleteTextField(
+    suggestions: List<String>,
+    onSuggestionClick: (String) -> Unit
+) {
+    var text by remember { mutableStateOf(TextFieldValue("")) }
+    var isDropdownExpanded by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .padding(start = 32.dp, end = 32.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isDropdownExpanded = true } // Abre el menú desplegable al hacer clic
+                .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            // Componente TextField con propiedades de Material3 y sin permitir la edición
+            TextField(
+                value = text,
+                onValueChange = { /* No hace nada para deshabilitar entrada de texto */ },
+                enabled = false,  // Deshabilita la entrada de texto
+                label = { Text("Fundo") },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = "Dropdown Arrow",
+                        modifier = Modifier.clickable {
+                            isDropdownExpanded = !isDropdownExpanded
+                        }
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = Color.White,  // Fondo blanco completamente opaco
+                    cursorColor = MaterialTheme.colorScheme.primary, // Color del cursor
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // Color del texto cuando está deshabilitado
+                    focusedLabelColor = MaterialTheme.colorScheme.primary, // Color de la etiqueta cuando está enfocado
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) // Color de la etiqueta cuando no está enfocado
+                ),
+                shape = RoundedCornerShape(8.dp) // Asegura que el borde esté redondeado
+            )
+        }
+
+        // Menú desplegable que muestra las opciones
+        DropdownMenu(
+            expanded = isDropdownExpanded,
+            onDismissRequest = { isDropdownExpanded = false }
+        ) {
+            suggestions.forEach { suggestion ->
+                DropdownMenuItem(
+                    onClick = {
+                        text = TextFieldValue(suggestion)
+                        onSuggestionClick(suggestion)
+                        isDropdownExpanded = false
+                    },
+                    text = { Text(text = suggestion) }
+                )
+            }
+        }
+    }
+}
+
+
+//@Composable
+//fun AutocompleteTextField(
+//    suggestions: List<String>,
+//    onSuggestionClick: (String) -> Unit
+//) {
+//    var text by remember { mutableStateOf(TextFieldValue("")) }
+//    var filteredSuggestions by remember { mutableStateOf(suggestions) }
+//    var isDropdownExpanded by remember { mutableStateOf(false) }
+//
+//    Column (
+//        modifier = Modifier
+//            .padding(start = 32.dp, end = 32.dp) // Agrega padding para reducir el ancho
+//    ){
+//        TextField(
+//            value = text,
+//            onValueChange = { newText ->
+//                text = newText
+//                filteredSuggestions = suggestions.filter {
+//                    it.contains(newText.text, ignoreCase = true)
+//                }
+//                isDropdownExpanded = filteredSuggestions.isNotEmpty()
+//            },
+//            label = { Text("Fundo") },
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .onFocusChanged { focusState ->
+//                    isDropdownExpanded = focusState.isFocused && filteredSuggestions.isNotEmpty()
+//                }
+//        )
+//
+//        DropdownMenu(
+//            expanded = isDropdownExpanded,
+//            onDismissRequest = { isDropdownExpanded = false }
+//        ) {
+//            filteredSuggestions.forEach { suggestion ->
+//                DropdownMenuItem(
+//                    onClick = {
+//                        text = TextFieldValue(suggestion)
+//                        onSuggestionClick(suggestion)
+//                        isDropdownExpanded = false
+//                    },
+//                    text = { Text(text = suggestion) }
+//                )
+//            }
+//        }
+//    }
+//}
+@Composable
+fun Spinner(
+//    label: String,
+    value: String,
+    isDropdownOpen: Boolean,
+    onDropdownToggle: (Boolean) -> Unit,
+    onValueChange: (String) -> Unit,
+    items: List<String>
+) {
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 32.dp)
+            .width(250.dp)  // Ajusta el ancho aquí, o usa fillMaxWidth() si quieres que se ajuste al espacio disponible
+            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+            .clickable { onDropdownToggle(!isDropdownOpen) }
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Column {
+//            Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = if (value.isNotBlank()) value else "Seleccionar...",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (value.isNotBlank()) MaterialTheme.colorScheme.onSurface else Color.Gray
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Dropdown Arrow",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        if (isDropdownOpen) {
+            Dialog(
+                onDismissRequest = { onDropdownToggle(false) }
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp)
+                        .padding(top = 55.dp)  // Ajusta la posición vertical del dropdown
+                        .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                        .padding(16.dp),
+                    shadowElevation = 4.dp,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column (
+                        modifier = Modifier.padding(horizontal = 10.dp)  // Espaciado interno en la lista
+                    ){
+                        items.forEach { item ->
+                            Text(
+                                text = item,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onValueChange(item)
+                                        onDropdownToggle(false)
+                                    }
+                                    .padding(vertical = 8.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
     }

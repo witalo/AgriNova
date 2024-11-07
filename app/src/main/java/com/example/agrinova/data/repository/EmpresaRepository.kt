@@ -1,5 +1,7 @@
 package com.example.agrinova.data.repository
 
+import android.util.Log
+import com.apollographql.apollo3.ApolloClient
 import com.example.agrinova.data.local.dao.EmpresaDao
 import com.example.agrinova.data.local.dao.UsuarioDao
 import com.example.agrinova.data.local.dao.ZonaDao
@@ -11,18 +13,21 @@ import com.example.agrinova.data.remote.model.UsuarioFundoDataModel
 import com.example.agrinova.data.remote.model.ZonaDataModel
 import com.example.agrinova.data.remote.model.FundoDataModel
 import com.example.agrinova.GetEmpresaDataQuery
+import com.example.agrinova.di.models.FundoDomainModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class EmpresaRepository(
     private val empresaDao: EmpresaDao,
     private val usuarioDao: UsuarioDao,
     private val zonaDao: ZonaDao,
     private val fundoDao: FundoDao,
-    private val graphQLClient: GraphQLClient
+    private val graphQLClient: ApolloClient
 ) {
 
     // Función para sincronizar los datos de la empresa desde la API
     suspend fun syncEmpresaData(empresaId: Int) {
-        val response = graphQLClient.apolloClient.query(
+        val response = graphQLClient.query(
             GetEmpresaDataQuery(empresaId.toString())
         ).execute()
 
@@ -79,6 +84,7 @@ class EmpresaRepository(
                 empresaDao.updateEmpresa(empresaEntity.toEntity())
             } else {
                 // Almacenar la empresa
+                Log.d("Italo E", empresaData.toString())
                 empresaDao.insertEmpresa(empresaEntity.toEntity())
             }
 
@@ -88,6 +94,7 @@ class EmpresaRepository(
                 if (existingUsuario != null) {
                     usuarioDao.updateUsuario(usuario.toEntity())
                 } else {
+                    Log.d("Italo U", empresaData.toString())
                     usuarioDao.insertUsuario(usuario.toEntity())
                 }
             }
@@ -98,6 +105,7 @@ class EmpresaRepository(
                 if (existingZona != null) {
                     zonaDao.updateZona(zona.toEntity())
                 } else {
+                    Log.d("Italo Z", empresaData.toString())
                     zonaDao.insertZona(zona.toEntity())
                 }
 
@@ -106,6 +114,7 @@ class EmpresaRepository(
                     if (existingFundo != null) {
                         fundoDao.updateFundo(fundo.toEntity())
                     } else {
+                        Log.d("Italo F", empresaData.toString())
                         fundoDao.insertFundo(fundo.toEntity())
                     }
 
@@ -119,12 +128,18 @@ class EmpresaRepository(
 
                         if (!exists) {
                             // Inserta solo si la relación no existe
+                            Log.d("Italo UF", empresaData.toString())
                             usuarioDao.insertUsuarioFundoCrossRef(userFundo.toEntity())
                         }
                     }
                 }
             }
         } ?: throw Exception("Error al sincronizar: Datos de empresa no encontrados.")
+    }
+    fun getFundos(): Flow<List<FundoDomainModel>> {
+        return fundoDao.getAllFundos().map { fundos ->
+            fundos.map { it.toDomainModel() } // Mapea cada FundoEntity a FundoDomainModel
+        }
     }
 
 }

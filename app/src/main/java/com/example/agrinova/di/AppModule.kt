@@ -4,6 +4,10 @@ import android.content.Context
 import com.example.agrinova.data.local.AppDatabase
 import com.example.agrinova.data.local.dao.EmpresaDao
 import com.example.agrinova.data.local.dao.FundoDao
+import com.example.agrinova.data.local.dao.UsuarioDao
+import com.example.agrinova.data.local.dao.ZonaDao
+import com.example.agrinova.data.remote.GraphQLClient
+import com.example.agrinova.data.repository.EmpresaRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,6 +29,42 @@ object AppModule {
     @Singleton
     fun provideEmpresaDao(appDatabase: AppDatabase): EmpresaDao {
         return appDatabase.empresaDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideUsuarioDao(appDatabase: AppDatabase): UsuarioDao {
+        return appDatabase.usuarioDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideZonaDao(appDatabase: AppDatabase): ZonaDao {
+        return appDatabase.zonaDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFundoDao(appDatabase: AppDatabase): FundoDao {
+        return appDatabase.fundoDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideEmpresaRepository(
+        empresaDao: EmpresaDao,
+        usuarioDao: UsuarioDao,
+        zonaDao: ZonaDao,
+        fundoDao: FundoDao
+    ): EmpresaRepository {
+        // Usa GraphQLClient.apolloClient directamente
+        return EmpresaRepository(
+            empresaDao = empresaDao,
+            usuarioDao = usuarioDao,
+            zonaDao = zonaDao,
+            fundoDao = fundoDao,
+            graphQLClient = GraphQLClient.apolloClient
+        )
     }
 
     @Provides

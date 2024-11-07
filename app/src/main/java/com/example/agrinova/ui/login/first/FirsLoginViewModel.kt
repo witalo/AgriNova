@@ -1,4 +1,5 @@
 package com.example.agrinova.ui.login.first
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agrinova.GetEmpresaDataQuery
@@ -6,6 +7,7 @@ import com.example.agrinova.LoginEmpresaMutation
 import com.example.agrinova.data.local.dao.EmpresaDao
 import com.example.agrinova.data.remote.GraphQLClient
 import com.example.agrinova.data.remote.model.EmpresaDataModel
+import com.example.agrinova.data.repository.EmpresaRepository
 import com.example.agrinova.di.UsePreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class FirstLoginViewModel @Inject constructor(
     private val empresaDao: EmpresaDao,
-    private val userPreferences: UsePreferences
+    private val userPreferences: UsePreferences,
+    private val empresaRepository: EmpresaRepository,
 ) : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> get() = _loginState
@@ -58,13 +61,14 @@ class FirstLoginViewModel @Inject constructor(
                     _loginState.value = LoginState.Error("Error en el inicio de sesión")
                 } else {
                     val empresaData = response.data?.loginEmpresa?.empresa
-//                    Log.d("Italo", empresaData.toString())
+                    Log.d("Italo", empresaData.toString())
                     if (empresaData != null) {
                         // Almacena el nombre y el ID de la empresa en UserPreferences
                         userPreferences.saveCompanyData(empresaData.razonSocial!!, empresaData.id!!)
 
                         // Sincroniza los datos de la empresa
-                        getEmpresaData(empresaData.id)
+                        empresaRepository.syncEmpresaData(empresaData.id.toInt())
+                        // getEmpresaData(empresaData.id)
 
                         _loginState.value = LoginState.Success(companyName = empresaData.razonSocial, companyId = empresaData.id)
                     } else {
@@ -85,6 +89,7 @@ class FirstLoginViewModel @Inject constructor(
                     _loginState.value = LoginState.Error("Error al obtener los datos de la empresa")
                 } else {
                     val empresaData = response.data?.empresaById
+                    Log.d("Italo2", empresaData.toString())
                     if (empresaData != null) {
                         val empresaEntity = EmpresaDataModel.fromGraphQL(empresaData)
                         empresaDao.insertEmpresa(empresaEntity.toEntity()) // Guarda en la base de datos
