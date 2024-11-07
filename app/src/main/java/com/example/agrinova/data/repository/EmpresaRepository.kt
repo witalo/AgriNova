@@ -34,40 +34,39 @@ class EmpresaRepository(
         response.data?.empresaById?.let { empresaData ->
             // Comprobar si la empresa ya existe
             val existingEmpresa = empresaDao.getEmpresaById(empresaData.id!!.toInt())
-
             val empresaEntity = EmpresaDataModel(
-                id = empresaData.id,
-                ruc = empresaData.ruc!!,
-                razonSocial = empresaData.razonSocial!!,
-                correo = empresaData.correo!!,
-                telefono = empresaData.telefono!!,
-                direccion = empresaData.direccion!!,
+                id = empresaData.id?: 0,
+                ruc = empresaData.ruc?: "",
+                razonSocial = empresaData.razonSocial?: "",
+                correo = empresaData.correo?: "",
+                telefono = empresaData.telefono?: "",
+                direccion = empresaData.direccion?: "",
                 userSet = empresaData.userSet?.map {
                     UsuarioDataModel(
-                        id = it?.id!!,
-                        firstName = it.firstName,
-                        lastName = it.lastName,
-                        document = it.document!!,
-                        email = it.email,
-                        phone = it.phone!!,
-                        isActive = it.isActive
+                        id = it?.id?: 0,
+                        firstName = it?.firstName?: "",
+                        lastName = it?.lastName?: "",
+                        document = it?.document?: "",
+                        email = it?.email?: "",
+                        phone = it?.phone?: "",
+                        isActive = it?.isActive?: false
                     )
                 },
                 zonaSet = empresaData.zonaSet?.map { zona ->
                     ZonaDataModel(
-                        id = zona?.id!!,
-                        codigo = zona.codigo!!,
-                        nombre = zona.nombre!!,
-                        activo = zona.activo,
-                        empresaId = zona.empresaId!!,
-                        fundoSet = zona.fundoSet?.map { fundo ->
+                        id = zona?.id?: 0,
+                        codigo = zona?.codigo?: "",
+                        nombre = zona?.nombre?: "",
+                        activo = zona?.activo?: false,
+                        empresaId = zona?.empresaId?: 0,
+                        fundoSet = zona?.fundoSet?.map { fundo ->
                             FundoDataModel(
-                                id = fundo?.id!!,
-                                codigo = fundo.codigo!!,
-                                nombre = fundo.nombre!!,
-                                activo = fundo.activo,
-                                zonaId = fundo.zonaId!!,
-                                userFundoSet = fundo.userFundoSet?.map { userFundo ->
+                                id = fundo?.id?: 0,
+                                codigo = fundo?.codigo?: "",
+                                nombre = fundo?.nombre?: "",
+                                activo = fundo?.activo?: false,
+                                zonaId = fundo?.zonaId?: 0,
+                                userFundoSet = fundo?.userFundoSet?.map { userFundo ->
                                     UsuarioFundoDataModel(
                                         userId = userFundo?.userId ?: 0,
                                         fundoId = userFundo?.fundoId ?: 0
@@ -78,7 +77,6 @@ class EmpresaRepository(
                     )
                 }
             )
-
             if (existingEmpresa != null) {
                 // Actualizar los datos existentes
                 empresaDao.updateEmpresa(empresaEntity.toEntity())
@@ -89,23 +87,30 @@ class EmpresaRepository(
             }
 
             // Sincronizar usuarios
+            Log.d("Italo USET", empresaEntity.userSet.toString())
             empresaEntity.userSet?.forEach { usuario ->
+                Log.d("Italo User", usuario.toString())
                 val existingUsuario = usuarioDao.getUsuarioById(usuario.id.toInt())
+                Log.d("Italo Bool", existingUsuario.toString())
                 if (existingUsuario != null) {
+                    Log.d("Italo Update", existingUsuario.toString())
                     usuarioDao.updateUsuario(usuario.toEntity())
                 } else {
-                    Log.d("Italo U", empresaData.toString())
+                    Log.d("Italo Insert", empresaData.toString())
                     usuarioDao.insertUsuario(usuario.toEntity())
                 }
             }
 
             // Sincronizar zonas y fundos
+            Log.d("Italo Zonas", empresaEntity.zonaSet.toString())
             empresaEntity.zonaSet?.forEach { zona ->
+                Log.d("Italo Zona", zona.toString())
                 val existingZona = zonaDao.getZonaById(zona.id)
+                Log.d("Italo Zonas", existingZona.toString())
                 if (existingZona != null) {
                     zonaDao.updateZona(zona.toEntity())
                 } else {
-                    Log.d("Italo Z", empresaData.toString())
+                    Log.d("Italo Zona Insert", empresaData.toString())
                     zonaDao.insertZona(zona.toEntity())
                 }
 

@@ -36,11 +36,9 @@ class SecondLoginViewModel @Inject constructor(
 
     init {
         // Cargar fundos automáticamente cuando se inicializa el ViewModel y companyId tiene valor
-        Log.d("Italo Carga Fundos", "Uno")
         viewModelScope.launch {
             companyId.collect { id ->
                 id?.let {
-                    Log.d("Llegue", "Dos")
                     loadFundos() // Llamar a loadFundos cuando companyId tenga valor
                 }
             }
@@ -55,6 +53,7 @@ class SecondLoginViewModel @Inject constructor(
                         empresaRepository.getFundos().collect { fundosList ->
                             _fundos.value = fundosList
                         }
+
                     } catch (e: Exception) {
                         _fundos.value = emptyList()
                     }

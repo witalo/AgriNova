@@ -47,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,19 +62,27 @@ fun SecondLoginScreen(
 
     var dni by remember { mutableStateOf("") }
     var selectedFundo by remember { mutableStateOf<FundoDomainModel?>(null) }
-    var selectedModule by remember { mutableStateOf<String?>(null) }
+
+    var selectedModuleValue by remember { mutableStateOf("Seleccionar Módulo") }
     var isModuleDropdownOpen by remember { mutableStateOf(false) }
-    var isFundoDropdownOpen by remember { mutableStateOf(false) }
+
 
     // Observa companyId directamente desde el ViewModel
     val empresaId by viewModel.companyId.collectAsState(initial = null)
     val empresaName by viewModel.companyName.collectAsState(initial = null)
 
-    Box(
-        modifier = Modifier.widthIn(max = 400.dp) // Establece un ancho máximo para el contenido
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+        modifier = Modifier.widthIn(max = 300.dp) // Establece un ancho máximo para el contenido
         .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center
-    ) {
+     ) {
 
         Column(
             modifier = Modifier
@@ -95,18 +104,19 @@ fun SecondLoginScreen(
             )
 
             // Selector de Modulo
-            Spinner(
-//                label = "Seleccionar Módulo",
-                value = selectedModule ?: "Seleccionar Módulo",
+            StyledSpinner(
+                label = "Módulo",
+                value = selectedModuleValue,
                 isDropdownOpen = isModuleDropdownOpen,
                 onDropdownToggle = { isModuleDropdownOpen = it },
                 onValueChange = { value ->
-                    selectedModule = value
-                    isModuleDropdownOpen = false
-                    // Hacer algo con el módulo seleccionado
+                    selectedModuleValue = value // Aquí se guarda el valor seleccionado
                 },
-                items = listOf("Módulo 1", "Módulo 2", "Módulo 3")
+                items = listOf("SANIDAD", "FERTIRRIEGO", "CALIDAD")
             )
+
+            // Muestra el valor seleccionado
+//            Text(text = "Módulo seleccionado: $selectedModuleValue")
             Spacer(modifier = Modifier.height(8.dp))
             // Selector de Fundo
 //            Spinner(
@@ -136,27 +146,37 @@ fun SecondLoginScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Campo para el DNI
-            TextField(
+            OutlinedTextField(
                 value = dni,
                 onValueChange = { dni = it },
                 label = { Text("Ingrese su DNI") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier
-                    .fillMaxWidth() // Ocupa todo el ancho disponible
-                    .padding(start = 32.dp, end = 32.dp) // Padding a los lados
-                    .border(1.dp, color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f), shape = RoundedCornerShape(8.dp)), // Borde delgado y más sutil
-                textStyle = TextStyle(
-                    color = MaterialTheme.colorScheme.onSurface, // Color del texto
-                    fontSize = 16.sp // Tamaño de la fuente
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
                 ),
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color.White, // Fondo blanco
-                    focusedIndicatorColor = Color.Transparent, // Sin borde inferior cuando está enfocado
-                    unfocusedIndicatorColor = Color.Transparent, // Sin borde inferior cuando no está enfocado
-                    cursorColor = MaterialTheme.colorScheme.primary, // Color del cursor
-                    disabledIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f) // Color del indicador cuando está deshabilitado
-                ),
+                modifier = Modifier.fillMaxWidth()
             )
+//            TextField(
+//                value = dni,
+//                onValueChange = { dni = it },
+//                label = { Text("Ingrese su DNI") },
+//                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+//                modifier = Modifier
+//                    .fillMaxWidth() // Ocupa todo el ancho disponible
+//                    .padding(start = 32.dp, end = 32.dp) // Padding a los lados
+//                    .border(1.dp, color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f), shape = RoundedCornerShape(8.dp)), // Borde delgado y más sutil
+//                textStyle = TextStyle(
+//                    color = MaterialTheme.colorScheme.onSurface, // Color del texto
+//                    fontSize = 16.sp // Tamaño de la fuente
+//                ),
+//                colors = TextFieldDefaults.textFieldColors(
+//                    containerColor = Color.White, // Fondo blanco
+//                    focusedIndicatorColor = Color.Transparent, // Sin borde inferior cuando está enfocado
+//                    unfocusedIndicatorColor = Color.Transparent, // Sin borde inferior cuando no está enfocado
+//                    cursorColor = MaterialTheme.colorScheme.primary, // Color del cursor
+//                    disabledIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f) // Color del indicador cuando está deshabilitado
+//                ),
+//            )
 
 
 
@@ -237,6 +257,7 @@ fun SecondLoginScreen(
             }
         }
     }
+    }
 }
 @Composable
 fun SimpleComboBox(
@@ -298,7 +319,6 @@ fun AutocompleteTextField(
 
     Column(
         modifier = Modifier
-            .padding(start = 32.dp, end = 32.dp)
     ) {
         Box(
             modifier = Modifier
@@ -353,6 +373,78 @@ fun AutocompleteTextField(
     }
 }
 
+@Composable
+fun StyledSpinner(
+    label: String,
+    value: String,
+    isDropdownOpen: Boolean,
+    onDropdownToggle: (Boolean) -> Unit,
+    onValueChange: (String) -> Unit,
+    items: List<String>
+) {
+    Box(
+        modifier = Modifier
+            .width(250.dp)
+            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+            .clickable { onDropdownToggle(!isDropdownOpen) }
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Column {
+            Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = if (value.isNotBlank()) value else "Seleccionar...",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (value.isNotBlank()) MaterialTheme.colorScheme.onSurface else Color.Gray
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Dropdown Arrow",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        if (isDropdownOpen) {
+            Dialog(
+                onDismissRequest = { onDropdownToggle(false) }
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp)
+                        .padding(top = 40.dp)
+                        .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                        .padding(3.dp), //padding trasparente que rodea al desplegable
+                    shadowElevation = 4.dp,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 10.dp)
+                    ) {
+                        items.forEach { item ->
+                            Text(
+                                text = item,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onValueChange(item) // Cambia el valor seleccionado
+                                        onDropdownToggle(false) // Cierra el dropdown
+                                    }
+                                    .padding(vertical = 8.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 //@Composable
 //fun AutocompleteTextField(
@@ -401,76 +493,76 @@ fun AutocompleteTextField(
 //        }
 //    }
 //}
-@Composable
-fun Spinner(
+//@Composable
+//fun Spinner(
 //    label: String,
-    value: String,
-    isDropdownOpen: Boolean,
-    onDropdownToggle: (Boolean) -> Unit,
-    onValueChange: (String) -> Unit,
-    items: List<String>
-) {
-    Box(
-        modifier = Modifier
-            .padding(horizontal = 32.dp)
-            .width(250.dp)  // Ajusta el ancho aquí, o usa fillMaxWidth() si quieres que se ajuste al espacio disponible
-            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-            .clickable { onDropdownToggle(!isDropdownOpen) }
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        Column {
+//    value: String,
+//    isDropdownOpen: Boolean,
+//    onDropdownToggle: (Boolean) -> Unit,
+//    onValueChange: (String) -> Unit,
+//    items: List<String>
+//) {
+//    Box(
+//        modifier = Modifier
+////            .padding(horizontal = 2.dp)
+//            .width(250.dp)  // Ajusta el ancho aquí, o usa fillMaxWidth() si quieres que se ajuste al espacio disponible
+//            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+//            .clickable { onDropdownToggle(!isDropdownOpen) }
+//            .padding(horizontal = 16.dp, vertical = 12.dp)
+//    ) {
+//        Column {
 //            Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = if (value.isNotBlank()) value else "Seleccionar...",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = if (value.isNotBlank()) MaterialTheme.colorScheme.onSurface else Color.Gray
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = "Dropdown Arrow",
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
-
-        if (isDropdownOpen) {
-            Dialog(
-                onDismissRequest = { onDropdownToggle(false) }
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 40.dp)
-                        .padding(top = 55.dp)  // Ajusta la posición vertical del dropdown
-                        .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                        .padding(16.dp),
-                    shadowElevation = 4.dp,
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Column (
-                        modifier = Modifier.padding(horizontal = 10.dp)  // Espaciado interno en la lista
-                    ){
-                        items.forEach { item ->
-                            Text(
-                                text = item,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        onValueChange(item)
-                                        onDropdownToggle(false)
-                                    }
-                                    .padding(vertical = 8.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+//            Row(
+//                verticalAlignment = Alignment.CenterVertically,
+//                modifier = Modifier.fillMaxWidth()
+//            ) {
+//                Text(
+//                    text = if (value.isNotBlank()) value else "Seleccionar...",
+//                    style = MaterialTheme.typography.bodyLarge,
+//                    color = if (value.isNotBlank()) MaterialTheme.colorScheme.onSurface else Color.Gray
+//                )
+//                Spacer(modifier = Modifier.weight(1f))
+//                Icon(
+//                    imageVector = Icons.Default.ArrowDropDown,
+//                    contentDescription = "Dropdown Arrow",
+//                    tint = MaterialTheme.colorScheme.onSurface
+//                )
+//            }
+//        }
+//
+//        if (isDropdownOpen) {
+//            Dialog(
+//                onDismissRequest = { onDropdownToggle(false) }
+//            ) {
+//                Surface(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(horizontal = 40.dp)
+//                        .padding(top = 55.dp)  // Ajusta la posición vertical del dropdown
+//                        .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+//                        .padding(16.dp),
+//                    shadowElevation = 4.dp,
+//                    shape = RoundedCornerShape(8.dp)
+//                ) {
+//                    Column (
+//                        modifier = Modifier.padding(horizontal = 10.dp)  // Espaciado interno en la lista
+//                    ){
+//                        items.forEach { item ->
+//                            Text(
+//                                text = item,
+//                                style = MaterialTheme.typography.bodyMedium,
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .clickable {
+//                                        onValueChange(item)
+//                                        onDropdownToggle(false)
+//                                    }
+//                                    .padding(vertical = 8.dp)
+//                            )
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
