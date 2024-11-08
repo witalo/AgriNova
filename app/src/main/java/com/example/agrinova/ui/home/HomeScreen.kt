@@ -11,15 +11,18 @@ import com.example.agriapp.ui.home.screens.ProfileScreen
 import com.example.agriapp.ui.home.screens.ReportScreen
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.agrinova.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
 ) {
     val selectedTab by viewModel.selectedTab.collectAsState()
 
@@ -29,13 +32,22 @@ fun HomeScreen(
                 title = {
                     Text(
                         text = selectedTab.title,
-                        style = MaterialTheme.typography.headlineLarge
+                        style = MaterialTheme.typography.titleMedium
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                    containerColor = Color(0xFF43BD28),
+                    titleContentColor = Color(0xFFFFFFFF)
+                ),
+                actions = {
+                    IconButton(onClick = {}) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground), // tu icono de upload
+                            contentDescription = "Upload data",
+                            tint = Color.White
+                        )
+                    }
+                }
             )
         },
         bottomBar = {

@@ -87,7 +87,7 @@ dependencies {
     implementation(libs.apollo.runtime)
 
     // Lottie Compose
-    implementation("com.airbnb.android:lottie-compose:5.2.0")
+    implementation(libs.lottie.compose)
 }
 kapt {
     correctErrorTypes = true
