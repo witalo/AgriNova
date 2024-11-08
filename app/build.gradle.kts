@@ -85,6 +85,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3") // Para Android
     //Apollo
     implementation(libs.apollo.runtime)
+
+    // Lottie Compose
+    implementation("com.airbnb.android:lottie-compose:5.2.0")
 }
 kapt {
     correctErrorTypes = true

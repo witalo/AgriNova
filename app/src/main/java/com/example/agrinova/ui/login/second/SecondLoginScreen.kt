@@ -1,7 +1,9 @@
 package com.example.agrinova.ui.login.second
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -49,13 +51,20 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SecondLoginScreen(
     viewModel: SecondLoginViewModel = hiltViewModel(),
     onNavigateToHome: () -> Unit  // Cambiado para recibir solo la función de navegación
 ) {
+    // Define el estado del snackbar
+    val snackbarHostState = remember { SnackbarHostState() }
+    // Control de coroutine para mostrar el snackbar
+    val coroutineScope = rememberCoroutineScope()
+
     val fundos by viewModel.fundos.collectAsState() // Lista de fundos
     val validationState by viewModel.validationState.collectAsState() // Estado de validación
     val syncState by viewModel.syncState.collectAsState() // Estado de sincronización
@@ -70,7 +79,9 @@ fun SecondLoginScreen(
     // Observa companyId directamente desde el ViewModel
     val empresaId by viewModel.companyId.collectAsState(initial = null)
     val empresaName by viewModel.companyName.collectAsState(initial = null)
-
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -97,11 +108,13 @@ fun SecondLoginScreen(
                 style = MaterialTheme.typography.headlineSmall, // En lugar de h6
                 textAlign = TextAlign.Center
             )
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = empresaName ?: "-",
                 style = MaterialTheme.typography.headlineSmall, // En lugar de h6
                 textAlign = TextAlign.Center
             )
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Selector de Modulo
             StyledSpinner(
@@ -193,10 +206,25 @@ fun SecondLoginScreen(
             // Botón Ingresar
             Button(
                 onClick = {
-                    // Verifica que el fundo esté seleccionado antes de llamar a la función
-                    selectedFundo?.id?.let { id ->
-                        viewModel.validateUser(dni, id)
+                    val fundoId = selectedFundo?.id
+                    val dniValue = dni
+                    val moduleId = selectedModuleValue
+
+                    if (fundoId != null && dniValue.isNotBlank() && moduleId != "Seleccionar Módulo") {
+                        // Llama a la función si todos los valores están presentes
+                        viewModel.validateUser(dniValue, fundoId, moduleId)
+                    } else {
+                        // Muestra el Snackbar si algún campo está incompleto
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = "Por favor, completa todos los campos",
+                                duration = SnackbarDuration.Short // Aquí puedes cambiar a Long o Indefinite
+                            )
+                        }
                     }
+//                    selectedFundo?.id?.let { id ->
+//                        viewModel.validateUser(dni, id, selectedModuleValue)
+//                    }
                 },
                 modifier = Modifier.widthIn(min = 150.dp, max = 250.dp).padding(bottom = 4.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
@@ -264,6 +292,7 @@ fun SecondLoginScreen(
                 else -> {}
             }
         }
+    }
     }
     }
 }

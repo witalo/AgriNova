@@ -34,7 +34,12 @@ interface UsuarioDao {
         """
         SELECT EXISTS (
             SELECT 1 FROM UsuarioFundoCrossRef
-            WHERE usuarioId = (SELECT usuarioId FROM usuario WHERE document = :dni LIMIT 1)
+            WHERE usuarioId = (
+                SELECT usuarioId FROM usuario 
+                WHERE document = :dni 
+                AND isActive = 1  -- Verificar si el usuario está activo
+                LIMIT 1
+            )
             AND fundoId = :fundoId
         )
     """
