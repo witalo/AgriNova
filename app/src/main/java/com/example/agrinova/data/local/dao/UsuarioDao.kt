@@ -45,4 +45,8 @@ interface UsuarioDao {
     """
     )
     suspend fun isUserAssociatedWithFundo(dni: String, fundoId: Int): Boolean
+    @Query("SELECT * FROM usuario WHERE id = 1 LIMIT 1")
+    suspend fun getCurrentUser(): UsuarioEntity?
+    @Query("DELETE FROM usuario WHERE id = 1")
+    suspend fun clearCurrentUser()
 }
