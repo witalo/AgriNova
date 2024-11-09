@@ -52,6 +52,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.unit.dp
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,8 +77,16 @@ fun SecondLoginScreen(
     var dni by remember { mutableStateOf("") }
     var selectedFundo by remember { mutableStateOf<FundoDomainModel?>(null) }
 
-    var selectedModuleValue by remember { mutableStateOf("Seleccionar Módulo") }
-    var isModuleDropdownOpen by remember { mutableStateOf(false) }
+//    var selectedModuleValue by remember { mutableStateOf("Seleccionar Módulo") }
+//    var isModuleDropdownOpen by remember { mutableStateOf(false) }
+    var selectedModulo by remember { mutableStateOf<ModuloDomainModel?>(null) }
+    val modules = remember {
+        listOf(
+            ModuloDomainModel(1, "SANIDAD"),
+            ModuloDomainModel(2, "CALIDAD"),
+            ModuloDomainModel(3, "FERTIRRIEGO")
+        )
+    }
 
 
     // Observa companyId directamente desde el ViewModel
@@ -117,54 +130,70 @@ fun SecondLoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Selector de Modulo
-            StyledSpinner(
-                label = "Módulo",
-                value = selectedModuleValue,
-                isDropdownOpen = isModuleDropdownOpen,
-                onDropdownToggle = { isModuleDropdownOpen = it },
-                onValueChange = { value ->
-                    selectedModuleValue = value // Aquí se guarda el valor seleccionado
-                },
-                items = listOf("SANIDAD", "FERTIRRIEGO", "CALIDAD")
-            )
-
-            // Muestra el valor seleccionado
-//            Text(text = "Módulo seleccionado: $selectedModuleValue")
-            Spacer(modifier = Modifier.height(8.dp))
-            // Selector de Fundo
-//            Spinner(
-//                label = "Seleccionar Fundo",
-//                value = selectedFundo?.nombre ?: "Seleccionar Fundo",
-//                isDropdownOpen = isFundoDropdownOpen,
-//                onDropdownToggle = { isFundoDropdownOpen = it },
+//            StyledSpinner(
+//                label = "Módulo",
+//                value = selectedModuleValue,
+//                isDropdownOpen = isModuleDropdownOpen,
+//                onDropdownToggle = { isModuleDropdownOpen = it },
 //                onValueChange = { value ->
-//                    selectedFundo = fundos.find { it.nombre == value }
-//                    isFundoDropdownOpen = false
-//                    // Hacer algo con el fundo seleccionado
+//                    selectedModuleValue = value // Aquí se guarda el valor seleccionado
 //                },
-//                items = fundos.map { it.nombre }
+//                items = listOf("SANIDAD", "FERTIRRIEGO", "CALIDAD")
 //            )
-            // Selector de Fundo
-            if (fundos.isNotEmpty()) {
-//                AutocompleteTextField(
-//                    suggestions = fundos.map { it.nombre },  // Asegúrate de que 'nombre' esté en tu modelo de datos
-//                    onSuggestionClick = { selectedFundoNombre ->
-//                        // Buscar el fundo completo por nombre
-//                        selectedFundo = fundos.firstOrNull { it.nombre == selectedFundoNombre }
-//                    }
-//                )
-            } else {
-                Text("No se encontraron fundos")
-            }
-            FundoComboBox(
-                label = "Fundo",
-                fundos = fundos,
-                onFundoSelected = { fundo ->
-                    selectedFundo = fundo
-//                    println("Selected fundo: ${fundo.id} - ${fundo.nombre}")
-                }
+            // Selector de Fundos
+            GenericSelector(
+                items = fundos,
+                selectedItem = selectedFundo,
+                onItemSelected = { selectedFundo = it },
+                getDisplayText = { it.nombre },
+                label = "Fundos"
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+            // Selector de Módulos
+            GenericSelector(
+                items = modules,
+                selectedItem = selectedModulo,
+                onItemSelected = { selectedModulo = it },
+                getDisplayText = { it.nombre },
+                label = "Módulos"
+            )
+//            FundoComboBox(
+//                label = "Fundo",
+//                fundos = fundos,
+//                onFundoSelected = { fundo ->
+//                    selectedFundo = fundo
+////                    println("Selected fundo: ${fundo.id} - ${fundo.nombre}")
+//                }
+//            )
+
+            // Mostrar información adicional del fundo seleccionado si es necesario
+//            selectedFundo?.let { fundo ->
+//                Spacer(modifier = Modifier.height(16.dp))
+//                Card(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    colors = CardDefaults.cardColors(
+//                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+//                    )
+//                ) {
+//                    Column(
+//                        modifier = Modifier.padding(16.dp)
+//                    ) {
+//                        Text(
+//                            text = "Fundo seleccionado:",
+//                            style = MaterialTheme.typography.titleMedium
+//                        )
+//                        Text(
+//                            text = "Nombre: ${fundo.nombre}",
+//                            style = MaterialTheme.typography.bodyLarge
+//                        )
+//                        Text(
+//                            text = "ID: ${fundo.id}",
+//                            style = MaterialTheme.typography.bodyMedium
+//                        )
+//                    }
+//                }
+//            }
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Campo para el DNI
             OutlinedTextField(
@@ -208,9 +237,9 @@ fun SecondLoginScreen(
                 onClick = {
                     val fundoId = selectedFundo?.id
                     val dniValue = dni
-                    val moduleId = selectedModuleValue
+                    val moduleId = selectedModulo?.id
 
-                    if (fundoId != null && dniValue.isNotBlank() && moduleId != "Seleccionar Módulo") {
+                    if (fundoId != null && dniValue.isNotBlank() && moduleId != null) {
                         // Llama a la función si todos los valores están presentes
                         viewModel.validateUser(dniValue, fundoId, moduleId)
                     } else {
@@ -284,7 +313,7 @@ fun SecondLoginScreen(
 
                 is ValidationState.Invalid -> {
                     Text(
-                        "Usuario no válido. Verifique el DNI y el fundo seleccionado.",
+                        "Usuario no válido. Verifique datos.",
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -296,71 +325,6 @@ fun SecondLoginScreen(
     }
     }
 }
-
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun AutocompleteTextField(
-//    suggestions: List<String>,
-//    onSuggestionClick: (String) -> Unit
-//) {
-//    var text by remember { mutableStateOf(TextFieldValue("")) }
-//    var isDropdownExpanded by remember { mutableStateOf(false) }
-//
-//    Column(
-//        modifier = Modifier
-//    ) {
-//        Box(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .clickable { isDropdownExpanded = true } // Abre el menú desplegable al hacer clic
-//                .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-//                .padding(horizontal = 16.dp, vertical = 8.dp)
-//        ) {
-//            // Componente TextField con propiedades de Material3 y sin permitir la edición
-//            TextField(
-//                value = text,
-//                onValueChange = { /* No hace nada para deshabilitar entrada de texto */ },
-//                enabled = false,  // Deshabilita la entrada de texto
-//                label = { Text("Fundo") },
-//                trailingIcon = {
-//                    Icon(
-//                        imageVector = Icons.Default.ArrowDropDown,
-//                        contentDescription = "Dropdown Arrow",
-//                        modifier = Modifier.clickable {
-//                            isDropdownExpanded = !isDropdownExpanded
-//                        }
-//                    )
-//                },
-//                modifier = Modifier.fillMaxWidth(),
-//                colors = TextFieldDefaults.textFieldColors(
-//                    containerColor = Color.White,  // Fondo blanco completamente opaco
-//                    cursorColor = MaterialTheme.colorScheme.primary, // Color del cursor
-//                    disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // Color del texto cuando está deshabilitado
-//                    focusedLabelColor = MaterialTheme.colorScheme.primary, // Color de la etiqueta cuando está enfocado
-//                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) // Color de la etiqueta cuando no está enfocado
-//                ),
-//                shape = RoundedCornerShape(8.dp) // Asegura que el borde esté redondeado
-//            )
-//        }
-//
-//        // Menú desplegable que muestra las opciones
-//        DropdownMenu(
-//            expanded = isDropdownExpanded,
-//            onDismissRequest = { isDropdownExpanded = false }
-//        ) {
-//            suggestions.forEach { suggestion ->
-//                DropdownMenuItem(
-//                    onClick = {
-//                        text = TextFieldValue(suggestion)
-//                        onSuggestionClick(suggestion)
-//                        isDropdownExpanded = false
-//                    },
-//                    text = { Text(text = suggestion) }
-//                )
-//            }
-//        }
-//    }
-//}
 
 @Composable
 fun StyledSpinner(
@@ -434,77 +398,6 @@ fun StyledSpinner(
         }
     }
 }
-//@Composable
-//fun FundoAutocomplete(
-//    label: String,
-//    fundos: List<FundoDomainModel>,
-//    onFundoSelected: (FundoDomainModel) -> Unit
-//) {
-//    var isOpen by remember { mutableStateOf(false) }
-//    var searchTerm by remember { mutableStateOf("") }
-//    var isFocused by remember { mutableStateOf(false) }
-//
-//    // Si el campo de búsqueda está vacío, muestra todos los fundos; de lo contrario, filtra según el término de búsqueda
-//    val filteredFundos = if (searchTerm.isEmpty()) fundos else fundos.filter {
-//        it.nombre.contains(searchTerm, ignoreCase = true)
-//    }
-//
-//    OutlinedTextField(
-//        value = searchTerm,
-//        onValueChange = {
-//            searchTerm = it
-//            isOpen = true
-//        },
-//        label = { Text(label) },
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .onFocusChanged { state ->
-//                isFocused = state.isFocused
-//            },
-//        trailingIcon = {
-//            Icon(
-//                imageVector = Icons.Default.ArrowDropDown,
-//                contentDescription = "Toggle Dropdown",
-//                modifier = Modifier.clickable {
-//                    isOpen = !isOpen // Cambia el estado de isOpen al hacer clic en el icono
-//                }
-//            )
-//        }
-//    )
-//
-//    if (isOpen && isFocused && filteredFundos.isNotEmpty()) {
-//        LazyColumn(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(top = 8.dp, bottom = 8.dp)
-//        ) {
-//            items(filteredFundos) { fundo ->
-//                DropdownOption(
-//                    text = fundo.nombre,
-//                    onClick = {
-//                        onFundoSelected(fundo)
-//                        searchTerm = fundo.nombre // Muestra el nombre seleccionado en el campo de texto
-//                        isOpen = false
-//                    }
-//                )
-//            }
-//        }
-//    }
-//}
-//@Composable
-//fun DropdownOption(
-//    text: String,
-//    onClick: () -> Unit
-//) {
-//    Text(
-//        text = text,
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(vertical = 12.dp, horizontal = 16.dp)
-//            .clickable { onClick() },
-//        style = MaterialTheme.typography.bodyMedium
-//    )
-//}
 
 @Composable
 fun FundoComboBox(
@@ -576,3 +469,55 @@ fun FundoComboBox(
         }
     }
 }
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun <T> GenericSelector(
+    items: List<T>,
+    selectedItem: T?,
+    onItemSelected: (T?) -> Unit,
+    getDisplayText: (T) -> String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = selectedItem?.let { getDisplayText(it) } ?: "",
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            items.forEach { item ->
+                DropdownMenuItem(
+                    text = { Text(getDisplayText(item)) },
+                    onClick = {
+                        onItemSelected(item)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+data class ModuloDomainModel(
+    val id: Int,
+    val nombre: String
+)

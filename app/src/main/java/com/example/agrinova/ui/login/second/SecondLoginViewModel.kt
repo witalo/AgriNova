@@ -75,7 +75,7 @@ class SecondLoginViewModel @Inject constructor(
         }
     }
 
-    fun validateUser(dni: String, fundoId: Int?, moduleId: String) {
+    fun validateUser(dni: String, fundoId: Int?, moduleId: Int) {
         viewModelScope.launch {
             when {
                 dni.isBlank() -> {
