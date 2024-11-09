@@ -1,6 +1,7 @@
 package com.example.agrinova.di
 
 import android.content.Context
+import androidx.lifecycle.ViewModel
 import com.example.agrinova.data.local.AppDatabase
 import com.example.agrinova.data.local.dao.EmpresaDao
 import com.example.agrinova.data.local.dao.FundoDao
@@ -8,11 +9,14 @@ import com.example.agrinova.data.local.dao.UsuarioDao
 import com.example.agrinova.data.local.dao.ZonaDao
 import com.example.agrinova.data.remote.GraphQLClient
 import com.example.agrinova.data.repository.EmpresaRepository
+import com.example.agrinova.ui.home.screens.ProfileViewModel
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.IntoMap
 import javax.inject.Singleton
 
 @Module

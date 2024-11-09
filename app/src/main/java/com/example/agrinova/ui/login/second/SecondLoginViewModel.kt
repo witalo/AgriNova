@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.example.agrinova.data.repository.EmpresaRepository
 import com.example.agrinova.data.repository.UsuarioRepository
+import com.example.agrinova.di.models.UsuarioDomainModel
 import javax.inject.Inject
 
 @HiltViewModel
@@ -86,13 +87,10 @@ class SecondLoginViewModel @Inject constructor(
                 else -> {
                     _validationState.value = ValidationState.Loading
                     try {
-                        Log.d("Italo", "DNI: $dni, Fundo ID: $fundoId, Módulo ID: $moduleId")
                         val isUserValid = usuarioRepository.validateUser(dni, fundoId)
                         _validationState.value = if (isUserValid) {
-                            Log.d("Italo login success", "Valido")
                             ValidationState.Valid
                         } else {
-                            Log.d("Italo login error", "No Valido")
                             ValidationState.Invalid("Usuario no válido")
                         }
                     } catch (e: Exception) {
