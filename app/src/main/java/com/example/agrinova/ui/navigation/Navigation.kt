@@ -31,7 +31,8 @@ class AppNavigator @Inject constructor(
     @Composable
     fun AppNavigation() {
         val navController = rememberNavController()
-        val isCompanyRegistered = userPreferences.isCompanyRegistered.collectAsState(initial = false).value
+        val isCompanyRegistered =
+            userPreferences.isCompanyRegistered.collectAsState(initial = false).value
         val scope = rememberCoroutineScope()
 
         // Usamos LaunchedEffect para manejar la navegación inicial
@@ -46,6 +47,7 @@ class AppNavigator @Inject constructor(
             }
         }
 
+
         NavHost(navController = navController, startDestination = "lottie_animation") {
             composable("lottie_animation") {
                 LottieAnimationScreen(
@@ -53,6 +55,10 @@ class AppNavigator @Inject constructor(
                         if (!isCompanyRegistered) {
                             navController.navigate("first_login") {
                                 popUpTo("lottie_animation") { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate("second_login") {
+                                popUpTo(0) { inclusive = true }
                             }
                         }
                     }
@@ -95,6 +101,10 @@ class AppNavigator @Inject constructor(
                         // Navega de vuelta a la SecondLoginScreen
                         navController.navigate("second_login") {
                             popUpTo(0) { inclusive = true }
+                        }
+                        scope.launch {
+                            // Limpiar los datos del usuario
+                            userPreferences.clearUserData()
                         }
                     }
                 )

@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
@@ -56,7 +58,7 @@ fun ProfileScreen(
         if (uiState.isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
-                color = Color(0xFF43BD28)
+                color = Color(0xFF48C02D)
             )
         } else {
             Column(
@@ -70,7 +72,7 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFB7B7B7)
+                        containerColor = Color(0xFF5DC745)
                     )
                 ) {
                     Column(
@@ -88,7 +90,7 @@ fun ProfileScreen(
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = null,
-                                tint = Color(0xFF636463),
+                                tint = Color(0xFF8C8B8B),
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(16.dp)
@@ -108,7 +110,7 @@ fun ProfileScreen(
                         Text(
                             text = uiState.userLastName,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = Color.White.copy(alpha = 0.8f),
+                            color = Color.White.copy(alpha = 0.9f),
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         )
                     }
@@ -126,7 +128,7 @@ fun ProfileScreen(
                             .padding(16.dp)
                     ) {
                         InfoRow(
-                            icon = Icons.Default.List,
+                            icon = Icons.Default.Create,
                             label = "DNI",
                             value = uiState.userDni
                         )
@@ -156,11 +158,13 @@ fun ProfileScreen(
                             .padding(16.dp)
                     ) {
                         InfoRow(
-                            icon = Icons.Default.CheckCircle,
+                            icon = if (uiState.userActive) Icons.Default.CheckCircle else Icons.Default.Close,
                             label = "Estado",
-                            value = uiState.userActive.toString()
+                            value = if (uiState.userActive) "Activo" else "Inactivo",
+                            valueColor = if (uiState.userActive) Color(0xFF4CAF50) else Color.Red // Cambia color según estado
                         )
                     }
+
                 }
             }
         }
@@ -171,7 +175,8 @@ fun ProfileScreen(
 private fun InfoRow(
     icon: ImageVector,
     label: String,
-    value: String
+    value: String,
+    valueColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -180,7 +185,7 @@ private fun InfoRow(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Color(0xFF43BD28)
+            tint = valueColor // Aplica el color pasado o usa el predeterminado
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
@@ -191,7 +196,8 @@ private fun InfoRow(
             )
             Text(
                 text = value,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = valueColor // Aplica color según el valor pasado
             )
         }
     }

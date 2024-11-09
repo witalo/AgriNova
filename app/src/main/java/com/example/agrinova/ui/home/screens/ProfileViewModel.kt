@@ -2,6 +2,7 @@ package com.example.agrinova.ui.home.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.agrinova.data.repository.UsuarioRepository
 import com.example.agrinova.di.UsePreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val usePreferences: UsePreferences
+    private val usePreferences: UsePreferences,
 ) : ViewModel() {
 
     data class ProfileUiState(
@@ -53,7 +54,7 @@ class ProfileViewModel @Inject constructor(
                     userDni = values[3] as? String ?: "",
                     userPhone = values[4] as? String ?: "",
                     userEmail = values[5] as? String ?: "",
-                    userActive = values[6] as? Boolean ?: false,
+                    userActive =  values[6] as? Boolean ?: false,
                     isLoading = false
                 )
             }.collect { state ->

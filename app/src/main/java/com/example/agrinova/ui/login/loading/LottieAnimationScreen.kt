@@ -29,7 +29,7 @@ fun LottieAnimationScreen(
 
     // Efecto que se ejecutará después de un delay específico
     LaunchedEffect(Unit) {
-        delay(3000) // 3 segundos, puedes ajustar este valor
+        delay(2000) // 3 segundos, puedes ajustar este valor
         isPlaying = false
         onAnimationFinished()
     }

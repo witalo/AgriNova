@@ -56,7 +56,14 @@ class FirstLoginViewModel @Inject constructor(
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
             try {
-                val response = GraphQLClient.apolloClient.mutate(LoginEmpresaMutation(ruc, correo, password)).execute()
+                val response = GraphQLClient.apolloClient.mutation(
+                    LoginEmpresaMutation(
+                        ruc,
+                        correo,
+                        password
+                    )
+                )
+                    .execute()
                 if (response.hasErrors()) {
                     _loginState.value = LoginState.Error("Error en el inicio de sesión")
                 } else {
@@ -76,7 +83,7 @@ class FirstLoginViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                _loginState.value = LoginState.Error("Error: ${e.message}")
+                _loginState.value = LoginState.Error("${e.message}")
             }
         }
     }
@@ -96,7 +103,7 @@ class FirstLoginViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                _loginState.value = LoginState.Error("Error: ${e.message}")
+                _loginState.value = LoginState.Error("${e.message}")
             }
         }
     }

@@ -8,9 +8,23 @@ import javax.inject.Inject
 class UsuarioRepository @Inject constructor(
     private val usuarioDao: UsuarioDao
 ) {
-    suspend fun validateUser(dni: String, fundoId: Int): Boolean {
-        return usuarioDao.isUserAssociatedWithFundo(dni, fundoId)
+    suspend fun validateUser(dni: String, fundoId: Int): UsuarioDomainModel {
+        val usuarioEntity = usuarioDao.isUserAssociatedWithFundo(dni, fundoId)
+        return usuarioEntity?.let {
+            UsuarioDomainModel(
+                id = it.id,
+                document = it.document,
+                firstName = it.firstName?: "",
+                lastName = it.lastName ?: "",
+                phone = it.phone,
+                email = it.email,
+                isActive = it.isActive
+            )
+        } ?: throw IllegalArgumentException("Usuario no encontrado")
     }
+//    suspend fun validateUser(dni: String, fundoId: Int): Boolean {
+//        return usuarioDao.isUserAssociatedWithFundo(dni, fundoId)
+//    }
     suspend fun getCurrentUserId(): Int {
         val usuario = usuarioDao.getCurrentUser()
         return usuario?.id ?: throw IllegalStateException("No se ha iniciado sesión")
@@ -31,11 +45,8 @@ class UsuarioRepository @Inject constructor(
         } ?: throw IllegalArgumentException("Usuario no encontrado")
     }
 
-    suspend fun logout() {
-        usuarioDao.clearCurrentUser()
-    }
-    fun getUserStatusText(usuario: UsuarioDomainModel?): String {
-        return if (usuario?.isActive == true) {
+    fun getUserStatusText(active: Boolean?): String {
+        return if (active == true) {
             "Activo"
         } else {
             "Inactivo"

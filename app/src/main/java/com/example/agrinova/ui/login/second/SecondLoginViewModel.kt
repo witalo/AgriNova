@@ -87,12 +87,26 @@ class SecondLoginViewModel @Inject constructor(
                 else -> {
                     _validationState.value = ValidationState.Loading
                     try {
-                        val isUserValid = usuarioRepository.validateUser(dni, fundoId)
-                        _validationState.value = if (isUserValid) {
-                            ValidationState.Valid
-                        } else {
-                            ValidationState.Invalid("Usuario no válido")
-                        }
+//                        val isUserValid = usuarioRepository.validateUser(dni, fundoId)
+//                        _validationState.value = if (isUserValid) {
+//                            ValidationState.Valid
+//                        } else {
+//                            ValidationState.Invalid("Usuario no válido")
+//                        }
+                        val userData = usuarioRepository.validateUser(dni, fundoId)
+                        // Guarda los datos del usuario si la validación es exitosa
+                        Log.d("DATOS", userData.toString())
+                        userPreferences.saveUserData(
+                            userData.id,
+                            userData.firstName,
+                            userData.lastName,
+                            userData.document,
+                            userData.phone,
+                            userData.email,
+                            userData.isActive,
+                            fundoId
+                        ) // Asumiendo que `id` no es null
+                        _validationState.value = ValidationState.Valid
                     } catch (e: Exception) {
                         _validationState.value = ValidationState.Invalid("Error de validación: ${e.message}")
                     }

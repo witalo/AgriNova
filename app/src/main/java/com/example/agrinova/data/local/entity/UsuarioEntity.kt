@@ -4,6 +4,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.agrinova.data.remote.model.EmpresaDataModel
 import com.example.agrinova.data.remote.model.UsuarioDataModel
+import com.example.agrinova.di.models.FundoDomainModel
+import com.example.agrinova.di.models.UsuarioDomainModel
 
 @Entity(tableName = "usuario")
 data class UsuarioEntity(
@@ -15,6 +17,17 @@ data class UsuarioEntity(
     val email: String,
     val isActive: Boolean
 ){
+    fun toDomainModel(): UsuarioDomainModel {
+        return UsuarioDomainModel(
+            id = this.id,
+            firstName = this.firstName,
+            lastName = this.lastName,
+            document = this.document,
+            phone = this.phone,
+            email = this.email,
+            isActive = this.isActive
+        )
+    }
     companion object {
         fun fromDataModel(dataModel: UsuarioDataModel): UsuarioEntity {
             return UsuarioEntity(

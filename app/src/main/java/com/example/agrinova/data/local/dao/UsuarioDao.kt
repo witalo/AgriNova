@@ -30,23 +30,33 @@ interface UsuarioDao {
     suspend fun getUsuarioByDocument(document: String): UsuarioEntity?
 
     // Verificar si un usuario está asociado con un fundo específico
+//    @Query(
+//        """
+//        SELECT EXISTS (
+//            SELECT 1 FROM UsuarioFundoCrossRef
+//            WHERE usuarioId = (
+//                SELECT usuarioId FROM usuario
+//                WHERE document = :dni
+//                AND isActive = 1  -- Verificar si el usuario está activo
+//                LIMIT 1
+//            )
+//            AND fundoId = :fundoId
+//        )
+//    """
+//    )
+//    suspend fun isUserAssociatedWithFundo(dni: String, fundoId: Int): Boolean
     @Query(
         """
-        SELECT EXISTS (
-            SELECT 1 FROM UsuarioFundoCrossRef
-            WHERE usuarioId = (
-                SELECT usuarioId FROM usuario 
-                WHERE document = :dni 
-                AND isActive = 1  -- Verificar si el usuario está activo
-                LIMIT 1
-            )
-            AND fundoId = :fundoId
-        )
+        SELECT u.id, u.firstName, u.lastName, u.document, u.phone, u.email, u.isActive 
+        FROM usuario u
+        JOIN UsuarioFundoCrossRef uf ON u.id = uf.usuarioId
+        WHERE u.document = :dni 
+        AND u.isActive = 1  -- Verificar si el usuario está activo
+        AND uf.fundoId = :fundoId
+        LIMIT 1
     """
     )
-    suspend fun isUserAssociatedWithFundo(dni: String, fundoId: Int): Boolean
+    suspend fun isUserAssociatedWithFundo(dni: String, fundoId: Int): UsuarioEntity?
     @Query("SELECT * FROM usuario WHERE id = 1 LIMIT 1")
     suspend fun getCurrentUser(): UsuarioEntity?
-    @Query("DELETE FROM usuario WHERE id = 1")
-    suspend fun clearCurrentUser()
 }
