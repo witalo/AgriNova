@@ -2,9 +2,7 @@ package com.example.agrinova.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.agrinova.data.remote.model.EmpresaDataModel
 import com.example.agrinova.data.remote.model.UsuarioDataModel
-import com.example.agrinova.di.models.FundoDomainModel
 import com.example.agrinova.di.models.UsuarioDomainModel
 
 @Entity(tableName = "usuario")

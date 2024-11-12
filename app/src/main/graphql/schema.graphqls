@@ -13,6 +13,8 @@ type Query {
 type MuestraVGType {
   id: Int
 
+  variableGrupo: VariableGrupoType
+
   muestra: Decimal!
 
   fecha: Date
@@ -31,17 +33,106 @@ The `Int` scalar type represents non-fractional signed whole numeric values. Int
 """
 scalar Int
 
-"""
-The `Decimal` scalar type represents a python Decimal.
-"""
-scalar Decimal
+type VariableGrupoType {
+  id: Int
+
+  grupoVariable: GrupoVariableType
+
+  minimo: Int
+
+  maximo: Int
+
+  calculado: Boolean!
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  muestravgSet: [MuestraVGType!]!
+
+  grupoVariableId: Int
+
+  variableEvaluacionId: Int
+
+  variableEvaluacionNombre: String
+}
+
+type GrupoVariableType {
+  id: Int
+
+  cartillaEvaluacion: CartillaEvaluacionType
+
+  calculado: Boolean!
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  variablegrupoSet: [VariableGrupoType!]!
+
+  grupoId: Int
+
+  grupoCodigo: String
+
+  grupoNombre: String
+
+  cartillaEvaluacionId: Int
+
+  variableGrupoSet: [VariableGrupoType]
+}
+
+type CartillaEvaluacionType {
+  id: Int
+
+  codigo: String
+
+  nombre: String
+
+  descripcion: String
+
+  cultivo: CultivoType
+
+  muestra: Int!
+
+  activo: Boolean!
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  userSet: [UserType!]!
+
+  grupovariableSet: [GrupoVariableType!]!
+
+  cultivoId: Int
+
+  userCartillaSet: [UserCartillaType]
+}
 
 """
-The `Date` scalar type represents a Date
-value as specified by
-[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.
 """
-scalar Date
+scalar String
+
+type CultivoType {
+  id: Int
+
+  codigo: String
+
+  nombre: String
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  activo: Boolean!
+
+  campaniaSet: [CampaniaType!]!
+
+  variedadSet: [VariedadType]
+
+  cartillaevaluacionSet: [CartillaEvaluacionType!]!
+}
 
 """
 The `DateTime` scalar type represents a DateTime
@@ -51,14 +142,132 @@ value as specified by
 scalar DateTime
 
 """
-The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).
+The `Boolean` scalar type represents `true` or `false`.
 """
-scalar Float
+scalar Boolean
+
+type CampaniaType {
+  id: Int
+
+  numero: Int!
+
+  centroCosto: String
+
+  inicio: Date
+
+  inicioCampania: Date
+
+  inicioCosecha: Date
+
+  final: Date
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  lote: LoteType
+
+  cultivo: CultivoType
+
+  activo: Boolean!
+
+  valvulaSet: [ValvulaType]
+
+  loteId: Int
+
+  cultivoId: Int
+}
 
 """
-The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `"4"`) or integer (such as `4`) input value will be accepted as an ID.
+The `Date` scalar type represents a Date
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
 """
-scalar ID
+scalar Date
+
+type LoteType {
+  id: Int
+
+  codigo: String
+
+  nombre: String
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  modulo: ModuloType
+
+  activo: Boolean!
+
+  campaniaSet: [CampaniaType]
+
+  moduloId: Int
+}
+
+type ModuloType {
+  id: Int
+
+  codigo: String
+
+  nombre: String
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  fundo: FundoType
+
+  activo: Boolean!
+
+  loteSet: [LoteType]
+
+  fundoId: Int
+}
+
+type FundoType {
+  id: Int
+
+  codigo: String
+
+  nombre: String
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  zona: ZonaType
+
+  activo: Boolean!
+
+  userSet: [UserType!]!
+
+  moduloSet: [ModuloType]
+
+  zonaId: Int
+
+  userFundoSet: [UserFundoType]
+}
+
+type ZonaType {
+  id: Int
+
+  codigo: String
+
+  nombre: String
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  empresa: EmpresaType
+
+  activo: Boolean!
+
+  fundoSet: [FundoType]
+
+  empresaId: Int
+}
 
 type EmpresaType {
   id: Int
@@ -90,60 +299,6 @@ type EmpresaType {
   cultivoSet: [CultivoType]
 
   cartillaEvaluacionSet: [CartillaEvaluacionType]
-}
-
-"""
-The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.
-"""
-scalar String
-
-"""
-The `Boolean` scalar type represents `true` or `false`.
-"""
-scalar Boolean
-
-type ZonaType {
-  id: Int
-
-  codigo: String
-
-  nombre: String
-
-  fechaCreacion: DateTime!
-
-  fechaModificacion: DateTime!
-
-  empresa: EmpresaType
-
-  activo: Boolean!
-
-  fundoSet: [FundoType]
-
-  empresaId: Int
-}
-
-type FundoType {
-  id: Int
-
-  codigo: String
-
-  nombre: String
-
-  fechaCreacion: DateTime!
-
-  fechaModificacion: DateTime!
-
-  zona: ZonaType
-
-  activo: Boolean!
-
-  userSet: [UserType!]!
-
-  moduloSet: [ModuloType]
-
-  zonaId: Int
-
-  userFundoSet: [UserFundoType]
 }
 
 type UserType {
@@ -194,120 +349,8 @@ type UserType {
   fundoSet: [FundoType]
 }
 
-type CartillaEvaluacionType {
-  id: Int
-
-  codigo: String
-
-  nombre: String
-
-  descripcion: String
-
-  cultivo: CultivoType
-
-  muestra: Int!
-
-  activo: Boolean!
-
-  fechaCreacion: DateTime!
-
-  fechaModificacion: DateTime!
-
-  userSet: [UserType!]!
-
-  grupovariableSet: [GrupoVariableType!]!
-
-  cultivoId: Int
-}
-
-type CultivoType {
-  id: Int
-
-  codigo: String
-
-  nombre: String
-
-  fechaCreacion: DateTime!
-
-  fechaModificacion: DateTime!
-
-  activo: Boolean!
-
-  campaniaSet: [CampaniaType!]!
-
-  variedadSet: [VariedadType]
-
-  cartillaevaluacionSet: [CartillaEvaluacionType!]!
-}
-
-type CampaniaType {
-  id: Int
-
-  numero: Int!
-
-  centroCosto: String
-
-  inicio: Date
-
-  inicioCampania: Date
-
-  inicioCosecha: Date
-
-  final: Date
-
-  fechaCreacion: DateTime!
-
-  fechaModificacion: DateTime!
-
-  lote: LoteType
-
-  cultivo: CultivoType
-
-  activo: Boolean!
-
-  valvulaSet: [ValvulaType]
-
-  loteId: Int
-
-  cultivoId: Int
-}
-
-type LoteType {
-  id: Int
-
-  codigo: String
-
-  nombre: String
-
-  fechaCreacion: DateTime!
-
-  fechaModificacion: DateTime!
-
-  modulo: ModuloType
-
-  activo: Boolean!
-
-  campaniaSet: [CampaniaType]
-
-  moduloId: Int
-}
-
-type ModuloType {
-  id: Int
-
-  codigo: String
-
-  nombre: String
-
-  fechaCreacion: DateTime!
-
-  fechaModificacion: DateTime!
-
-  fundo: FundoType
-
-  activo: Boolean!
-
-  loteSet: [LoteType]
+type UserFundoType {
+  userId: Int
 
   fundoId: Int
 }
@@ -336,6 +379,11 @@ type ValvulaType {
   campaniaId: Int
 }
 
+"""
+The `Decimal` scalar type represents a python Decimal.
+"""
+scalar Decimal
+
 type PoligonoType {
   id: Int
 
@@ -347,6 +395,11 @@ type PoligonoType {
 
   valvulaId: Int
 }
+
+"""
+The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).
+"""
+scalar Float
 
 type VariedadType {
   id: Int
@@ -366,27 +419,16 @@ type VariedadType {
   cultivoId: Int
 }
 
-type GrupoVariableType {
-  id: Int
-
-  cartillaEvaluacion: CartillaEvaluacionType
-
-  calculado: Boolean!
-
-  fechaCreacion: DateTime!
-
-  fechaModificacion: DateTime!
-
-  grupoId: Int
-
-  cartillaEvaluacionId: Int
-}
-
-type UserFundoType {
+type UserCartillaType {
   userId: Int
 
-  fundoId: Int
+  cartillaId: Int
 }
+
+"""
+The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `"4"`) or integer (such as `4`) input value will be accepted as an ID.
+"""
+scalar ID
 
 type Mutation {
   createMuestraVg(fecha: String, muestra: Float, variableGrupoId: Int): CreateMuestraVGMutation

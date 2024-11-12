@@ -16,6 +16,39 @@ query GetEmpresaData($empresaId: ID!) {
             phone
             isActive
         }
+        cartillaEvaluacionSet{
+            id
+            codigo
+            nombre
+            activo
+            cultivoId
+            userCartillaSet{
+                userId
+                cartillaId
+            }
+            grupovariableSet{
+                id
+                calculado
+                grupoCodigo
+                grupoNombre
+                grupoId
+                cartillaEvaluacionId
+                variableGrupoSet{
+                    id
+                    minimo
+                    maximo
+                    calculado
+                    variableEvaluacionNombre
+                    grupoVariableId
+                }
+            }
+        }
+        cultivoSet{
+            id
+            codigo
+            nombre
+            activo
+        }
         zonaSet{
             id
             codigo
@@ -31,6 +64,41 @@ query GetEmpresaData($empresaId: ID!) {
                 userFundoSet{
                     userId
                     fundoId
+                }
+                moduloSet{
+                    id
+                    codigo
+                    nombre
+                    activo
+                    fundoId
+                    loteSet{
+                        id
+                        codigo
+                        nombre
+                        activo
+                        moduloId
+                        campaniaSet{
+                            id
+                            numero
+                            centroCosto
+                            activo
+                            loteId
+                            cultivoId
+                            valvulaSet{
+                                id
+                                codigo
+                                nombre
+                                activo
+                                campaniaId
+                                poligonoSet{
+                                    id
+                                    latitud
+                                    longitud
+                                    valvulaId
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
