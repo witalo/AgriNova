@@ -5,7 +5,6 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.agrinova.di.models.VariableGrupoDomainModel
-import kotlin.math.min
 
 @Entity(
     tableName = "variablegrupo",

@@ -2,7 +2,7 @@ package com.example.agrinova.util
 
 object Constants {
     const val GRAPHQL_URL = "http://192.168.1.245:9000/graphql" /*"TU_URL_BASE_GRAPHQL"*/
-//    const val GRAPHQL_URL = "http://192.168.25.151:9000/graphql" /*"TU_URL_BASE_GRAPHQL"*/
+//    const val GRAPHQL_URL = "http://192.168.22.151:9000/graphql" /*"TU_URL_BASE_GRAPHQL"*/
 //    const val GRAPHQL_URL = "http://192.168.1.6:9000/graphql" /*"TU_URL_BASE_GRAPHQL"*/
     const val DATABASE_NAME = "db_agrinova"/*"app_database"*/
     object GraphQL {
