@@ -13,6 +13,11 @@ import com.example.agrinova.data.remote.model.UsuarioFundoDataModel
 import com.example.agrinova.data.remote.model.ZonaDataModel
 import com.example.agrinova.data.remote.model.FundoDataModel
 import com.example.agrinova.GetEmpresaDataQuery
+import com.example.agrinova.data.remote.model.CampaniaDataModel
+import com.example.agrinova.data.remote.model.LoteDataModel
+import com.example.agrinova.data.remote.model.ModuloDataModel
+import com.example.agrinova.data.remote.model.PoligonoDataModel
+import com.example.agrinova.data.remote.model.ValvulaDataModel
 import com.example.agrinova.di.models.FundoDomainModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -86,7 +91,7 @@ class EmpresaRepository(
                                                 campaniaSet = lote?.campaniaSet?.map { campania ->
                                                     CampaniaDataModel(
                                                         id = campania?.id ?: 0,
-                                                        numero = campania?.numero ?: "",
+                                                        numero = campania?.numero ?: 0,
                                                         centroCosto = campania?.centroCosto ?: "",
                                                         activo = campania?.activo ?: false,
                                                         loteId = campania?.loteId ?: 0,
@@ -101,8 +106,8 @@ class EmpresaRepository(
                                                                 poligonoSet = valvula?.poligonoSet?.map { poligono ->
                                                                     PoligonoDataModel(
                                                                         id = poligono?.id ?: 0,
-                                                                        latitud = poligono?.latitud ?: 0.0,
-                                                                        longitud = poligono?.longitud ?: 0.0,
+                                                                        latitud = poligono?.latitud?.toFloat() ?: 0.0f,
+                                                                        longitud = poligono?.longitud?.toFloat() ?: 0.0f,
                                                                         valvulaId = poligono?.valvulaId ?: 0
                                                                     )
                                                                 } ?: emptyList()
@@ -118,49 +123,49 @@ class EmpresaRepository(
                         } ?: emptyList()
                     )
                 },
-                cartillaEvaluacionSet = empresaData.cartillaEvaluacionSet?.map { cartilla ->
-                    CartillaEvaluacionDataModel(
-                        id = cartilla?.id ?: 0,
-                        codigo = cartilla?.codigo ?: "",
-                        nombre = cartilla?.nombre ?: "",
-                        activo = cartilla?.activo ?: false,
-                        cultivoId = cartilla?.cultivoId ?: 0,
-                        userCartillaSet = cartilla?.userCartillaSet?.map { userCartilla ->
-                            UserCartillaDataModel(
-                                userId = userCartilla?.userId ?: 0,
-                                cartillaId = userCartilla?.cartillaId ?: 0
-                            )
-                        } ?: emptyList(),
-                        grupoVariableSet = cartilla?.grupovariableSet?.map { grupo ->
-                            GrupoVariableDataModel(
-                                id = grupo?.id ?: 0,
-                                calculado = grupo?.calculado ?: false,
-                                grupoCodigo = grupo?.grupoCodigo ?: "",
-                                grupoNombre = grupo?.grupoNombre ?: "",
-                                grupoId = grupo?.grupoId ?: 0,
-                                cartillaEvaluacionId = grupo?.cartillaEvaluacionId ?: 0,
-                                variableGrupoSet = grupo?.variableGrupoSet?.map { variable ->
-                                    VariableGrupoDataModel(
-                                        id = variable?.id ?: 0,
-                                        minimo = variable?.minimo ?: 0.0,
-                                        maximo = variable?.maximo ?: 0.0,
-                                        calculado = variable?.calculado ?: false,
-                                        variableEvaluacionNombre = variable?.variableEvaluacionNombre ?: "",
-                                        grupoVariableId = variable?.grupoVariableId ?: 0
-                                    )
-                                } ?: emptyList()
-                            )
-                        } ?: emptyList()
-                    )
-                },
-                cultivoSet = empresaData.cultivoSet?.map { cultivo ->
-                    CultivoDataModel(
-                        id = cultivo?.id ?: 0,
-                        codigo = cultivo?.codigo ?: "",
-                        nombre = cultivo?.nombre ?: "",
-                        activo = cultivo?.activo ?: false
-                    )
-                } ?: emptyList()
+//                cartillaEvaluacionSet = empresaData.cartillaEvaluacionSet?.map { cartilla ->
+//                    CartillaEvaluacionDataModel(
+//                        id = cartilla?.id ?: 0,
+//                        codigo = cartilla?.codigo ?: "",
+//                        nombre = cartilla?.nombre ?: "",
+//                        activo = cartilla?.activo ?: false,
+//                        cultivoId = cartilla?.cultivoId ?: 0,
+//                        userCartillaSet = cartilla?.userCartillaSet?.map { userCartilla ->
+//                            UserCartillaDataModel(
+//                                userId = userCartilla?.userId ?: 0,
+//                                cartillaId = userCartilla?.cartillaId ?: 0
+//                            )
+//                        } ?: emptyList(),
+//                        grupoVariableSet = cartilla?.grupovariableSet?.map { grupo ->
+//                            GrupoVariableDataModel(
+//                                id = grupo?.id ?: 0,
+//                                calculado = grupo?.calculado ?: false,
+//                                grupoCodigo = grupo?.grupoCodigo ?: "",
+//                                grupoNombre = grupo?.grupoNombre ?: "",
+//                                grupoId = grupo?.grupoId ?: 0,
+//                                cartillaEvaluacionId = grupo?.cartillaEvaluacionId ?: 0,
+//                                variableGrupoSet = grupo?.variableGrupoSet?.map { variable ->
+//                                    VariableGrupoDataModel(
+//                                        id = variable?.id ?: 0,
+//                                        minimo = variable?.minimo ?: 0.0,
+//                                        maximo = variable?.maximo ?: 0.0,
+//                                        calculado = variable?.calculado ?: false,
+//                                        variableEvaluacionNombre = variable?.variableEvaluacionNombre ?: "",
+//                                        grupoVariableId = variable?.grupoVariableId ?: 0
+//                                    )
+//                                } ?: emptyList()
+//                            )
+//                        } ?: emptyList()
+//                    )
+//                },
+//                cultivoSet = empresaData.cultivoSet?.map { cultivo ->
+//                    CultivoDataModel(
+//                        id = cultivo?.id ?: 0,
+//                        codigo = cultivo?.codigo ?: "",
+//                        nombre = cultivo?.nombre ?: "",
+//                        activo = cultivo?.activo ?: false
+//                    )
+//                } ?: emptyList()
             )
 
             // Guardar o actualizar la empresa y sus datos relacionados

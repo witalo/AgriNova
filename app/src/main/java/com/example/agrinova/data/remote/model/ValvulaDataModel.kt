@@ -1,22 +1,22 @@
 package com.example.agrinova.data.remote.model
 
-import com.example.agrinova.data.local.entity.ModuloEntity
+import com.example.agrinova.data.local.entity.ValvulaEntity
 
-data class ModuloDataModel(
+data class ValvulaDataModel(
     val id: Int,
     val codigo: String,
     val nombre: String,
-    val fundoId: Int,
+    val campaniaId: Int,
     val activo: Boolean,
-    val loteSet: List<LoteDataModel>?
+    val poligonoSet: List<PoligonoDataModel>?
 )
 {
-    fun toEntity(): ModuloEntity {
-        return ModuloEntity(
+    fun toEntity(): ValvulaEntity {
+        return ValvulaEntity(
             id = this.id,
             codigo = this.codigo,
             nombre = this.nombre,
-            fundoId = this.fundoId,
+            campaniaId = this.campaniaId,
             activo = this.activo
         )
     }

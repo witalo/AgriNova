@@ -64,11 +64,56 @@ data class EmpresaDataModel(
                                         userId = userFundo?.userId ?: 0,
                                         fundoId = userFundo?.fundoId ?: 0
                                     )
+                                } ?: emptyList(),
+                                moduloSet = fundo.moduloSet?.map { modulo ->
+                                    ModuloDataModel(
+                                        id = modulo?.id ?: 0,
+                                        codigo = modulo?.codigo ?: "",
+                                        nombre = modulo?.nombre ?: "",
+                                        activo = modulo?.activo ?: false,
+                                        fundoId = modulo?.fundoId ?: 0,
+                                        loteSet = modulo?.loteSet?.map { lote ->
+                                            LoteDataModel(
+                                                id = lote?.id ?: 0,
+                                                codigo = lote?.codigo ?: "",
+                                                nombre = lote?.nombre ?: "",
+                                                activo = lote?.activo ?: false,
+                                                moduloId = lote?.moduloId ?: 0,
+                                                campaniaSet = lote?.campaniaSet?.map { campania ->
+                                                    CampaniaDataModel(
+                                                        id = campania?.id ?: 0,
+                                                        numero = campania?.numero ?: 0,
+                                                        centroCosto = campania?.centroCosto ?: "",
+                                                        activo = campania?.activo ?: false,
+                                                        loteId = campania?.loteId ?: 0,
+                                                        cultivoId = campania?.cultivoId ?: 0,
+                                                        valvulaSet = campania?.valvulaSet?.map { valvula ->
+                                                            ValvulaDataModel(
+                                                                id = valvula?.id ?: 0,
+                                                                codigo = valvula?.codigo ?: "",
+                                                                nombre = valvula?.nombre ?: "",
+                                                                activo = valvula?.activo ?: false,
+                                                                campaniaId = valvula?.campaniaId ?: 0,
+                                                                poligonoSet = valvula?.poligonoSet?.map { poligono ->
+                                                                    PoligonoDataModel(
+                                                                        id = poligono?.id ?: 0,
+                                                                        latitud = poligono?.latitud?.toFloat() ?: 0.0f,
+                                                                        longitud = poligono?.longitud?.toFloat() ?: 0.0f,
+                                                                        valvulaId = poligono?.valvulaId ?: 0
+                                                                    )
+                                                                } ?: emptyList()
+                                                            )
+                                                        } ?: emptyList()
+                                                    )
+                                                } ?: emptyList()
+                                            )
+                                        } ?: emptyList()
+                                    )
                                 } ?: emptyList()
                             )
-                        }
+                        } ?: emptyList()
                     )
-                }
+                } ?: emptyList()
             )
         }
     }
