@@ -6,7 +6,9 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.agrinova.data.local.entity.CartillaEvaluacionEntity
+import com.example.agrinova.data.local.entity.FundoEntity
 import com.example.agrinova.data.local.entity.UsuarioCartillaCrossRef
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CartillaEvaluacionDao {
@@ -24,4 +26,11 @@ interface CartillaEvaluacionDao {
 
     @Query("SELECT COUNT(*) FROM UsuarioCartillaCrossRef WHERE usuarioId = :userId AND cartillaId = :cartillaId")
     suspend fun checkUsuarioCartillaExists(userId: Int, cartillaId: Int): Int
+
+    @Query("""
+        SELECT * FROM cartillaevaluacion
+        INNER JOIN UsuarioCartillaCrossRef ON cartillaevaluacion.id = UsuarioCartillaCrossRef.cartillaId
+        WHERE UsuarioCartillaCrossRef.usuarioId = :usuarioId
+    """)
+    fun getCartillasByUsuarioId(usuarioId: Int): Flow<List<CartillaEvaluacionEntity>>
 }

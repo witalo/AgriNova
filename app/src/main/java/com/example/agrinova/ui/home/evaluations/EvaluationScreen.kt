@@ -57,6 +57,7 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,17 +68,12 @@ import java.util.*
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EvaluationScreen(
-    viewModel: ProfileViewModel = hiltViewModel(),
-    navController: NavHostController
+    viewModel: EvaluationViewModel = hiltViewModel(),
+    navController: NavHostController,
+    onNavigate: (String) -> Unit,
 ) {
-    val cartillas = listOf(
-        CartillaEvaluacionDomainModel(1, "001", "Cartilla 1", true, 1),
-        CartillaEvaluacionDomainModel(2, "002", "Cartilla 2", true, 1),
-        CartillaEvaluacionDomainModel(3, "003","Cartilla 3",true, 1),
-        CartillaEvaluacionDomainModel(4, "004", "Cartilla 4",true, 1),
-        CartillaEvaluacionDomainModel(5, "005", "Cartilla 5", true, 1)
-    )
-//    val cartillas by viewModel.cartillas.collectAsState() // Lista de fundos
+
+    val cartillas by viewModel.cartillas.collectAsState() // Lista de fundos
     var selectedCartilla by remember { mutableStateOf<CartillaEvaluacionDomainModel?>(null) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     // Ejemplo de datos para la lista
@@ -95,7 +91,7 @@ fun EvaluationScreen(
         // Botón flotante en la esquina inferior derecha
         FloatingActionButton(
             onClick = {
-                // Acción al hacer clic en el botón
+                onNavigate("NuevaEvaluacion")
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)

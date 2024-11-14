@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.agrinova.ui.home.evaluations.EvaluationScreen
+import com.example.agrinova.ui.home.evaluations.NewEvaluationScreen
 import com.example.agrinova.ui.home.screens.ProfileScreen
 import com.example.agrinova.ui.login.second.SecondLoginScreen
 
@@ -34,7 +35,14 @@ fun HomeScreen(
     fun navigateToScreen(option: String) {
         when (option) {
             "Evaluaciones" -> navController.navigate("EvaluationScreen")
-            "Opción 2" -> navController.navigate("option2Screen")
+            "NuevaEvaluacion" -> navController.navigate("NewEvaluationScreen"){
+                // Agregamos opciones de navegación para asegurar un comportamiento correcto
+                popUpTo(navController.graph.startDestinationId) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
             "Opción 3" -> navController.navigate("option3Screen")
             else -> {}
         }
@@ -160,7 +168,13 @@ fun HomeScreen(
                 ReportScreen(navController = navController) // Igualmente, si lo necesitas en ReportScreen
             }
             composable("EvaluationScreen") {
-                EvaluationScreen(navController = navController) // Asegúrate de pasar navController
+                EvaluationScreen(navController = navController, onNavigate = ::navigateToScreen) // Asegúrate de pasar navController
+            }
+            composable("NewEvaluationScreen") {
+                NewEvaluationScreen(
+                    navController = navController,
+                    onNavigate = ::navigateToScreen
+                )
             }
             composable("login") {
                 SecondLoginScreen(

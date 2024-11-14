@@ -31,6 +31,7 @@ import com.example.agrinova.data.remote.model.PoligonoDataModel
 import com.example.agrinova.data.remote.model.ValvulaDataModel
 import com.example.agrinova.data.remote.model.VariableGrupoDataModel
 import com.example.agrinova.data.remote.model.UsuarioCartillaDataModel
+import com.example.agrinova.di.models.CartillaEvaluacionDomainModel
 import com.example.agrinova.di.models.FundoDomainModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -310,6 +311,20 @@ class EmpresaRepository(
                         Log.d("Italo Cartilla->Insert", cartilla.toString())
                         cartillaDao.insertCartillaEvaluacion(cartilla.toEntity())
                     }
+                    // Almacenar relaciones usuario-fundo
+                    cartilla.userCartillaSet?.forEach { userCartilla ->
+                        val userId = userCartilla.usuarioId
+                        val cartillaId = userCartilla.cartillaId
+
+                        // Verifica si la relación ya existe
+                        val exists = cartillaDao.checkUsuarioCartillaExists(userId, cartillaId) > 0
+
+                        if (!exists) {
+                            // Inserta solo si la relación no existe
+                            Log.d("Italo UsuarioCartilla->Insert", userCartilla.toString())
+                            cartillaDao.insertUsuarioCartillaCrossRef(userCartilla.toEntity())
+                        }
+                    }
                     cartilla.grupoVariableSet?.forEach{ grupoVariable ->
                         val existingGrupoVariable = grupoVariableDao.getGrupoVariableById(grupoVariable.id.toInt())
                         if (existingGrupoVariable != null) {
@@ -457,5 +472,10 @@ class EmpresaRepository(
             fundos.map { it.toDomainModel() } // Mapea cada FundoEntity a FundoDomainModel
         }
     }
-
+    fun getCartillas(usuarioId: Int): Flow<List<CartillaEvaluacionDomainModel>> {
+        return cartillaDao.getCartillasByUsuarioId(usuarioId).map { cartillas ->
+            Log.d("Cartilla 4", cartillas.toString())
+            cartillas.map { it.toDomainModel() }
+        }
+    }
 }

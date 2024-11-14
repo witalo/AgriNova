@@ -30,7 +30,7 @@ fun InitialScreen(
     navController: NavHostController,
     onNavigate: (String) -> Unit,
 ) {
-    val options = listOf("Evaluaciones", "Opción 2", "Opción 3", "Opción 4")  // Opciones de ejemplo
+    val options = listOf("Evaluaciones", "NewEvaluacion", "Opción 3", "Opción 4")  // Opciones de ejemplo
 
     Column(
         modifier = Modifier
