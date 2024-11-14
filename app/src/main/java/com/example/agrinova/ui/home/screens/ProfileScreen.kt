@@ -50,7 +50,8 @@ import com.example.agrinova.ui.navigation.AppNavigator
 import kotlinx.coroutines.launch
 @Composable
 fun ProfileScreen(
-    viewModel: ProfileViewModel = hiltViewModel() // Inyección del ViewModel
+    viewModel: ProfileViewModel = hiltViewModel(),
+    navController: NavHostController
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -202,52 +203,3 @@ private fun InfoRow(
         }
     }
 }
-//
-//@Composable
-//fun ProfileScreen(
-//    usuarioRepository: UsuarioRepository,
-//    appNavigator: AppNavigator,
-//    navController: NavHostController
-//) {
-//    var usuario: UsuarioDomainModel? by remember { mutableStateOf(null) }
-//    val coroutineScope = rememberCoroutineScope()
-//
-//    LaunchedEffect(Unit) {
-//        // Cargar los datos del usuario que se ha logueado
-//        val userId = usuarioRepository.getCurrentUserId()
-//        usuario = usuarioRepository.getUserById(userId)
-//    }
-//
-//    Box(
-//        modifier = Modifier.fillMaxSize(),
-//        contentAlignment = Alignment.Center
-//    ) {
-//        if (usuario == null) {
-//            CircularProgressIndicator()
-//        } else {
-//            Column(
-//                modifier = Modifier.padding(16.dp),
-//                verticalArrangement = Arrangement.spacedBy(16.dp)
-//            ) {
-//                Text("Perfil de Usuario")
-//                Text("Nombre: ${usuario?.firstName} ${usuario?.lastName}")
-//                Text("DNI: ${usuario?.document}")
-//                Text("Telfono: ${usuario?.phone}")
-//                Text("Correo: ${usuario?.email}")
-//                Text("Estado: ${usuarioRepository.getUserStatusText(usuario)}")
-//                Spacer(modifier = Modifier.height(16.dp))
-//                Button(
-//                    onClick = {
-//                        // Usamos el alcance de corrutina para invocar funciones suspendidas
-//                        coroutineScope.launch {
-//                            usuarioRepository.logout()
-//                            appNavigator.navigateToSecondLogin(navController)
-//                        }
-//                    }
-//                ) {
-//                    Text("Cerrar Sesión")
-//                }
-//            }
-//        }
-//    }
-//}

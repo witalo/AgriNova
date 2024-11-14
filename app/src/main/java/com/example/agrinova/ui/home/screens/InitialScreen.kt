@@ -1,4 +1,4 @@
-package com.example.agriapp.ui.home.screens
+package com.example.agrinova.ui.home.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,12 +22,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.rememberNavController
-import com.example.agrinova.ui.home.screens.ProfileViewModel
+import androidx.navigation.NavHostController
 
 @Composable
-fun InitialScreen( viewModel: ProfileViewModel = hiltViewModel()) {
-    val navController = rememberNavController()  // Obtén el NavController internamente
+fun InitialScreen(
+    viewModel: ProfileViewModel = hiltViewModel(),
+    navController: NavHostController,
+    onNavigate: (String) -> Unit,
+) {
     val options = listOf("Evaluaciones", "Opción 2", "Opción 3", "Opción 4")  // Opciones de ejemplo
 
     Column(
@@ -51,7 +53,7 @@ fun InitialScreen( viewModel: ProfileViewModel = hiltViewModel()) {
                 OptionCard(
                     option = option,
                     onOptionClick = {
-//                        navController.navigate("destination_route/${option}")
+                        onNavigate(option)
                     }
                 )
             }

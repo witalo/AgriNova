@@ -10,9 +10,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.example.agrinova.ui.home.screens.ProfileViewModel
 
 @Composable
-fun ReportScreen() {
+fun ReportScreen(
+    viewModel: ProfileViewModel = hiltViewModel(),
+    navController: NavHostController
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
