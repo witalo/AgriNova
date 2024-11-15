@@ -49,7 +49,7 @@ fun FirstLoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.agriapp),
+                    painter = painterResource(id = R.drawable.logo_tierra),
                     contentDescription = "Imagen de login",
                     modifier = Modifier
                         .height(150.dp)
