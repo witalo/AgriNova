@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.example.agrinova.data.dto.LoteModuloDto
 import com.example.agrinova.data.local.entity.GrupoVariableEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -21,5 +22,8 @@ interface GrupoVariableDao {
 
     @Query("SELECT * FROM grupovariable")
     fun getAllGruposVaribale(): Flow<List<GrupoVariableEntity>>
+
+    @Query("SELECT * FROM grupovariable WHERE cartillaEvaluacionId = :cartillaId")
+    fun getGruposVariableByCartillaId(cartillaId: Int):   Flow<List<GrupoVariableEntity>>
 
 }

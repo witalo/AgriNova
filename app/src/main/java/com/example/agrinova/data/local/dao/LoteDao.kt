@@ -24,8 +24,8 @@ interface LoteDao {
     @Query("SELECT * FROM lote")
     fun getAllLotes(): Flow<List<LoteEntity>>
 
-    @Query("SELECT l.id, l.codigo, l.nombre, " +
-            "m.codigo, m.nombre " +
+    @Query("SELECT l.id as loteId, l.codigo as loteCodigo, l.nombre as loteNombre, " +
+            "m.codigo as moduloCodigo, m.nombre as moduloNombre " +
             "FROM lote l INNER JOIN modulo m ON m.id = l.moduloId WHERE m.fundoId = :fundoId")
     fun getAllLotesByFundo(fundoId: Int):   Flow<List<LoteModuloDto>>
 

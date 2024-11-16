@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.example.agrinova.data.dto.LoteModuloDto
 import com.example.agrinova.data.local.entity.ValvulaEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -21,5 +22,11 @@ interface ValvulaDao {
 
     @Query("SELECT * FROM valvula")
     fun getAllValvulas(): Flow<List<ValvulaEntity>>
+
+    @Query("SELECT * FROM valvula " +
+            "INNER JOIN campania ON campania.id = valvula.campaniaId " +
+            "WHERE campania.loteId = :loteId AND campania.activo = 1 " +
+            "ORDER BY campania.id DESC LIMIT 1")
+    fun getValvulasByLoteId(loteId: Int): Flow<List<ValvulaEntity>>
 
 }

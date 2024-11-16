@@ -34,7 +34,10 @@ import com.example.agrinova.data.remote.model.VariableGrupoDataModel
 import com.example.agrinova.data.remote.model.UsuarioCartillaDataModel
 import com.example.agrinova.di.models.CartillaEvaluacionDomainModel
 import com.example.agrinova.di.models.FundoDomainModel
+import com.example.agrinova.di.models.GrupoVariableDomainModel
 import com.example.agrinova.di.models.LoteDomainModel
+import com.example.agrinova.di.models.ValvulaDomainModel
+import com.example.agrinova.di.models.VariableGrupoDomainModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -54,15 +57,14 @@ class EmpresaRepository(
     private val poligonoDao: PoligonoDao,
     private val graphQLClient: ApolloClient
 ) {
-      suspend fun syncEmpresaData(empresaId: Int) {
+    suspend fun syncEmpresaData(empresaId: Int) {
         val response = graphQLClient.query(
             GetEmpresaDataQuery(empresaId.toString())
         ).execute()
 
         response.data?.empresaById?.let { empresaData ->
             val existingEmpresa = empresaDao.getEmpresaById(empresaData.id!!.toInt())
-            val empresaEntity = EmpresaDataModel(
-                id = empresaData.id ?: 0,
+            val empresaEntity = EmpresaDataModel(id = empresaData.id ?: 0,
                 ruc = empresaData.ruc ?: "",
                 razonSocial = empresaData.razonSocial ?: "",
                 correo = empresaData.correo ?: "",
@@ -80,15 +82,13 @@ class EmpresaRepository(
                     )
                 },
                 zonaSet = empresaData.zonaSet?.map { zona ->
-                    ZonaDataModel(
-                        id = zona?.id ?: 0,
+                    ZonaDataModel(id = zona?.id ?: 0,
                         codigo = zona?.codigo ?: "",
                         nombre = zona?.nombre ?: "",
                         activo = zona?.activo ?: false,
                         empresaId = zona?.empresaId ?: 0,
                         fundoSet = zona?.fundoSet?.map { fundo ->
-                            FundoDataModel(
-                                id = fundo?.id ?: 0,
+                            FundoDataModel(id = fundo?.id ?: 0,
                                 codigo = fundo?.codigo ?: "",
                                 nombre = fundo?.nombre ?: "",
                                 activo = fundo?.activo ?: false,
@@ -100,57 +100,50 @@ class EmpresaRepository(
                                     )
                                 } ?: emptyList(),
                                 moduloSet = fundo?.moduloSet?.map { modulo ->
-                                    ModuloDataModel(
-                                        id = modulo?.id ?: 0,
+                                    ModuloDataModel(id = modulo?.id ?: 0,
                                         codigo = modulo?.codigo ?: "",
                                         nombre = modulo?.nombre ?: "",
                                         activo = modulo?.activo ?: false,
                                         fundoId = modulo?.fundoId ?: 0,
                                         loteSet = modulo?.loteSet?.map { lote ->
-                                            LoteDataModel(
-                                                id = lote?.id ?: 0,
+                                            LoteDataModel(id = lote?.id ?: 0,
                                                 codigo = lote?.codigo ?: "",
                                                 nombre = lote?.nombre ?: "",
                                                 activo = lote?.activo ?: false,
                                                 moduloId = lote?.moduloId ?: 0,
                                                 campaniaSet = lote?.campaniaSet?.map { campania ->
-                                                    CampaniaDataModel(
-                                                        id = campania?.id ?: 0,
+                                                    CampaniaDataModel(id = campania?.id ?: 0,
                                                         numero = campania?.numero ?: 0,
                                                         centroCosto = campania?.centroCosto ?: "",
                                                         activo = campania?.activo ?: false,
                                                         loteId = campania?.loteId ?: 0,
                                                         cultivoId = campania?.cultivoId ?: 0,
                                                         valvulaSet = campania?.valvulaSet?.map { valvula ->
-                                                            ValvulaDataModel(
-                                                                id = valvula?.id ?: 0,
+                                                            ValvulaDataModel(id = valvula?.id ?: 0,
                                                                 codigo = valvula?.codigo ?: "",
                                                                 nombre = valvula?.nombre ?: "",
                                                                 activo = valvula?.activo ?: false,
-                                                                campaniaId = valvula?.campaniaId ?: 0,
+                                                                campaniaId = valvula?.campaniaId
+                                                                    ?: 0,
                                                                 poligonoSet = valvula?.poligonoSet?.map { poligono ->
                                                                     PoligonoDataModel(
                                                                         id = poligono?.id ?: 0,
-                                                                        latitud = poligono?.latitud?.toFloat() ?: 0.0f,
-                                                                        longitud = poligono?.longitud?.toFloat() ?: 0.0f,
-                                                                        valvulaId = poligono?.valvulaId ?: 0
+                                                                        latitud = poligono?.latitud?.toFloat()
+                                                                            ?: 0.0f,
+                                                                        longitud = poligono?.longitud?.toFloat()
+                                                                            ?: 0.0f,
+                                                                        valvulaId = poligono?.valvulaId
+                                                                            ?: 0
                                                                     )
-                                                                } ?: emptyList()
-                                                            )
-                                                        } ?: emptyList()
-                                                    )
-                                                } ?: emptyList()
-                                            )
-                                        } ?: emptyList()
-                                    )
-                                } ?: emptyList()
-                            )
-                        } ?: emptyList()
-                    )
+                                                                } ?: emptyList())
+                                                        } ?: emptyList())
+                                                } ?: emptyList())
+                                        } ?: emptyList())
+                                } ?: emptyList())
+                        } ?: emptyList())
                 },
                 cartillaEvaluacionSet = empresaData.cartillaEvaluacionSet?.map { cartilla ->
-                    CartillaEvaluacionDataModel(
-                        id = cartilla?.id ?: 0,
+                    CartillaEvaluacionDataModel(id = cartilla?.id ?: 0,
                         codigo = cartilla?.codigo ?: "",
                         nombre = cartilla?.nombre ?: "",
                         activo = cartilla?.activo ?: false,
@@ -162,8 +155,7 @@ class EmpresaRepository(
                             )
                         } ?: emptyList(),
                         grupoVariableSet = cartilla?.grupovariableSet?.map { grupo ->
-                            GrupoVariableDataModel(
-                                id = grupo.id ?: 0,
+                            GrupoVariableDataModel(id = grupo.id ?: 0,
                                 calculado = grupo.calculado ?: false,
                                 grupoCodigo = grupo.grupoCodigo ?: "",
                                 grupoNombre = grupo.grupoNombre ?: "",
@@ -175,13 +167,12 @@ class EmpresaRepository(
                                         minimo = variable?.minimo ?: 0,
                                         maximo = variable?.maximo ?: 0,
                                         calculado = variable?.calculado ?: false,
-                                        variableEvaluacionNombre = variable?.variableEvaluacionNombre ?: "",
+                                        variableEvaluacionNombre = variable?.variableEvaluacionNombre
+                                            ?: "",
                                         grupoVariableId = variable?.grupoVariableId ?: 0
                                     )
-                                } ?: emptyList()
-                            )
-                        } ?: emptyList()
-                    )
+                                } ?: emptyList())
+                        } ?: emptyList())
                 },
                 cultivoSet = empresaData.cultivoSet?.map { cultivo ->
                     CultivoDataModel(
@@ -190,9 +181,8 @@ class EmpresaRepository(
                         nombre = cultivo?.nombre ?: "",
                         activo = cultivo?.activo ?: false
                     )
-                } ?: emptyList()
-            )
-            try{
+                } ?: emptyList())
+            try {
                 // Guardar o actualizar la empresa y sus datos relacionados
                 if (existingEmpresa != null) {
                     empresaDao.updateEmpresa(empresaEntity.toEntity())
@@ -202,7 +192,7 @@ class EmpresaRepository(
                 }
                 // Sincronizar cultivos
                 Log.d("Italo Cultivos 2024", "Cultivos")
-                empresaEntity.cultivoSet?.forEach{ cultivo ->
+                empresaEntity.cultivoSet?.forEach { cultivo ->
                     val existingCultivo = cultivoDao.getCultivoById(cultivo.id.toInt())
                     if (existingCultivo != null) {
                         cultivoDao.updateCultivo(cultivo.toEntity())
@@ -256,7 +246,7 @@ class EmpresaRepository(
                             }
                         }
                         // Almacenar modulo y otros
-                        fundo.moduloSet?.forEach{ modulo ->
+                        fundo.moduloSet?.forEach { modulo ->
                             val existingModulo = moduloDao.getModuloById(modulo.id)
                             if (existingModulo != null) {
                                 moduloDao.updateModulo(modulo.toEntity())
@@ -289,7 +279,8 @@ class EmpresaRepository(
                                             valvulaDao.insertValvula(valvula.toEntity())
                                         }
                                         valvula.poligonoSet?.forEach { poligono ->
-                                            val existingPoligono = poligonoDao.getPoligonoById(poligono.id)
+                                            val existingPoligono =
+                                                poligonoDao.getPoligonoById(poligono.id)
                                             if (existingPoligono != null) {
                                                 poligonoDao.updatePoligono(poligono.toEntity())
                                             } else {
@@ -305,8 +296,9 @@ class EmpresaRepository(
                 }
                 // Sincronizar cartilla
                 Log.d("Italo Cartilla Evaluacion 2024", "Cartillas")
-                empresaEntity.cartillaEvaluacionSet?.forEach{ cartilla ->
-                    val existingCartilla = cartillaDao.getCartillaEvaluacionById(cartilla.id.toInt())
+                empresaEntity.cartillaEvaluacionSet?.forEach { cartilla ->
+                    val existingCartilla =
+                        cartillaDao.getCartillaEvaluacionById(cartilla.id.toInt())
                     if (existingCartilla != null) {
                         cartillaDao.updateCartillaEvaluacion(cartilla.toEntity())
                     } else {
@@ -327,16 +319,18 @@ class EmpresaRepository(
                             cartillaDao.insertUsuarioCartillaCrossRef(userCartilla.toEntity())
                         }
                     }
-                    cartilla.grupoVariableSet?.forEach{ grupoVariable ->
-                        val existingGrupoVariable = grupoVariableDao.getGrupoVariableById(grupoVariable.id.toInt())
+                    cartilla.grupoVariableSet?.forEach { grupoVariable ->
+                        val existingGrupoVariable =
+                            grupoVariableDao.getGrupoVariableById(grupoVariable.id.toInt())
                         if (existingGrupoVariable != null) {
                             grupoVariableDao.updateGrupoVariable(grupoVariable.toEntity())
                         } else {
                             Log.d("Italo Grupo Variable->Insert", grupoVariable.toString())
                             grupoVariableDao.insertGrupoVariable(grupoVariable.toEntity())
                         }
-                        grupoVariable.variableGrupoSet?.forEach{ variableGrupo ->
-                            val existingVariableGrupo = variableGrupoDao.getVariableGrupoById(variableGrupo.id.toInt())
+                        grupoVariable.variableGrupoSet?.forEach { variableGrupo ->
+                            val existingVariableGrupo =
+                                variableGrupoDao.getVariableGrupoById(variableGrupo.id.toInt())
                             if (existingVariableGrupo != null) {
                                 variableGrupoDao.updateVariableGrupo(variableGrupo.toEntity())
                             } else {
@@ -347,141 +341,45 @@ class EmpresaRepository(
                     }
                 }
             } catch (e: Exception) {
-                  Log.e("Sync Error", "Error durante la sincronización: ${e.message}", e)
-                  throw e // Lanza la excepción para evitar que se cometan datos parciales
+                Log.e("Sync Error", "Error durante la sincronización: ${e.message}", e)
+                throw e // Lanza la excepción para evitar que se cometan datos parciales
             }
         } ?: throw Exception("Error al sincronizar: Datos de empresa no encontrados.")
     }
-
+//    suspend fun saveEvaluacion(evaluacion: EvaluacionDto): Result<Unit>
     // Función para sincronizar los datos de la empresa desde la API
-//    suspend fun syncEmpresaData(empresaId: Int) {
-//        val response = graphQLClient.query(
-//            GetEmpresaDataQuery(empresaId.toString())
-//        ).execute()
-//
-//        response.data?.empresaById?.let { empresaData ->
-//            // Comprobar si la empresa ya existe
-//            val existingEmpresa = empresaDao.getEmpresaById(empresaData.id!!.toInt())
-//            val empresaEntity = EmpresaDataModel(
-//                id = empresaData.id?: 0,
-//                ruc = empresaData.ruc?: "",
-//                razonSocial = empresaData.razonSocial?: "",
-//                correo = empresaData.correo?: "",
-//                telefono = empresaData.telefono?: "",
-//                direccion = empresaData.direccion?: "",
-//                userSet = empresaData.userSet?.map {
-//                    UsuarioDataModel(
-//                        id = it?.id?: 0,
-//                        firstName = it?.firstName?: "",
-//                        lastName = it?.lastName?: "",
-//                        document = it?.document?: "",
-//                        email = it?.email?: "",
-//                        phone = it?.phone?: "",
-//                        isActive = it?.isActive?: false
-//                    )
-//                },
-//                zonaSet = empresaData.zonaSet?.map { zona ->
-//                    ZonaDataModel(
-//                        id = zona?.id?: 0,
-//                        codigo = zona?.codigo?: "",
-//                        nombre = zona?.nombre?: "",
-//                        activo = zona?.activo?: false,
-//                        empresaId = zona?.empresaId?: 0,
-//                        fundoSet = zona?.fundoSet?.map { fundo ->
-//                            FundoDataModel(
-//                                id = fundo?.id?: 0,
-//                                codigo = fundo?.codigo?: "",
-//                                nombre = fundo?.nombre?: "",
-//                                activo = fundo?.activo?: false,
-//                                zonaId = fundo?.zonaId?: 0,
-//                                userFundoSet = fundo?.userFundoSet?.map { userFundo ->
-//                                    UsuarioFundoDataModel(
-//                                        userId = userFundo?.userId ?: 0,
-//                                        fundoId = userFundo?.fundoId ?: 0
-//                                    )
-//                                } ?: emptyList()
-//                            )
-//                        }
-//                    )
-//                }
-//            )
-//            if (existingEmpresa != null) {
-//                // Actualizar los datos existentes
-//                empresaDao.updateEmpresa(empresaEntity.toEntity())
-//            } else {
-//                // Almacenar la empresa
-//                Log.d("Italo E", empresaData.toString())
-//                empresaDao.insertEmpresa(empresaEntity.toEntity())
-//            }
-//
-//            // Sincronizar usuarios
-//            Log.d("Italo USET", empresaEntity.userSet.toString())
-//            empresaEntity.userSet?.forEach { usuario ->
-//                Log.d("Italo User", usuario.toString())
-//                val existingUsuario = usuarioDao.getUsuarioById(usuario.id.toInt())
-//                Log.d("Italo Bool", existingUsuario.toString())
-//                if (existingUsuario != null) {
-//                    Log.d("Italo Update", existingUsuario.toString())
-//                    usuarioDao.updateUsuario(usuario.toEntity())
-//                } else {
-//                    Log.d("Italo Insert", empresaData.toString())
-//                    usuarioDao.insertUsuario(usuario.toEntity())
-//                }
-//            }
-//
-//            // Sincronizar zonas y fundos
-//            Log.d("Italo Zonas", empresaEntity.zonaSet.toString())
-//            empresaEntity.zonaSet?.forEach { zona ->
-//                Log.d("Italo Zona", zona.toString())
-//                val existingZona = zonaDao.getZonaById(zona.id)
-//                Log.d("Italo Zonas", existingZona.toString())
-//                if (existingZona != null) {
-//                    zonaDao.updateZona(zona.toEntity())
-//                } else {
-//                    Log.d("Italo Zona Insert", empresaData.toString())
-//                    zonaDao.insertZona(zona.toEntity())
-//                }
-//
-//                zona.fundoSet?.forEach { fundo ->
-//                    val existingFundo = fundoDao.getFundoById(fundo.id)
-//                    if (existingFundo != null) {
-//                        fundoDao.updateFundo(fundo.toEntity())
-//                    } else {
-//                        Log.d("Italo F", empresaData.toString())
-//                        fundoDao.insertFundo(fundo.toEntity())
-//                    }
-//
-//                    // Almacenar relaciones usuario-fundo
-//                    fundo.userFundoSet?.forEach { userFundo ->
-//                        val userId = userFundo.userId
-//                        val fundoId = userFundo.fundoId
-//
-//                        // Verifica si la relación ya existe
-//                        val exists = usuarioDao.checkUsuarioFundoExists(userId, fundoId) > 0
-//
-//                        if (!exists) {
-//                            // Inserta solo si la relación no existe
-//                            Log.d("Italo UF", empresaData.toString())
-//                            usuarioDao.insertUsuarioFundoCrossRef(userFundo.toEntity())
-//                        }
-//                    }
-//                }
-//            }
-//        } ?: throw Exception("Error al sincronizar: Datos de empresa no encontrados.")
-//    }
+
     fun getFundos(): Flow<List<FundoDomainModel>> {
         return fundoDao.getAllFundos().map { fundos ->
             fundos.map { it.toDomainModel() } // Mapea cada FundoEntity a FundoDomainModel
         }
     }
+
     fun getCartillas(usuarioId: Int): Flow<List<CartillaEvaluacionDomainModel>> {
         return cartillaDao.getCartillasByUsuarioId(usuarioId).map { cartillas ->
             cartillas.map { it.toDomainModel() }
         }
     }
+
     fun getLotesByFundo(fundoId: Int): Flow<List<LoteModuloDto>> {
         return loteDao.getAllLotesByFundo(fundoId).map { lotes ->
             lotes.map { it }
+        }
+    }
+
+    fun getValvulasByLoteId(loteId: Int): Flow<List<ValvulaDomainModel>> {
+        return valvulaDao.getValvulasByLoteId(loteId).map { valvulas ->
+            valvulas.map { it.toDomainModel() }
+        }
+    }
+    fun getGruposVariableByCartillaId(cartillaId: Int): Flow<List<GrupoVariableDomainModel>> {
+        return grupoVariableDao.getGruposVariableByCartillaId(cartillaId).map { grupos ->
+            grupos.map { it.toDomainModel() }
+        }
+    }
+    fun getVariablesGrupoByGrupoVariableId(grupoVariableId: Int): Flow<List<VariableGrupoDomainModel>> {
+        return variableGrupoDao.getVariablesGrupoByGrupoVariableId(grupoVariableId).map { variables ->
+            variables.map { it.toDomainModel() }
         }
     }
 }
