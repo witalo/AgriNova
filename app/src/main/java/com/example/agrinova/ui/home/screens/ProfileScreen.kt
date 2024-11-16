@@ -51,7 +51,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    navController: NavHostController
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

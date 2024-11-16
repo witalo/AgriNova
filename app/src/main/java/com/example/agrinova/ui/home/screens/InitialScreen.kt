@@ -28,7 +28,7 @@ import androidx.navigation.NavHostController
 fun InitialScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
     navController: NavHostController,
-    onNavigate: (String) -> Unit,
+//    onNavigate: (String) -> Unit,
 ) {
     val options = listOf("Evaluaciones", "NewEvaluacion", "Opción 3", "Opción 4")  // Opciones de ejemplo
 
@@ -53,7 +53,7 @@ fun InitialScreen(
                 OptionCard(
                     option = option,
                     onOptionClick = {
-                        onNavigate(option)
+                        navController.navigate("evaluation")
                     }
                 )
             }

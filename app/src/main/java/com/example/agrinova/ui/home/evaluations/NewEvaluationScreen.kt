@@ -1,5 +1,6 @@
 package com.example.agrinova.ui.home.evaluations
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,13 +51,16 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.navigation.NavController
 
 @Composable
 fun NewEvaluationScreen(
+    navController: NavController,
+    cartillaId: String,
     viewModel: NewEvaluationViewModel = hiltViewModel(),
-    navController: NavHostController,
-    onNavigate: (String) -> Unit,
+//    onNavigate: (String) -> Unit,
 ) {
+    Log.d("Cartilla:", cartillaId.toString())
     var isChecked by remember { mutableStateOf(false) }
 
     Column(

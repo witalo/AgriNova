@@ -3,6 +3,7 @@ package com.example.agrinova.ui.home.evaluations
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agrinova.data.dto.LoteModuloDto
@@ -23,9 +24,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NewEvaluationViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val usePreferences: UsePreferences,
     private val empresaRepository: EmpresaRepository
 ) : ViewModel() {
+    val cartillaId: String = savedStateHandle["cartillaId"] ?: ""
     val userId: Flow<Int?> = usePreferences.userId
     val fundoId: Flow<Int?> = usePreferences.fundoId
 
@@ -72,6 +75,7 @@ class NewEvaluationViewModel @Inject constructor(
                     fundoId.collect { id ->
                         id?.let {
                             loadLotes(id)
+                            loadGruposVariable(cartillaId.toInt())
                         }
                     }
                 }
@@ -85,7 +89,7 @@ class NewEvaluationViewModel @Inject constructor(
                 if (fundoId != null) {
                     empresaRepository.getLotesByFundo(fundoId).collect { loteList ->
                         _lotes.value = loteList
-                        _selectedLote.value = null
+//                        _selectedLote.value = null
                     }
                 }
 
@@ -101,11 +105,11 @@ class NewEvaluationViewModel @Inject constructor(
                 empresaRepository.getValvulasByLoteId(loteId).collect { valvulasList ->
                     _valvulas.value = valvulasList
                     // Limpiamos la válvula seleccionada cuando cambia el lote
-                    _selectedValvula.value = null
+//                    _selectedValvula.value = null
                 }
             } catch (e: Exception) {
                 _valvulas.value = emptyList()
-                _selectedValvula.value = null
+//                _selectedValvula.value = null
             }
         }
     }

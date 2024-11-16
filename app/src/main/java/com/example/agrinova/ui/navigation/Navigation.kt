@@ -15,6 +15,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.agrinova.di.UsePreferences
 import com.example.agrinova.ui.home.HomeScreen
+import com.example.agrinova.ui.home.evaluations.EvaluationScreen
+import com.example.agrinova.ui.home.screens.ProfileScreen
 import com.example.agrinova.ui.login.first.FirstLoginScreen
 import com.example.agrinova.ui.login.loading.LottieAnimationScreen
 import com.example.agrinova.ui.login.second.SecondLoginScreen
@@ -96,6 +98,7 @@ class AppNavigator @Inject constructor(
 
             composable("home") {
                 HomeScreen(
+//                    navController = navController,
                     viewModel = hiltViewModel(),
                     onLogoutClick = {
                         // Navega de vuelta a la SecondLoginScreen
@@ -109,6 +112,21 @@ class AppNavigator @Inject constructor(
                     }
                 )
             }
+//            composable("profile") {
+//                ProfileScreen()
+//            }
+//            composable("evaluation") {
+//                EvaluationScreen(navController = navController,
+//                    onNavigate = {
+//                        navController.navigate("newEvaluation") {
+//                            popUpTo(0) { inclusive = true }
+//                        }
+//                    }
+//                )
+//            }
+//            composable("newEvaluation") {
+//                EvaluationScreen(navController = navController) // Asegúrate de pasar navController
+//            }
 
         }
     }

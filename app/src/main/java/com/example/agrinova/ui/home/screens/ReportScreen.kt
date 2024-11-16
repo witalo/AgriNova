@@ -17,7 +17,7 @@ import com.example.agrinova.ui.home.screens.ProfileViewModel
 @Composable
 fun ReportScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    navController: NavHostController
+//    navController: NavHostController
 ) {
     Column(
         modifier = Modifier

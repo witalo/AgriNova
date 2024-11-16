@@ -1,6 +1,7 @@
 package com.example.agrinova.data.repository
 
 import android.util.Log
+import androidx.room.withTransaction
 import com.apollographql.apollo3.ApolloClient
 import com.example.agrinova.data.local.dao.EmpresaDao
 import com.example.agrinova.data.local.dao.UsuarioDao
@@ -13,6 +14,7 @@ import com.example.agrinova.data.remote.model.ZonaDataModel
 import com.example.agrinova.data.remote.model.FundoDataModel
 import com.example.agrinova.GetEmpresaDataQuery
 import com.example.agrinova.data.dto.LoteModuloDto
+import com.example.agrinova.data.local.AppDatabase
 import com.example.agrinova.data.local.dao.CampaniaDao
 import com.example.agrinova.data.local.dao.CartillaEvaluacionDao
 import com.example.agrinova.data.local.dao.CultivoDao
@@ -42,6 +44,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class EmpresaRepository(
+    private val database: AppDatabase,
     private val empresaDao: EmpresaDao,
     private val cultivoDao: CultivoDao,
     private val usuarioDao: UsuarioDao,

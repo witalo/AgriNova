@@ -52,6 +52,8 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ButtonDefaults
@@ -70,9 +72,9 @@ import java.util.*
 fun EvaluationScreen(
     viewModel: EvaluationViewModel = hiltViewModel(),
     navController: NavHostController,
-    onNavigate: (String) -> Unit,
+//    onNavigate: (String) -> Unit,
 ) {
-
+    val context = LocalContext.current
     val cartillas by viewModel.cartillas.collectAsState() // Lista de fundos
     var selectedCartilla by remember { mutableStateOf<CartillaEvaluacionDomainModel?>(null) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -91,7 +93,11 @@ fun EvaluationScreen(
         // Botón flotante en la esquina inferior derecha
         FloatingActionButton(
             onClick = {
-                onNavigate("NuevaEvaluacion")
+                    if(selectedCartilla != null){
+                        navController.navigate("newEvaluation/${selectedCartilla?.id}")
+                    }else{
+                        Toast.makeText(context, "Seleccione una cartilla", Toast.LENGTH_SHORT).show()
+                    }
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
