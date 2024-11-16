@@ -1,13 +1,19 @@
 package com.example.agrinova.ui.home.evaluations
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.agrinova.data.dto.LoteModuloDto
 import com.example.agrinova.data.repository.EmpresaRepository
 import com.example.agrinova.di.UsePreferences
+import com.example.agrinova.di.models.LoteDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -15,10 +21,13 @@ import javax.inject.Inject
 @HiltViewModel
 class NewEvaluationViewModel @Inject constructor(
     private val usePreferences: UsePreferences,
-    private val repository: EmpresaRepository
+    private val empresaRepository: EmpresaRepository
 ) : ViewModel() {
-    val companyId: Flow<Int?> = usePreferences.companyId
     val userId: Flow<Int?> = usePreferences.userId
+    val fundoId: Flow<Int?> = usePreferences.fundoId
+
+    private val _lotes = MutableStateFlow<List<LoteModuloDto>>(emptyList())
+    val lotes: StateFlow<List<LoteModuloDto>> = _lotes.asStateFlow()
     // Estados para los combos
     var isCombo1Expanded = mutableStateOf(false)
     var isCombo2Expanded = mutableStateOf(false)
@@ -38,17 +47,31 @@ class NewEvaluationViewModel @Inject constructor(
     var evaluationList = mutableStateListOf<EvaluationItem>()
 
     init {
-        loadComboData()
+        viewModelScope.launch {
+            userId.collect { user ->
+                user?.let {
+                    fundoId.collect { id ->
+                        id?.let {
+                            loadLotes(id)
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    private fun loadComboData() {
+    private fun loadLotes(fundoId: Int?) {
         viewModelScope.launch {
-//            combo1Items.addAll(repository.getCombo1Items())
-//            combo2Items.addAll(repository.getCombo2Items())
-//            combo3Items.addAll(repository.getCombo3Items())
-//            combo1Items.addAll(repository.getCombo1Items())
-//            combo2Items.addAll(repository.getCombo2Items())
-//            combo3Items.addAll(repository.getCombo3Items())
+            try {
+                if (fundoId != null) {
+                    empresaRepository.getLotesByFundo(fundoId).collect { loteList ->
+                        _lotes.value = loteList
+                    }
+                }
+
+            } catch (e: Exception) {
+                _lotes.value = emptyList()
+            }
         }
     }
 

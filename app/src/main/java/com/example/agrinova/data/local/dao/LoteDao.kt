@@ -5,7 +5,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.example.agrinova.data.dto.LoteModuloDto
 import com.example.agrinova.data.local.entity.LoteEntity
+import com.example.agrinova.data.local.entity.ModuloEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -21,5 +23,10 @@ interface LoteDao {
 
     @Query("SELECT * FROM lote")
     fun getAllLotes(): Flow<List<LoteEntity>>
+
+    @Query("SELECT l.id, l.codigo, l.nombre, " +
+            "m.codigo, m.nombre " +
+            "FROM lote l INNER JOIN modulo m ON m.id = l.moduloId WHERE m.fundoId = :fundoId")
+    fun getAllLotesByFundo(fundoId: Int):   Flow<List<LoteModuloDto>>
 
 }

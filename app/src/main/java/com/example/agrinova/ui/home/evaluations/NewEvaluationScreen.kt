@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +40,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.agrinova.data.dto.LoteModuloDto
+import com.example.agrinova.di.models.CartillaEvaluacionDomainModel
 
 @Composable
 fun NewEvaluationScreen(
@@ -80,6 +83,8 @@ private fun EvaluationHeader(
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val lotes by viewModel.lotes.collectAsState() // Lista de lotes
+    var selectedLote by remember { mutableStateOf<LoteModuloDto?>(null) }
     Column(
         modifier = modifier
             .shadow(elevation = 4.dp)
@@ -104,7 +109,8 @@ private fun EvaluationHeader(
                         .fillMaxWidth()
                         .menuAnchor(),
                     readOnly = true,
-                    value = viewModel.selectedCombo1.value?.name ?: "",
+//                    value = viewModel.selectedCombo1.value?.name ?: "",
+                    value = selectedLote?.nombre ?: "",
                     onValueChange = {},
                     label = { Text("Lote") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.isCombo1Expanded.value) },
@@ -115,12 +121,18 @@ private fun EvaluationHeader(
                     expanded = viewModel.isCombo1Expanded.value,
                     onDismissRequest = { viewModel.isCombo1Expanded.value = false }
                 ) {
-                    viewModel.combo1Items.forEach { item ->
+//                    viewModel.combo1Items.forEach { item ->
+                    lotes.forEach { item ->
                         DropdownMenuItem(
-                            text = { Text(item.name) },
+                            text = { Text(item.nombre) },
+//                            onClick = {
+//                                viewModel.onCombo1Selected(item)
+//                                viewModel.isCombo1Expanded.value = false
+//                            }
                             onClick = {
-                                viewModel.onCombo1Selected(item)
-                                viewModel.isCombo1Expanded.value = false
+                                selectedLote = item // Actualiza el lote seleccionado
+                                viewModel.onCombo1Selected(item) // Llama a la función del ViewModel si necesitas lógica adicional
+                                viewModel.isCombo1Expanded.value = false // Cierra el menú
                             }
                         )
                     }

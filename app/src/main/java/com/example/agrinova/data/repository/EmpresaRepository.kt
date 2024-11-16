@@ -12,6 +12,7 @@ import com.example.agrinova.data.remote.model.UsuarioFundoDataModel
 import com.example.agrinova.data.remote.model.ZonaDataModel
 import com.example.agrinova.data.remote.model.FundoDataModel
 import com.example.agrinova.GetEmpresaDataQuery
+import com.example.agrinova.data.dto.LoteModuloDto
 import com.example.agrinova.data.local.dao.CampaniaDao
 import com.example.agrinova.data.local.dao.CartillaEvaluacionDao
 import com.example.agrinova.data.local.dao.CultivoDao
@@ -33,6 +34,7 @@ import com.example.agrinova.data.remote.model.VariableGrupoDataModel
 import com.example.agrinova.data.remote.model.UsuarioCartillaDataModel
 import com.example.agrinova.di.models.CartillaEvaluacionDomainModel
 import com.example.agrinova.di.models.FundoDomainModel
+import com.example.agrinova.di.models.LoteDomainModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -474,8 +476,12 @@ class EmpresaRepository(
     }
     fun getCartillas(usuarioId: Int): Flow<List<CartillaEvaluacionDomainModel>> {
         return cartillaDao.getCartillasByUsuarioId(usuarioId).map { cartillas ->
-            Log.d("Cartilla 4", cartillas.toString())
             cartillas.map { it.toDomainModel() }
+        }
+    }
+    fun getLotesByFundo(fundoId: Int): Flow<List<LoteModuloDto>> {
+        return loteDao.getAllLotesByFundo(fundoId).map { lotes ->
+            lotes.map { it }
         }
     }
 }
