@@ -63,6 +63,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.agrinova.di.models.DatoDomainModel
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.*
@@ -78,6 +79,7 @@ fun EvaluationScreen(
     val cartillas by viewModel.cartillas.collectAsState() // Lista de fundos
     var selectedCartilla by remember { mutableStateOf<CartillaEvaluacionDomainModel?>(null) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
+    val datos by viewModel.filteredDatos.collectAsState() // Lista de datos filtrados
     // Ejemplo de datos para la lista
     val items = List(20) { "Item ${it + 1}" } // Lista de ejemplo con más elementos
 
@@ -88,8 +90,15 @@ fun EvaluationScreen(
             selectedCartilla = selectedCartilla,
             selectedDate = selectedDate,
             onCartillaSelected = { selectedCartilla = it },
-            onDateSelected = { selectedDate = it } // Esta función actualiza la fecha seleccionada
+            onDateSelected = { selectedDate = it }, // Esta función actualiza la fecha seleccionada
+            datos = datos
         )
+        // Llamada a cargar los datos cuando cartilla y fecha están seleccionados
+        selectedDate?.let { date ->
+            selectedCartilla?.let { cartilla ->
+                viewModel.loadDatosByDateAndCartilla(date.toString(), cartilla.id)
+            }
+        }
         // Botón flotante en la esquina inferior derecha
         FloatingActionButton(
             onClick = {
@@ -119,7 +128,8 @@ fun EvaluationCard(
     selectedCartilla: CartillaEvaluacionDomainModel?,
     selectedDate: LocalDate?,
     onCartillaSelected: (CartillaEvaluacionDomainModel?) -> Unit,
-    onDateSelected: (LocalDate?) -> Unit
+    onDateSelected: (LocalDate?) -> Unit,
+    datos: List<DatoDomainModel>,
 ) {
     val context = LocalContext.current // Obtener el contexto dentro del composable
 
@@ -215,15 +225,31 @@ fun EvaluationCard(
                     .background(Color.White)
                     .padding(16.dp)
             ) {
-                items(List(30) { "Item ${it + 1}" }) { item ->
-                    Text(
-                        text = item,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground,
+                items(datos) { dato ->
+                    Row(
                         modifier = Modifier
-                            .padding(vertical = 4.dp)
                             .fillMaxWidth()
-                    )
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = dato.id.toString(),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.padding(end = 8.dp) // Espacio entre las columnas
+                        )
+                        Text(
+                            text = dato.fecha,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.padding(horizontal = 8.dp) // Espacio entre columnas
+                        )
+                        Text(
+                            text = dato.valvulaId.toString(),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
                     Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
                 }
             }

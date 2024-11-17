@@ -65,6 +65,12 @@ class NewEvaluationViewModel @Inject constructor(
     private val _variableValues = MutableStateFlow<Map<Int, String>>(emptyMap())
     val variableValues: StateFlow<Map<Int, String>> = _variableValues.asStateFlow()
 
+    private val _saveStatus = MutableStateFlow<Result<Unit>?>(null)
+    val saveStatus: StateFlow<Result<Unit>?> = _saveStatus.asStateFlow()
+    // Controla el estado de carga
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
+
     init {
         viewModelScope.launch {
             userId.collect { user ->
@@ -177,9 +183,29 @@ class NewEvaluationViewModel @Inject constructor(
     fun saveEvaluationDato() {
         viewModelScope.launch {
             try {
+                _isLoading.value = true
+                val valvulaId = _selectedValvula.value?.id
+                    ?: throw IllegalStateException("No se ha seleccionado una válvula")
 
+                // Solo procesar valores que no estén vacíos y sean números válidos
+                val validValues = _variableValues.value.filter { (_, value) ->
+                    value.isNotEmpty() && value.toDoubleOrNull() != null
+                }
+
+                if (validValues.isEmpty()) {
+                    throw IllegalStateException("No hay valores válidos para guardar")
+                }
+
+                val result = empresaRepository.insertDatoWithDetalles(
+                    valvulaId = valvulaId,
+                    cartillaId = cartillaId.toInt(),
+                    variableValues = validValues
+                )
+                _saveStatus.value = result
             } catch (e: Exception) {
-                // Manejar el error
+                _saveStatus.value = Result.failure(e)
+            } finally {
+                _isLoading.value = false
             }
         }
     }

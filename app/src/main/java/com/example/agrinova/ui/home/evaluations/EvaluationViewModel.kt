@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.agrinova.data.repository.EmpresaRepository
 import com.example.agrinova.di.UsePreferences
 import com.example.agrinova.di.models.CartillaEvaluacionDomainModel
+import com.example.agrinova.di.models.DatoDomainModel
 import com.example.agrinova.di.models.FundoDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +26,10 @@ class EvaluationViewModel @Inject constructor(
     val userId: Flow<Int?> = usePreferences.userId
     private val _cartillas = MutableStateFlow<List<CartillaEvaluacionDomainModel>>(emptyList())
     val cartillas: StateFlow<List<CartillaEvaluacionDomainModel>> = _cartillas.asStateFlow()
+
+    // Estado para los datos filtrados
+    private val _filteredDatos = MutableStateFlow<List<DatoDomainModel>>(emptyList())
+    val filteredDatos: StateFlow<List<DatoDomainModel>> = _filteredDatos.asStateFlow()
     init {
         viewModelScope.launch {
             companyId.collect { id ->
@@ -51,6 +56,18 @@ class EvaluationViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 _cartillas.value = emptyList()
+            }
+        }
+    }
+    // Cargar datos filtrados por cartilla y fecha
+    fun loadDatosByDateAndCartilla(fecha: String, cartillaId: Int) {
+        viewModelScope.launch {
+            try {
+                empresaRepository.getDatosByDateAndCartillaId(fecha, cartillaId).collect { datos ->
+                    _filteredDatos.value = datos
+                }
+            } catch (e: Exception) {
+                _filteredDatos.value = emptyList()
             }
         }
     }

@@ -6,10 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,7 +47,10 @@ import com.example.agrinova.di.models.VariableGrupoDomainModel
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -61,7 +62,23 @@ fun NewEvaluationScreen(
     cartillaId: String,
     viewModel: NewEvaluationViewModel = hiltViewModel(),
 ) {
+    val saveStatus by viewModel.saveStatus.collectAsState()
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
     var isChecked by remember { mutableStateOf(false) }
+    // Monitor save status
+    LaunchedEffect(saveStatus) {
+        saveStatus?.fold(
+            onSuccess = {
+                showSuccessDialog = true
+            },
+            onFailure = { error ->
+                errorMessage = error.message ?: "Error desconocido"
+                showErrorDialog = true
+            }
+        )
+    }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -81,6 +98,38 @@ fun NewEvaluationScreen(
             viewModel = viewModel,
             onSaveClick = { viewModel.saveEvaluationDato() }
         )
+        // Success Dialog
+        if (showSuccessDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showSuccessDialog = false
+                    navController.popBackStack()
+                },
+                title = { Text("Éxito") },
+                text = { Text("Los datos se guardaron correctamente") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showSuccessDialog = false
+                        navController.popBackStack()
+                    }) {
+                        Text("Aceptar")
+                    }
+                }
+            )
+        }
+        // Error Dialog
+        if (showErrorDialog) {
+            AlertDialog(
+                onDismissRequest = { showErrorDialog = false },
+                title = { Text("Error") },
+                text = { Text(errorMessage) },
+                confirmButton = {
+                    TextButton(onClick = { showErrorDialog = false }) {
+                        Text("Aceptar")
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -209,18 +258,19 @@ private fun EvaluationHeader(
             }
             // Botón con ícono
             IconButton(
-                onClick = { /* Acción del botón */ },
+                onClick = { viewModel.saveEvaluationDato() },
                 modifier = Modifier
-                    .size(48.dp)  // Tamaño pequeño del botón
+                    .size(48.dp)
                     .padding(end = 8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.CheckCircle, // Cambia por otro ícono si es necesario
+                    imageVector = Icons.Default.CheckCircle,
                     contentDescription = "Guardar",
                     modifier = Modifier.size(35.dp),
                     tint = Color(0xFF43BD28)
                 )
             }
+
         }
     }
 }

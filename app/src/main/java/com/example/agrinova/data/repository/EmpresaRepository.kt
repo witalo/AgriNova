@@ -1,6 +1,8 @@
 package com.example.agrinova.data.repository
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.room.withTransaction
 import com.apollographql.apollo3.ApolloClient
 import com.example.agrinova.data.local.dao.EmpresaDao
@@ -18,12 +20,16 @@ import com.example.agrinova.data.local.AppDatabase
 import com.example.agrinova.data.local.dao.CampaniaDao
 import com.example.agrinova.data.local.dao.CartillaEvaluacionDao
 import com.example.agrinova.data.local.dao.CultivoDao
+import com.example.agrinova.data.local.dao.DatoDao
+import com.example.agrinova.data.local.dao.DatoDetalleDao
 import com.example.agrinova.data.local.dao.GrupoVariableDao
 import com.example.agrinova.data.local.dao.LoteDao
 import com.example.agrinova.data.local.dao.ModuloDao
 import com.example.agrinova.data.local.dao.PoligonoDao
 import com.example.agrinova.data.local.dao.ValvulaDao
 import com.example.agrinova.data.local.dao.VariableGrupoDao
+import com.example.agrinova.data.local.entity.DatoDetalleEntity
+import com.example.agrinova.data.local.entity.DatoEntity
 import com.example.agrinova.data.remote.model.CampaniaDataModel
 import com.example.agrinova.data.remote.model.CartillaEvaluacionDataModel
 import com.example.agrinova.data.remote.model.CultivoDataModel
@@ -35,6 +41,7 @@ import com.example.agrinova.data.remote.model.ValvulaDataModel
 import com.example.agrinova.data.remote.model.VariableGrupoDataModel
 import com.example.agrinova.data.remote.model.UsuarioCartillaDataModel
 import com.example.agrinova.di.models.CartillaEvaluacionDomainModel
+import com.example.agrinova.di.models.DatoDomainModel
 import com.example.agrinova.di.models.FundoDomainModel
 import com.example.agrinova.di.models.GrupoVariableDomainModel
 import com.example.agrinova.di.models.LoteDomainModel
@@ -42,6 +49,8 @@ import com.example.agrinova.di.models.ValvulaDomainModel
 import com.example.agrinova.di.models.VariableGrupoDomainModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class EmpresaRepository(
 //    private val database: AppDatabase,
@@ -58,6 +67,8 @@ class EmpresaRepository(
     private val campaniaDao: CampaniaDao,
     private val valvulaDao: ValvulaDao,
     private val poligonoDao: PoligonoDao,
+    private val datoDao: DatoDao,
+    private val datoDetalleDao: DatoDetalleDao,
     private val graphQLClient: ApolloClient
 ) {
     suspend fun syncEmpresaData(empresaId: Int) {
@@ -384,5 +395,46 @@ class EmpresaRepository(
         return variableGrupoDao.getVariablesGrupoByGrupoVariableId(grupoVariableId).map { variables ->
             variables.map { it.toDomainModel() }
         }
+    }
+    fun getDatosByDateAndCartillaId(date: String, cartillaId: Int): Flow<List<DatoDomainModel>> {
+        return datoDao.getDatosByDateAndCartillaId(date, cartillaId).map { datos ->
+            datos.map { it.toDomainModel() }
+        }
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun insertDatoWithDetalles(
+        valvulaId: Int,
+        cartillaId: Int,
+        variableValues: Map<Int, String>
+    ): Result<Unit> = runCatching {
+        val fechaActual = LocalDateTime.now()
+        // Formatear fecha y hora
+        val formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // Ajusta el formato si es necesario
+        val fechaFormateada = fechaActual.format(formato)
+        // Crear la entidad DatoEntity
+        val datoEntity = DatoEntity(
+            valvulaId = valvulaId,
+            cartillaId = cartillaId,
+            fecha = fechaFormateada
+        )
+
+        // Mapear los valores válidos a DatoDetalleEntity
+        val detalles = variableValues.mapNotNull { (variableId, valor) ->
+            valor.toFloatOrNull()?.let { floatValue ->
+                DatoDetalleEntity(
+                    muestra = floatValue,       // Ejemplo: usando el valor como "muestra"
+                    latitud = 0f,              // Placeholder (reemplaza con valor real si es necesario)
+                    longitud = 0f,             // Placeholder (reemplaza con valor real si es necesario)
+                    datoId = 0,                // Temporal, se asignará después
+                    variableGrupoId = variableId
+                )
+            }
+        }
+        // Verifica si hay detalles válidos para insertar
+        if (detalles.isEmpty()) {
+            throw IllegalStateException("No hay valores válidos para guardar")
+        }
+        // Llama al método DAO para insertar el dato y sus detalles
+        datoDao.insertDatoWithDetalles(datoEntity, detalles)
     }
 }

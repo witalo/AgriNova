@@ -7,6 +7,8 @@ import androidx.room.RoomDatabase
 import com.example.agrinova.data.local.dao.CampaniaDao
 import com.example.agrinova.data.local.dao.CartillaEvaluacionDao
 import com.example.agrinova.data.local.dao.CultivoDao
+import com.example.agrinova.data.local.dao.DatoDao
+import com.example.agrinova.data.local.dao.DatoDetalleDao
 import com.example.agrinova.data.local.dao.EmpresaDao
 import com.example.agrinova.data.local.dao.FundoDao
 import com.example.agrinova.data.local.dao.GrupoVariableDao
@@ -32,6 +34,8 @@ import com.example.agrinova.data.local.entity.UsuarioFundoCrossRef
 import com.example.agrinova.data.local.entity.ValvulaEntity
 import com.example.agrinova.data.local.entity.VariableGrupoEntity
 import com.example.agrinova.data.local.entity.ZonaEntity
+import com.example.agrinova.data.local.entity.DatoEntity
+import com.example.agrinova.data.local.entity.DatoDetalleEntity
 import com.example.agrinova.util.Constants
 
 @Database(entities = [
@@ -50,7 +54,8 @@ import com.example.agrinova.util.Constants
     CampaniaEntity::class,
     ValvulaEntity::class,
     PoligonoEntity::class,
-    MuestraVGEntity::class],
+    DatoEntity::class,
+    DatoDetalleEntity::class],
     version = 1,
     exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
@@ -67,7 +72,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun campaniaDao(): CampaniaDao
     abstract fun valvulaDao(): ValvulaDao
     abstract fun poligonoDao(): PoligonoDao
-    abstract fun muestraVGDao(): MuestraVGDao
+    abstract fun datoDao(): DatoDao
+    abstract fun datoDetalleDao(): DatoDetalleDao
 
     companion object {
         @Volatile

@@ -28,7 +28,8 @@ import com.example.agrinova.di.models.DatoDetalleDomainModel
     ]
 )
 data class DatoDetalleEntity(
-    @PrimaryKey val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     val muestra: Float,
     val latitud: Float,
     val longitud: Float,

@@ -28,7 +28,8 @@ import com.example.agrinova.di.models.DatoDomainModel
     ]
 )
 data class DatoEntity(
-    @PrimaryKey val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     val valvulaId: Int,
     val cartillaId: Int,
     val fecha: String

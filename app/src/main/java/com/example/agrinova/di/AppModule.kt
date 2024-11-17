@@ -6,6 +6,8 @@ import com.example.agrinova.data.local.AppDatabase
 import com.example.agrinova.data.local.dao.CampaniaDao
 import com.example.agrinova.data.local.dao.CartillaEvaluacionDao
 import com.example.agrinova.data.local.dao.CultivoDao
+import com.example.agrinova.data.local.dao.DatoDao
+import com.example.agrinova.data.local.dao.DatoDetalleDao
 import com.example.agrinova.data.local.dao.EmpresaDao
 import com.example.agrinova.data.local.dao.FundoDao
 import com.example.agrinova.data.local.dao.GrupoVariableDao
@@ -107,6 +109,16 @@ object AppModule {
     fun provideVariableGrupoDao(appDatabase: AppDatabase): VariableGrupoDao {
         return appDatabase.variableGrupoDao()
     }
+    @Provides
+    @Singleton
+    fun provideDatoDao(appDatabase: AppDatabase): DatoDao {
+        return appDatabase.datoDao()
+    }
+    @Provides
+    @Singleton
+    fun provideDatoDetalleDao(appDatabase: AppDatabase): DatoDetalleDao {
+        return appDatabase.datoDetalleDao()
+    }
 
     @Provides
     @Singleton
@@ -123,7 +135,9 @@ object AppModule {
         cartillaEvaluacionDao: CartillaEvaluacionDao,
         grupoVariableDao: GrupoVariableDao,
         variableGrupoDao: VariableGrupoDao,
-        cultivoDao: CultivoDao
+        cultivoDao: CultivoDao,
+        datoDao: DatoDao,
+        datoDetalleDao: DatoDetalleDao,
         ): EmpresaRepository {
         // Usa GraphQLClient.apolloClient directamente
         return EmpresaRepository(
@@ -140,6 +154,8 @@ object AppModule {
             grupoVariableDao = grupoVariableDao,
             variableGrupoDao = variableGrupoDao,
             cultivoDao = cultivoDao,
+            datoDao = datoDao,
+            datoDetalleDao = datoDetalleDao,
             graphQLClient = GraphQLClient.apolloClient
         )
     }
