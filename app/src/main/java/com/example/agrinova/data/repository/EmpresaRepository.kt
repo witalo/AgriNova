@@ -44,7 +44,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class EmpresaRepository(
-    private val database: AppDatabase,
+//    private val database: AppDatabase,
     private val empresaDao: EmpresaDao,
     private val cultivoDao: CultivoDao,
     private val usuarioDao: UsuarioDao,

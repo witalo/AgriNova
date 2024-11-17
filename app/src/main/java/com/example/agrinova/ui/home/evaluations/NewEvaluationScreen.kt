@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
@@ -41,16 +42,17 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.example.agrinova.data.dto.LoteModuloDto
-import com.example.agrinova.di.models.CartillaEvaluacionDomainModel
 import com.example.agrinova.di.models.GrupoVariableDomainModel
 import com.example.agrinova.di.models.ValvulaDomainModel
 import com.example.agrinova.di.models.VariableGrupoDomainModel
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 
 @Composable
@@ -58,9 +60,7 @@ fun NewEvaluationScreen(
     navController: NavController,
     cartillaId: String,
     viewModel: NewEvaluationViewModel = hiltViewModel(),
-//    onNavigate: (String) -> Unit,
 ) {
-    Log.d("Cartilla:", cartillaId.toString())
     var isChecked by remember { mutableStateOf(false) }
 
     Column(
@@ -79,7 +79,7 @@ fun NewEvaluationScreen(
                 .fillMaxWidth()
                 .weight(1f),
             viewModel = viewModel,
-            onSaveClick = { viewModel.saveEvaluation() }
+            onSaveClick = { viewModel.saveEvaluationDato() }
         )
     }
 }
@@ -267,9 +267,9 @@ private fun GrupoVariableCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 6.dp, vertical = 3.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = Color(0xFFFFFFFF)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -321,12 +321,25 @@ private fun GrupoVariableCard(
                             },
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(start = 8.dp),
-                            label = { Text(text = "Valor") },
+                                .padding(horizontal = 4.dp, vertical = 4.dp),
+                            label = { Text(text = "Valor", fontSize = 12.sp, color = Color(0xFF2A69D5)) },
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Decimal // Teclado de números con punto decimal
                             ),
+                            textStyle = TextStyle(
+//                                background = Color(0xFFFFFFFF), // Fondo del texto (color azul claro)
+                                color = Color(0xFF2A69D5), // Color del texto azul (tema primario)
+                                textAlign = TextAlign.End, // Texto alineado a la derecha
+                                fontSize = 18.sp // Aumentar el tamaño del texto
+                            ),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                containerColor = Color(0xFFFFFFFF), // Fondo del cuadro de texto (rosa claro)
+                                focusedBorderColor = Color(0xFF2970EA), // Borde azul al enfocarse
+                                unfocusedBorderColor = Color.Gray, // Borde gris sin enfoque
+                                errorBorderColor = Color.Red // Borde rojo en caso de error
+                            ),
                             singleLine = true,
+                            shape = RoundedCornerShape(30.dp),
                             isError = variableValues[variable.id]?.toDoubleOrNull() == null && variableValues[variable.id]?.isNotEmpty() == true
                         )
 //                        OutlinedTextField(
@@ -379,39 +392,3 @@ private fun GrupoVariableCard(
         }
     }
 }
-
-
-@Composable
-private fun EvaluationItem(
-    item: EvaluationItem, modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier, colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ), elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = item.title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = item.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-data class EvaluationItem(
-    val id: Int, val title: String, val description: String
-)

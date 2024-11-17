@@ -12,7 +12,6 @@ import com.example.agrinova.data.local.dao.FundoDao
 import com.example.agrinova.data.local.dao.GrupoVariableDao
 import com.example.agrinova.data.local.dao.LoteDao
 import com.example.agrinova.data.local.dao.ModuloDao
-import com.example.agrinova.data.local.dao.MuestraVGDao
 import com.example.agrinova.data.local.dao.PoligonoDao
 import com.example.agrinova.data.local.dao.UsuarioDao
 import com.example.agrinova.data.local.dao.ValvulaDao
@@ -33,7 +32,6 @@ import com.example.agrinova.data.local.entity.UsuarioFundoCrossRef
 import com.example.agrinova.data.local.entity.ValvulaEntity
 import com.example.agrinova.data.local.entity.VariableGrupoEntity
 import com.example.agrinova.data.local.entity.ZonaEntity
-import com.example.agrinova.data.local.entity.MuestraVGEntity
 import com.example.agrinova.util.Constants
 
 @Database(entities = [

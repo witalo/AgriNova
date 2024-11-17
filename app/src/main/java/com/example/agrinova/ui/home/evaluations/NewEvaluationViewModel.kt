@@ -51,9 +51,6 @@ class NewEvaluationViewModel @Inject constructor(
     var isCombo1Expanded = mutableStateOf(false)
     var isCombo2Expanded = mutableStateOf(false)
 
-    // Lista de evaluaciones
-    var evaluationList = mutableStateListOf<EvaluationItem>()
-
     private val _grupos = MutableStateFlow<List<GrupoVariableDomainModel>>(emptyList())
     val grupos: StateFlow<List<GrupoVariableDomainModel>> = _grupos.asStateFlow()
 
@@ -177,40 +174,13 @@ class NewEvaluationViewModel @Inject constructor(
     }
 
     // Función para guardar la evaluación
-    fun saveEvaluation() {
+    fun saveEvaluationDato() {
         viewModelScope.launch {
             try {
-//                val evaluacionDto = EvaluacionDto(
-//                    loteId = selectedLote.value?.loteId ?: return@launch,
-//                    valvulaId = selectedValvula.value?.id ?: return@launch,
-//                    variables = _variableValues.value.map { (variableId, valor) ->
-//                        VariableValorDto(
-//                            variableId = variableId,
-//                            valor = valor
-//                        )
-//                    }
-//                )
-//
-//                empresaRepository.saveEvaluacion(evaluacionDto)
-//                // Limpiar los valores después de guardar
-//                _variableValues.value = emptyMap()
 
             } catch (e: Exception) {
                 // Manejar el error
             }
         }
     }
-
-//    private fun updateEvaluationList() {
-//        viewModelScope.launch {
-//            val combo1Id = selectedCombo1.value?.id
-//            val combo2Id = selectedCombo2.value?.id
-//
-//            if (combo1Id != null && combo2Id != null) {
-////                val newList = repository.getEvaluationList(combo1Id, combo2Id, combo3Id)
-//                evaluationList.clear()
-////                evaluationList.addAll(newList)
-//            }
-//        }
-//    }
 }

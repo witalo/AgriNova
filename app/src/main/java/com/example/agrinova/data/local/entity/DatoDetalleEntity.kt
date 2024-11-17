@@ -4,35 +4,44 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.example.agrinova.di.models.MuestraVGDomainModel
+import com.example.agrinova.di.models.DatoDetalleDomainModel
 
 @Entity(
-    tableName = "muestravg",
+    tableName = "datodetalle",
     foreignKeys = [
         ForeignKey(
             entity = VariableGrupoEntity::class,
             parentColumns = ["id"],
             childColumns = ["variableGrupoId"],
             onDelete = ForeignKey.NO_ACTION
+        ),
+        ForeignKey(
+            entity = DatoEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["datoId"],
+            onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index(value = ["variableGrupoId"])]
+    indices = [
+        Index(value = ["variableGrupoId"]),
+        Index(value = ["datoId"])
+    ]
 )
-data class MuestraVGEntity(
+data class DatoDetalleEntity(
     @PrimaryKey val id: Int,
     val muestra: Float,
-    val fecha: String,
     val latitud: Float,
     val longitud: Float,
+    val datoId: Int,
     val variableGrupoId: Int
 ){
-    fun toDomainModel(): MuestraVGDomainModel {
-        return MuestraVGDomainModel(
+    fun toDomainModel(): DatoDetalleDomainModel {
+        return DatoDetalleDomainModel(
             id = this.id,
             muestra = this.muestra,
-            fecha = this.fecha,
             latitud = this.latitud,
             longitud = this.longitud,
+            datoId = this.datoId,
             variableGrupoId = this.variableGrupoId
         )
     }

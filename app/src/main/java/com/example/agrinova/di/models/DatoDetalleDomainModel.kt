@@ -1,10 +1,10 @@
 package com.example.agrinova.di.models
 
-data class MuestraVGDomainModel(
+data class DatoDetalleDomainModel(
     val id: Int,
     val muestra: Float,
-    val fecha: String,
     val latitud: Float,
     val longitud: Float,
+    val datoId: Int,
     val variableGrupoId: Int
 )
