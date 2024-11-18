@@ -23,7 +23,7 @@ interface ValvulaDao {
     @Query("SELECT * FROM valvula")
     fun getAllValvulas(): Flow<List<ValvulaEntity>>
 
-    @Query("SELECT * FROM valvula " +
+    @Query("SELECT valvula.id, valvula.codigo, valvula.nombre, valvula.campaniaId, valvula.activo FROM valvula " +
             "INNER JOIN campania ON campania.id = valvula.campaniaId " +
             "WHERE campania.loteId = :loteId AND campania.activo = 1 " +
             "ORDER BY campania.id DESC LIMIT 1")

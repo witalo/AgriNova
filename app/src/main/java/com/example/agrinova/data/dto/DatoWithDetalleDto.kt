@@ -1,7 +1,7 @@
 package com.example.agrinova.data.dto
 
-data class DatoWithDetalle(
-    val datoId: Int,
+
+data class DatoWithDetalleDto(
     val valvulaId: Int,
     val fecha: String,
     val muestra: Float,

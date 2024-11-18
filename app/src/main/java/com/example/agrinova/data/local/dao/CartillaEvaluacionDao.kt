@@ -28,9 +28,18 @@ interface CartillaEvaluacionDao {
     suspend fun checkUsuarioCartillaExists(userId: Int, cartillaId: Int): Int
 
     @Query("""
-        SELECT * FROM cartillaevaluacion
-        INNER JOIN UsuarioCartillaCrossRef ON cartillaevaluacion.id = UsuarioCartillaCrossRef.cartillaId
-        WHERE UsuarioCartillaCrossRef.usuarioId = :usuarioId
-    """)
+    SELECT cartillaevaluacion.*
+    FROM cartillaevaluacion
+    INNER JOIN UsuarioCartillaCrossRef 
+    ON cartillaevaluacion.id = UsuarioCartillaCrossRef.cartillaId
+    WHERE UsuarioCartillaCrossRef.usuarioId = :usuarioId
+""")
     fun getCartillasByUsuarioId(usuarioId: Int): Flow<List<CartillaEvaluacionEntity>>
+
+//    @Query("""
+//        SELECT * FROM cartillaevaluacion
+//        INNER JOIN UsuarioCartillaCrossRef ON cartillaevaluacion.id = UsuarioCartillaCrossRef.cartillaId
+//        WHERE UsuarioCartillaCrossRef.usuarioId = :usuarioId
+//    """)
+//    fun getCartillasByUsuarioId(usuarioId: Int): Flow<List<CartillaEvaluacionEntity>>
 }

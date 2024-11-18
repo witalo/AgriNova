@@ -21,5 +21,8 @@ interface DatoDetalleDao {
 
     @Query("SELECT * FROM datodetalle WHERE datoId = :datoId")
     fun getDatosDetalleByDatoId(datoId: Int): Flow<List<DatoDetalleEntity>>
+    // Borra los detalles relacionados con los IDs de Dato
+    @Query("DELETE FROM datodetalle WHERE datoId IN (:datoIds)")
+    suspend fun clearDatoDetalleByDatoIds(datoIds: List<Int>)
 
 }

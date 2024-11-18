@@ -1,5 +1,6 @@
 package com.example.agrinova.ui.home.evaluations
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -69,6 +70,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -84,6 +86,8 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.util.*
 import kotlinx.coroutines.delay
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -94,8 +98,11 @@ fun EvaluationScreen(
 ) {
     val context = LocalContext.current
     val cartillas by viewModel.cartillas.collectAsState() // Lista de fundos
-    var selectedCartilla by remember { mutableStateOf<CartillaEvaluacionDomainModel?>(null) }
-    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
+    val selectedCartilla by viewModel.selectedCartilla.collectAsState()
+    val selectedDate by viewModel.selectedDate.collectAsState()
+
+//    var selectedCartilla by remember { mutableStateOf<CartillaEvaluacionDomainModel?>(null) }
+//    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     val datos by viewModel.filteredDatos.collectAsState() // Lista de datos filtrados
 
     val uploadStatus by viewModel.uploadStatus.collectAsState()
@@ -135,8 +142,8 @@ fun EvaluationScreen(
             cartillas = cartillas,
             selectedCartilla = selectedCartilla,
             selectedDate = selectedDate,
-            onCartillaSelected = { selectedCartilla = it },
-            onDateSelected = { selectedDate = it }, // Esta función actualiza la fecha seleccionada
+            onCartillaSelected = {viewModel.setSelectedCartilla(it) },
+            onDateSelected = { viewModel.setSelectedDate(it) }, // Esta función actualiza la fecha seleccionada
             datos = datos,
             onUploadClick = {
                 if (selectedDate == null || selectedCartilla == null) {
@@ -201,43 +208,6 @@ fun EvaluationCard(
 ) {
     val context = LocalContext.current // Obtener el contexto dentro del composable
 
-    // Mostrar diálogo de progreso
-//    if (showProgressDialog) {
-//        AlertDialog(
-//            onDismissRequest = { },
-//            title = { Text("Subiendo datos") },
-//            text = {
-//                Column(
-//                    horizontalAlignment = Alignment.CenterHorizontally,
-//                    modifier = Modifier.fillMaxWidth()
-//                ) {
-//                    CircularProgressIndicator()
-//                    Spacer(modifier = Modifier.height(16.dp))
-//                    Text("Por favor espere...")
-//                }
-//            },
-//            confirmButton = { }
-//        )
-//    }
-    // Observar el estado de la subida
-//    LaunchedEffect(uploadStatus) {
-//        when (uploadStatus) {
-//            is UploadState.Loading -> {
-//                showProgressDialog = true
-//            }
-//            is UploadState.Success -> {
-//                showProgressDialog = false
-//                Toast.makeText(context, (uploadStatus as UploadState.Success).message, Toast.LENGTH_LONG).show()
-//            }
-//            is UploadState.Error -> {
-//                showProgressDialog = false
-//                Toast.makeText(context, (uploadStatus as UploadState.Error).message, Toast.LENGTH_LONG).show()
-//            }
-//            else -> {
-//                showProgressDialog = false
-//            }
-//        }
-//    }
     Card(
         modifier = Modifier
             .fillMaxSize() // Ocupa todo el ancho y alto del dispositivo
@@ -299,15 +269,21 @@ fun EvaluationCard(
                         // Actualización del botón de subida
                         Button(
                             onClick = onUploadClick,
+                            enabled = selectedDate != null && selectedCartilla != null && datos.isNotEmpty(),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(8.dp),
                             shape = RoundedCornerShape(50.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFFCC014),
-                                contentColor = Color.Transparent
-                            ),
-                            enabled = selectedDate != null && selectedCartilla != null && datos.isNotEmpty()
+                            colors = if (selectedDate == null || selectedCartilla == null || datos.isEmpty())
+                                ButtonDefaults.buttonColors(
+                                    containerColor = Color.Gray,
+                                    contentColor = Color.DarkGray
+                                )
+                            else
+                                ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFFCC014),
+                                    contentColor = Color.Transparent
+                                )
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.cloud_upload),
@@ -328,8 +304,8 @@ fun EvaluationCard(
                     .background(Color.White)
                     .padding(16.dp)
             ) {
-                items(datos) { dato ->
-                    Row(
+                items(datos, key = { it.datoId }) { dato ->
+                Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp, horizontal = 16.dp), // Espaciado adicional
@@ -352,22 +328,13 @@ fun EvaluationCard(
                         )
                         val originalDate = dato.datoFecha
                         // Extraer solo la hora, minutos y segundos
-                        val timeOnly = try {
-                            val inputFormat =
-                                SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                            val date = inputFormat.parse(originalDate)
-                            val outputFormat = SimpleDateFormat(
-                                "hh:mm:ss a",
-                                Locale.getDefault()
-                            ) // 'a' agrega AM/PM
-                            if (date != null) {
-                                outputFormat.format(date)
-                            } else {
-                                originalDate
-                            }
-                        } catch (e: Exception) {
-                            originalDate // Si falla, usar el texto original
-                        }
+                    val timeOnly = try {
+                        val formatter = DateTimeFormatter.ofPattern("hh:mm:ss a", Locale.getDefault())
+                        val localDateTime = LocalDateTime.parse(originalDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                        localDateTime.format(formatter)
+                    } catch (e: Exception) {
+                        originalDate // Usar texto original si falla
+                    }
 
                         // Fecha del dato
                         Text(
@@ -476,6 +443,7 @@ fun <T> GenericSelector(
     }
 }
 
+@SuppressLint("ReturnFromAwaitPointerEventScope")
 @Composable
 fun LoadingOverlay(
     isLoading: Boolean,
@@ -486,7 +454,15 @@ fun LoadingOverlay(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.7f))
-                .clickable(enabled = false) { /* Previene clicks */ },
+                .pointerInput(Unit) {
+                    // Bloquea todos los gestos consumiéndolos
+                    awaitPointerEventScope {
+                        while (true) {
+                            awaitPointerEvent() // Consume todos los eventos de gestos
+                        }
+                    }
+                },
+//                .clickable(enabled = false) { /* Previene clicks */ },
             contentAlignment = Alignment.Center
         ) {
             Card(

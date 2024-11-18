@@ -1,6 +1,9 @@
 package com.example.agrinova.ui.home.evaluations
 
+import android.os.Build
 import android.util.Log
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,11 +54,13 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NewEvaluationScreen(
     navController: NavController,
@@ -133,6 +138,7 @@ fun NewEvaluationScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EvaluationHeader(
@@ -146,6 +152,7 @@ private fun EvaluationHeader(
 
     val valvulas by viewModel.valvulas.collectAsState()
     var selectedValvula by remember { mutableStateOf<ValvulaDomainModel?>(null) }
+
     Column(
         modifier = modifier.shadow(elevation = 4.dp)
     ) {
@@ -167,7 +174,6 @@ private fun EvaluationHeader(
                         .fillMaxWidth()
                         .menuAnchor(),
                     readOnly = true,
-//                    value = viewModel.selectedCombo1.value?.name ?: "",
                     value = if (selectedLote?.loteCodigo != null && selectedLote?.moduloCodigo != null) {
                         "${selectedLote?.loteCodigo}:${selectedLote?.moduloCodigo}"
                     } else {
@@ -181,13 +187,8 @@ private fun EvaluationHeader(
 
                 ExposedDropdownMenu(expanded = viewModel.isCombo1Expanded.value,
                     onDismissRequest = { viewModel.isCombo1Expanded.value = false }) {
-//                    viewModel.combo1Items.forEach { item ->
                     lotes.forEach { lote ->
                         DropdownMenuItem(text = { Text("${lote.loteCodigo}:${lote.moduloCodigo}") },
-//                            onClick = {
-//                                viewModel.onCombo1Selected(item)
-//                                viewModel.isCombo1Expanded.value = false
-//                            }
                             onClick = {
                                 selectedLote = lote // Actuasliza el lote seleccionado
                                 viewModel.onLoteSelected(lote) // Llama a la función del ViewModel si necesitas lógica adicional
@@ -209,7 +210,7 @@ private fun EvaluationHeader(
                         .menuAnchor(),
                     readOnly = true,
                     value = if (selectedValvula != null) {
-                        "${selectedValvula?.codigo}:${selectedValvula?.nombre}"
+                        "${selectedValvula?.codigo}"
                     } else {
                         ""
                     },
@@ -222,7 +223,7 @@ private fun EvaluationHeader(
                 ExposedDropdownMenu(expanded = viewModel.isCombo2Expanded.value,
                     onDismissRequest = { viewModel.isCombo2Expanded.value = false }) {
                     valvulas.forEach { valvula ->
-                        DropdownMenuItem(text = { Text("${valvula.codigo}:${valvula.nombre}") },
+                        DropdownMenuItem(text = { Text("${valvula.codigo}") },
                             onClick = {
                                 selectedValvula = valvula
                                 viewModel.onValvulaSelected(valvula)
@@ -252,9 +253,9 @@ private fun EvaluationHeader(
                     )
                 )
                 Text(
-                    text = "GPS Automatico", modifier = Modifier.padding(start = 8.dp)
+                    text = "GPS Automático",
+                    modifier = Modifier.padding(start = 8.dp)
                 )
-
             }
             // Botón con ícono
             IconButton(
@@ -392,50 +393,6 @@ private fun GrupoVariableCard(
                             shape = RoundedCornerShape(30.dp),
                             isError = variableValues[variable.id]?.toDoubleOrNull() == null && variableValues[variable.id]?.isNotEmpty() == true
                         )
-//                        OutlinedTextField(
-//                            value = variableValues[variable.id] ?: "",
-//                            onValueChange = { value ->
-//                                // Validación según el tipo
-//                                val isValid = when {
-//                                    variable.tipo.equals("decimal", ignoreCase = true) ->
-//                                        value.isEmpty() || value.toDoubleOrNull() != null
-//
-//                                    variable.tipo.equals("entero", ignoreCase = true) ->
-//                                        value.isEmpty() || value.toIntOrNull() != null
-//
-//                                    else -> true
-//                                }
-//
-//                                if (isValid) {
-//                                    onVariableValueChange(variable.id, value)
-//                                }
-//                            },
-//                            modifier = Modifier
-//                                .weight(1f)
-//                                .padding(start = 8.dp),
-//                            label = { Text(text = "Valor") },
-//                            keyboardOptions = KeyboardOptions(
-//                                keyboardType = when {
-//                                    variable.tipo.equals("decimal", ignoreCase = true) ->
-//                                        KeyboardType.Decimal
-//
-//                                    variable.tipo.equals("entero", ignoreCase = true) ->
-//                                        KeyboardType.Number
-//
-//                                    else -> KeyboardType.Text
-//                                }
-//                            ),
-//                            singleLine = true,
-//                            isError = when {
-//                                variable.tipo.equals("decimal", ignoreCase = true) ->
-//                                    variableValues[variable.id]?.toDoubleOrNull() == null && variableValues[variable.id]?.isNotEmpty() == true
-//
-//                                variable.tipo.equals("entero", ignoreCase = true) ->
-//                                    variableValues[variable.id]?.toIntOrNull() == null && variableValues[variable.id]?.isNotEmpty() == true
-//
-//                                else -> false
-//                            }
-//                        )
                     }
                 }
             }

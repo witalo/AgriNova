@@ -132,7 +132,7 @@ data class EmpresaDataModel(
                         grupoVariableSet = cartilla?.grupovariableSet?.map { grupo ->
                             GrupoVariableDataModel(
                                 id = grupo.id ?: 0,
-                                calculado = grupo.calculado ?: false,
+                                calculado = grupo.calculado,
                                 grupoCodigo = grupo.grupoCodigo ?: "",
                                 grupoNombre = grupo.grupoNombre ?: "",
                                 grupoId = grupo.grupoId ?: 0,

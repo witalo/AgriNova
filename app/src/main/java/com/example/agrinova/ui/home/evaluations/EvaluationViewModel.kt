@@ -1,6 +1,10 @@
 package com.example.agrinova.ui.home.evaluations
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agrinova.data.dto.DatoValvulaDto
@@ -16,13 +20,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
 class EvaluationViewModel @Inject constructor(
     private val empresaRepository: EmpresaRepository,
-    private val usePreferences: UsePreferences,
+    private val usePreferences: UsePreferences
 ) : ViewModel() {
+    private val _selectedCartilla = MutableStateFlow<CartillaEvaluacionDomainModel?>(null)
+    val selectedCartilla: StateFlow<CartillaEvaluacionDomainModel?> = _selectedCartilla
+
+    private val _selectedDate = MutableStateFlow<LocalDate?>(null)
+    val selectedDate: StateFlow<LocalDate?> = _selectedDate
+
     private val _uploadStatus = MutableStateFlow<UploadState>(UploadState.Idle)
     val uploadStatus: StateFlow<UploadState> = _uploadStatus.asStateFlow()
 
@@ -80,12 +91,14 @@ class EvaluationViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _uploadStatus.value = UploadState.Loading
-
+                // Subir los datos al servidor
                 val result = empresaRepository.uploadMuestraData(fecha, cartillaId)
 
                 result.fold(
                     onSuccess = {
                         _uploadStatus.value = UploadState.Success("Datos subidos exitosamente")
+                        // Limpiar los datos de esa fecha y cartillaId
+                        empresaRepository.clearDatosAndDetallesByDateAndCartillaId(fecha, cartillaId)
                     },
                     onFailure = { error ->
                         _uploadStatus.value = UploadState.Error("Error al subir datos: ${error.message}")
@@ -95,6 +108,13 @@ class EvaluationViewModel @Inject constructor(
                 _uploadStatus.value = UploadState.Error("Error inesperado: ${e.message}")
             }
         }
+    }
+    fun setSelectedCartilla(cartilla: CartillaEvaluacionDomainModel?) {
+        _selectedCartilla.value = cartilla
+    }
+
+    fun setSelectedDate(date: LocalDate?) {
+        _selectedDate.value = date
     }
 }
 // Estados de la subida

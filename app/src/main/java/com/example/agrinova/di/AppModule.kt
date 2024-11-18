@@ -1,5 +1,6 @@
 package com.example.agrinova.di
 
+import android.app.Application
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.example.agrinova.data.local.AppDatabase
@@ -20,14 +21,11 @@ import com.example.agrinova.data.local.dao.VariableGrupoDao
 import com.example.agrinova.data.local.dao.ZonaDao
 import com.example.agrinova.data.remote.GraphQLClient
 import com.example.agrinova.data.repository.EmpresaRepository
-import com.example.agrinova.ui.home.screens.ProfileViewModel
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import dagger.multibindings.IntoMap
 import javax.inject.Singleton
 
 @Module
@@ -165,4 +163,39 @@ object AppModule {
     fun provideUserPreferences(@ApplicationContext context: Context): UsePreferences {
         return UsePreferences(context)
     }
+//    @Provides
+//    @Singleton
+//    fun provideContext(application: Application): Context {
+//        return application.applicationContext
+//    }
+//    @Provides
+//    @Singleton
+//    fun provideGetLocationUseCase(
+//        context: Context,
+//        locationRepository: LocationRepository
+//    ): GetLocationUseCase {
+//        return GetLocationUseCase(context, locationRepository)
+//    }
+//
+//    @Provides
+//    @Singleton
+//    fun provideLocationRepository(
+//        context: Context,
+//        permissionHandler: PermissionHandler,
+//        locationDataSource: LocationDataSource
+//    ): LocationRepository {
+//        return LocationRepository(context, permissionHandler, locationDataSource)
+//    }
+//
+//    @Provides
+//    @Singleton
+//    fun provideLocationDataSource(context: Context): LocationDataSource {
+//        return LocationDataSource(context)
+//    }
+//
+//    @Provides
+//    @Singleton
+//    fun providePermissionHandler(): PermissionHandler {
+//        return PermissionHandler()
+//    }
 }

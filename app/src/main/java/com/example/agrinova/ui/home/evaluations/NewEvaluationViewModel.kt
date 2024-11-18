@@ -1,7 +1,7 @@
 package com.example.agrinova.ui.home.evaluations
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -10,7 +10,6 @@ import com.example.agrinova.data.dto.LoteModuloDto
 import com.example.agrinova.data.repository.EmpresaRepository
 import com.example.agrinova.di.UsePreferences
 import com.example.agrinova.di.models.GrupoVariableDomainModel
-import com.example.agrinova.di.models.LoteDomainModel
 import com.example.agrinova.di.models.ValvulaDomainModel
 import com.example.agrinova.di.models.VariableGrupoDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,6 +27,9 @@ class NewEvaluationViewModel @Inject constructor(
     private val usePreferences: UsePreferences,
     private val empresaRepository: EmpresaRepository
 ) : ViewModel() {
+    private val _isGpsEnabled = MutableStateFlow(false)
+    val isGpsEnabled: StateFlow<Boolean> = _isGpsEnabled.asStateFlow()
+
     val cartillaId: String = savedStateHandle["cartillaId"] ?: ""
     val userId: Flow<Int?> = usePreferences.userId
     val fundoId: Flow<Int?> = usePreferences.fundoId
@@ -180,6 +182,7 @@ class NewEvaluationViewModel @Inject constructor(
     }
 
     // Función para guardar la evaluación
+    @RequiresApi(Build.VERSION_CODES.O)
     fun saveEvaluationDato() {
         viewModelScope.launch {
             try {
@@ -209,4 +212,6 @@ class NewEvaluationViewModel @Inject constructor(
             }
         }
     }
+
+
 }

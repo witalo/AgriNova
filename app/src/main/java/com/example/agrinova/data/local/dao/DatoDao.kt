@@ -2,12 +2,11 @@ package com.example.agrinova.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RoomWarnings
 import androidx.room.Transaction
-import androidx.room.Update
 import com.example.agrinova.data.dto.DatoValvulaDto
-import com.example.agrinova.data.dto.DatoWithDetalle
+import com.example.agrinova.data.dto.DatoWithDetalleDto
 import com.example.agrinova.data.local.entity.DatoDetalleEntity
 import com.example.agrinova.data.local.entity.DatoEntity
 import kotlinx.coroutines.flow.Flow
@@ -41,6 +40,7 @@ interface DatoDao {
         val detallesWithDatoId = detalles.map { it.copy(datoId = datoId.toInt()) }
         insertDatoDetalles(detallesWithDatoId)
     }
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
         SELECT d.id AS datoId, d.valvulaId, d.fecha, dd.muestra, dd.latitud, dd.longitud, dd.variableGrupoId
@@ -52,5 +52,12 @@ interface DatoDao {
     suspend fun getDatoWithDetalleByDateAndCartillaId(
         fecha: String,
         cartillaId: Int
-    ): List<DatoWithDetalle>
+    ): List<DatoWithDetalleDto>
+
+    // Obtiene los IDs de Dato según la fecha y cartillaId
+    @Query("SELECT id FROM dato WHERE cartillaId = :cartillaId AND DATE(fecha) = DATE(:fecha)")
+    suspend fun getIdsDatoByDateAndCartillaId(fecha: String, cartillaId: Int): List<Int>
+    // Elimina los registros en Dato
+    @Query("DELETE FROM dato WHERE cartillaId = :cartillaId AND DATE(fecha) = DATE(:fecha)")
+    suspend fun clearDatoByDateAndCartillaId(fecha: String, cartillaId: Int)
 }

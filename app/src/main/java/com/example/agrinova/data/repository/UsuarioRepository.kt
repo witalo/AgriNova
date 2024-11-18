@@ -14,8 +14,8 @@ class UsuarioRepository @Inject constructor(
             UsuarioDomainModel(
                 id = it.id,
                 document = it.document,
-                firstName = it.firstName?: "",
-                lastName = it.lastName ?: "",
+                firstName = it.firstName,
+                lastName = it.lastName,
                 phone = it.phone,
                 email = it.email,
                 isActive = it.isActive

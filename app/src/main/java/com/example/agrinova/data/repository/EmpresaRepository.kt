@@ -3,7 +3,6 @@ package com.example.agrinova.data.repository
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.room.withTransaction
 import com.apollographql.apollo3.ApolloClient
 import com.example.agrinova.CreateMuestraVGMutation
 import com.example.agrinova.data.local.dao.EmpresaDao
@@ -17,9 +16,8 @@ import com.example.agrinova.data.remote.model.ZonaDataModel
 import com.example.agrinova.data.remote.model.FundoDataModel
 import com.example.agrinova.GetEmpresaDataQuery
 import com.example.agrinova.data.dto.DatoValvulaDto
+import com.example.agrinova.data.dto.DatoWithDetalleDto
 import com.example.agrinova.data.dto.LoteModuloDto
-import com.example.agrinova.data.dto.MuestraVGInput
-import com.example.agrinova.data.local.AppDatabase
 import com.example.agrinova.data.local.dao.CampaniaDao
 import com.example.agrinova.data.local.dao.CartillaEvaluacionDao
 import com.example.agrinova.data.local.dao.CultivoDao
@@ -44,14 +42,15 @@ import com.example.agrinova.data.remote.model.ValvulaDataModel
 import com.example.agrinova.data.remote.model.VariableGrupoDataModel
 import com.example.agrinova.data.remote.model.UsuarioCartillaDataModel
 import com.example.agrinova.di.models.CartillaEvaluacionDomainModel
-import com.example.agrinova.di.models.DatoDomainModel
 import com.example.agrinova.di.models.FundoDomainModel
 import com.example.agrinova.di.models.GrupoVariableDomainModel
-import com.example.agrinova.di.models.LoteDomainModel
 import com.example.agrinova.di.models.ValvulaDomainModel
 import com.example.agrinova.di.models.VariableGrupoDomainModel
+import com.example.agrinova.type.MuestraVGInput
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -81,7 +80,7 @@ class EmpresaRepository(
 
         response.data?.empresaById?.let { empresaData ->
             val existingEmpresa = empresaDao.getEmpresaById(empresaData.id!!.toInt())
-            val empresaEntity = EmpresaDataModel(id = empresaData.id ?: 0,
+            val empresaEntity = EmpresaDataModel(id = empresaData.id,
                 ruc = empresaData.ruc ?: "",
                 razonSocial = empresaData.razonSocial ?: "",
                 correo = empresaData.correo ?: "",
@@ -173,7 +172,7 @@ class EmpresaRepository(
                         } ?: emptyList(),
                         grupoVariableSet = cartilla?.grupovariableSet?.map { grupo ->
                             GrupoVariableDataModel(id = grupo.id ?: 0,
-                                calculado = grupo.calculado ?: false,
+                                calculado = grupo.calculado,
                                 grupoCodigo = grupo.grupoCodigo ?: "",
                                 grupoNombre = grupo.grupoNombre ?: "",
                                 grupoId = grupo.grupoId ?: 0,
@@ -446,32 +445,41 @@ class EmpresaRepository(
 
             // Convertir datos a la estructura generada por Apollo
             val muestrasVGInputList = datosLocales.map {
-                GraphQLMuestraVGInput(
-                    muestra = it.muestra.toDouble(),
+                MuestraVGInput(
+                    valvulaId = it.valvulaId,
+                    fechaHora = it.fecha,
                     latitud = it.latitud.toDouble(),
                     longitud = it.longitud.toDouble(),
-                    fecha_hora = it.fecha,
-                    variable_grupo_id = it.variableGrupoId,
-                    valvula_id = it.valvulaId
+                    muestra = it.muestra.toDouble(),
+                    variableGrupoId = it.variableGrupoId
                 )
             }
-            val responses = graphQLClient.mutation(CreateMuestraVGMutation)
-            ).execute()
-
             // Enviar la lista al servidor mediante Apollo Client
             val mutation = CreateMuestraVGMutation(muestrasVGInputList)
             val response = graphQLClient.mutation(mutation).execute()
 
             // Validar la respuesta
-            if (response.hasErrors() || response.data?.createMuestras?.success == false) {
+            if (response.hasErrors() || response.data?.createMuestra?.success == false) {
                 val errorMsg = response.errors?.joinToString(", ") { it.message }
-                    ?: response.data?.createMuestras?.message ?: "Error desconocido"
+                    ?: response.data?.createMuestra?.message ?: "Error desconocido"
                 throw Exception(errorMsg)
             }
 
             Result.success(true)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+    suspend fun clearDatosAndDetallesByDateAndCartillaId(fecha: String, cartillaId: Int) {
+        withContext(Dispatchers.IO) {
+            // Obtiene los IDs de Dato correspondientes
+            val datoIds = datoDao.getIdsDatoByDateAndCartillaId(fecha, cartillaId)
+
+            // Borra los detalles en DatoDetalle basándose en los datoIds
+            datoDetalleDao.clearDatoDetalleByDatoIds(datoIds)
+
+            // Finalmente borra los datos en Dato
+            datoDao.clearDatoByDateAndCartillaId(fecha, cartillaId)
         }
     }
 }

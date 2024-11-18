@@ -86,8 +86,13 @@ dependencies {
     //Apollo
     implementation(libs.apollo.runtime)
 
-    // Lottie Compose
+    // Lottie Compose animation initial
     implementation(libs.lottie.compose)
+
+    // Google Play Services Location
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
 }
 kapt {
     correctErrorTypes = true
