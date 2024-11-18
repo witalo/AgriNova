@@ -163,11 +163,11 @@ object AppModule {
     fun provideUserPreferences(@ApplicationContext context: Context): UsePreferences {
         return UsePreferences(context)
     }
-//    @Provides
-//    @Singleton
-//    fun provideContext(application: Application): Context {
-//        return application.applicationContext
-//    }
+    @Provides
+    @Singleton
+    fun provideContext(application: Application): Context {
+        return application.applicationContext
+    }
 //    @Provides
 //    @Singleton
 //    fun provideGetLocationUseCase(

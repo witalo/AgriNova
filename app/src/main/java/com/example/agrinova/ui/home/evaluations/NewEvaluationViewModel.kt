@@ -1,11 +1,13 @@
 package com.example.agrinova.ui.home.evaluations
 
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.agrinova.data.dto.LocationModel
 import com.example.agrinova.data.dto.LoteModuloDto
 import com.example.agrinova.data.repository.EmpresaRepository
 import com.example.agrinova.di.UsePreferences
@@ -25,10 +27,36 @@ import javax.inject.Inject
 class NewEvaluationViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val usePreferences: UsePreferences,
-    private val empresaRepository: EmpresaRepository
+    private val empresaRepository: EmpresaRepository,
+    private val context: Context
 ) : ViewModel() {
+    private val locationHelper = LocationHelper(context)
+
     private val _isGpsEnabled = MutableStateFlow(false)
     val isGpsEnabled: StateFlow<Boolean> = _isGpsEnabled.asStateFlow()
+
+    private val _locationData = MutableStateFlow<LocationModel?>(null)
+    val locationData: StateFlow<LocationModel?> = _locationData.asStateFlow()
+
+    fun onGpsCheckboxChanged(isChecked: Boolean) {
+        if (isChecked) {
+            val gpsEnabled = locationHelper.checkAndEnableGPS()
+            _isGpsEnabled.value = gpsEnabled
+
+            if (gpsEnabled) {
+                val location = locationHelper.getCurrentLocation()
+                location?.let {
+                    _locationData.value = LocationModel(
+                        latitude = it.first,
+                        longitude = it.second
+                    )
+                }
+            }
+        } else {
+            _isGpsEnabled.value = false
+            _locationData.value = null
+        }
+    }
 
     val cartillaId: String = savedStateHandle["cartillaId"] ?: ""
     val userId: Flow<Int?> = usePreferences.userId

@@ -1,8 +1,11 @@
 package com.example.agrinova.ui.home.evaluations
 
+import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -58,8 +61,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-
+import android.Manifest
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NewEvaluationScreen(
@@ -67,6 +71,18 @@ fun NewEvaluationScreen(
     cartillaId: String,
     viewModel: NewEvaluationViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+    val isGpsEnabled by viewModel.isGpsEnabled.collectAsState()
+    val locationData by viewModel.locationData.collectAsState()
+    // Show location when captured
+    locationData?.let { location ->
+        Toast.makeText(
+            context,
+            "Lat: ${location.latitude}, Lon: ${location.longitude}",
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
     val saveStatus by viewModel.saveStatus.collectAsState()
     var showSuccessDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
@@ -93,7 +109,11 @@ fun NewEvaluationScreen(
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface),
 //                .padding(0.dp),
-            viewModel = viewModel, isChecked = isChecked, onCheckedChange = { isChecked = it })
+            viewModel = viewModel,
+            isChecked = isGpsEnabled,
+            onCheckedChange = {
+                viewModel.onGpsCheckboxChanged(it)
+            })
 
         // Cuerpo scrollable con grupos y variables
         EvaluationBody(
@@ -147,6 +167,18 @@ private fun EvaluationHeader(
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val context = LocalContext.current
+    // Check and request location permissions if not granted
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            onCheckedChange(true)
+        } else {
+            // Handle permission denial
+            Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
     val lotes by viewModel.lotes.collectAsState()
     var selectedLote by remember { mutableStateOf<LoteModuloDto?>(null) }
 
@@ -223,7 +255,7 @@ private fun EvaluationHeader(
                 ExposedDropdownMenu(expanded = viewModel.isCombo2Expanded.value,
                     onDismissRequest = { viewModel.isCombo2Expanded.value = false }) {
                     valvulas.forEach { valvula ->
-                        DropdownMenuItem(text = { Text("${valvula.codigo}") },
+                        DropdownMenuItem(text = { Text(valvula.codigo) },
                             onClick = {
                                 selectedValvula = valvula
                                 viewModel.onValvulaSelected(valvula)
@@ -247,7 +279,20 @@ private fun EvaluationHeader(
             ) {
                 Checkbox(
                     checked = isChecked,
-                    onCheckedChange = onCheckedChange,
+                    onCheckedChange =  {
+                        // Check permissions before changing state
+                        if (ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.ACCESS_FINE_LOCATION
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            // Request permission
+                            launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                        } else {
+                            // Permissions already granted, proceed
+                            onCheckedChange(it)
+                        }
+                    },
                     colors = CheckboxDefaults.colors(
                         checkedColor = Color(0xFF43BD28)
                     )
