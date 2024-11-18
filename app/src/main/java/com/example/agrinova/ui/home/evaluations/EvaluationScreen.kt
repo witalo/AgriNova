@@ -56,10 +56,17 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -67,6 +74,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.agrinova.R
@@ -75,6 +83,7 @@ import com.example.agrinova.di.models.DatoDomainModel
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.*
+import kotlinx.coroutines.delay
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -89,6 +98,37 @@ fun EvaluationScreen(
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     val datos by viewModel.filteredDatos.collectAsState() // Lista de datos filtrados
 
+    val uploadStatus by viewModel.uploadStatus.collectAsState()
+    var uploadMessage by remember { mutableStateOf("Subiendo datos al servidor...") }
+
+    // Estado para controlar mensajes de error/éxito
+    LaunchedEffect(uploadStatus) {
+        when (uploadStatus) {
+            is UploadState.Loading -> {
+                uploadMessage = "Subiendo datos al servidor..."
+            }
+
+            is UploadState.Success -> {
+                delay(1000) // Pequeña demora antes de mostrar el mensaje de éxito
+                Toast.makeText(
+                    context,
+                    (uploadStatus as UploadState.Success).message,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            is UploadState.Error -> {
+                Toast.makeText(
+                    context,
+                    (uploadStatus as UploadState.Error).message,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            else -> {}
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         // Llama a la función EvaluationCard y pásale la lista de datos
         EvaluationCard(
@@ -97,7 +137,22 @@ fun EvaluationScreen(
             selectedDate = selectedDate,
             onCartillaSelected = { selectedCartilla = it },
             onDateSelected = { selectedDate = it }, // Esta función actualiza la fecha seleccionada
-            datos = datos
+            datos = datos,
+            onUploadClick = {
+                if (selectedDate == null || selectedCartilla == null) {
+                    Toast.makeText(
+                        context,
+                        "Seleccione una fecha y una cartilla",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@EvaluationCard
+                }
+                if (datos.isEmpty()) {
+                    Toast.makeText(context, "No hay datos para subir", Toast.LENGTH_SHORT).show()
+                    return@EvaluationCard
+                }
+                viewModel.uploadDataToServer(selectedDate.toString(), selectedCartilla!!.id)
+            }
         )
         // Llamada a cargar los datos cuando cartilla y fecha están seleccionados
         selectedDate?.let { date ->
@@ -108,11 +163,11 @@ fun EvaluationScreen(
         // Botón flotante en la esquina inferior derecha
         FloatingActionButton(
             onClick = {
-                    if(selectedCartilla != null){
-                        navController.navigate("newEvaluation/${selectedCartilla?.id}")
-                    }else{
-                        Toast.makeText(context, "Seleccione una cartilla", Toast.LENGTH_SHORT).show()
-                    }
+                if (selectedCartilla != null) {
+                    navController.navigate("newEvaluation/${selectedCartilla?.id}")
+                } else {
+                    Toast.makeText(context, "Seleccione una cartilla", Toast.LENGTH_SHORT).show()
+                }
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -125,8 +180,14 @@ fun EvaluationScreen(
                 contentDescription = "Agregar"
             )
         }
+        // Loading Overlay
+        LoadingOverlay(
+            isLoading = uploadStatus is UploadState.Loading,
+            message = uploadMessage
+        )
     }
 }
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EvaluationCard(
@@ -136,9 +197,47 @@ fun EvaluationCard(
     onCartillaSelected: (CartillaEvaluacionDomainModel?) -> Unit,
     onDateSelected: (LocalDate?) -> Unit,
     datos: List<DatoValvulaDto>,
+    onUploadClick: () -> Unit
 ) {
     val context = LocalContext.current // Obtener el contexto dentro del composable
 
+    // Mostrar diálogo de progreso
+//    if (showProgressDialog) {
+//        AlertDialog(
+//            onDismissRequest = { },
+//            title = { Text("Subiendo datos") },
+//            text = {
+//                Column(
+//                    horizontalAlignment = Alignment.CenterHorizontally,
+//                    modifier = Modifier.fillMaxWidth()
+//                ) {
+//                    CircularProgressIndicator()
+//                    Spacer(modifier = Modifier.height(16.dp))
+//                    Text("Por favor espere...")
+//                }
+//            },
+//            confirmButton = { }
+//        )
+//    }
+    // Observar el estado de la subida
+//    LaunchedEffect(uploadStatus) {
+//        when (uploadStatus) {
+//            is UploadState.Loading -> {
+//                showProgressDialog = true
+//            }
+//            is UploadState.Success -> {
+//                showProgressDialog = false
+//                Toast.makeText(context, (uploadStatus as UploadState.Success).message, Toast.LENGTH_LONG).show()
+//            }
+//            is UploadState.Error -> {
+//                showProgressDialog = false
+//                Toast.makeText(context, (uploadStatus as UploadState.Error).message, Toast.LENGTH_LONG).show()
+//            }
+//            else -> {
+//                showProgressDialog = false
+//            }
+//        }
+//    }
     Card(
         modifier = Modifier
             .fillMaxSize() // Ocupa todo el ancho y alto del dispositivo
@@ -185,7 +284,8 @@ fun EvaluationCard(
                                     // Mostrar el selector de fecha
                                     showDatePickerDialog(context) { calendar ->
                                         // Convertir la fecha seleccionada a LocalDate
-                                        val selectedLocalDate = calendar?.time?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDate()
+                                        val selectedLocalDate = calendar?.time?.toInstant()
+                                            ?.atZone(ZoneId.systemDefault())?.toLocalDate()
                                         onDateSelected(selectedLocalDate) // Pasar la fecha seleccionada
                                     }
                                 }) {
@@ -196,26 +296,24 @@ fun EvaluationCard(
                                 }
                             }
                         )
-
-                        // Botón en la misma fila
+                        // Actualización del botón de subida
                         Button(
-                            onClick = {
-                                // Acción del botón
-                            },
+                            onClick = onUploadClick,
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(8.dp),
                             shape = RoundedCornerShape(50.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFFCC014), // Fondo azul
-                                contentColor = Color.Transparent // Evitar que el color afecte al icono
-                            )
+                                containerColor = Color(0xFFFCC014),
+                                contentColor = Color.Transparent
+                            ),
+                            enabled = selectedDate != null && selectedCartilla != null && datos.isNotEmpty()
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.cloud_upload), // Icono del recurso
+                                painter = painterResource(id = R.drawable.cloud_upload),
                                 contentDescription = "Subir",
-                                modifier = Modifier.size(30.dp), // Tamaño del icono
-                                tint = Color.Unspecified // Conservar el color original del icono
+                                modifier = Modifier.size(30.dp),
+                                tint = Color.Unspecified
                             )
                         }
                     }
@@ -255,9 +353,13 @@ fun EvaluationCard(
                         val originalDate = dato.datoFecha
                         // Extraer solo la hora, minutos y segundos
                         val timeOnly = try {
-                            val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                            val inputFormat =
+                                SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                             val date = inputFormat.parse(originalDate)
-                            val outputFormat = SimpleDateFormat("hh:mm:ss a", Locale.getDefault()) // 'a' agrega AM/PM
+                            val outputFormat = SimpleDateFormat(
+                                "hh:mm:ss a",
+                                Locale.getDefault()
+                            ) // 'a' agrega AM/PM
                             if (date != null) {
                                 outputFormat.format(date)
                             } else {
@@ -327,6 +429,7 @@ fun showDatePickerDialog(context: Context, onDateSelected: (Calendar?) -> Unit) 
 
     datePickerDialog.show()
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> GenericSelector(
@@ -373,83 +476,66 @@ fun <T> GenericSelector(
     }
 }
 
-//@Composable
-//fun EvaluationCard(items: List<String>) {
-//    Card(
-//        modifier = Modifier
-//            .fillMaxSize() // Ocupa todo el ancho y alto del dispositivo
-//            .padding(5.dp),
-//        elevation = CardDefaults.cardElevation(4.dp),
-//        shape = RoundedCornerShape(8.dp),
-//        colors = CardDefaults.cardColors(
-//            containerColor = MaterialTheme.colorScheme.surface
-//        )
-//    ) {
-//        Column(
-//            modifier = Modifier.fillMaxSize() // Ajusta el contenido dentro del Card
-//        ) {
-//            // Encabezado
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .background(
-//                        brush = Brush.linearGradient(
-//                            colors = listOf(
-//                                Color(0xFF43BD28), // Color inicial
-//                                Color(0xFF148102)  // Color final
-//                            )
-//                        )
-//                    )
-//                    .padding(16.dp)
-//            ) {
-//                Text(
-//                    text = "Evaluaciones",
-//                    style = MaterialTheme.typography.titleLarge,
-//                    color = Color(0xFFF9FAF9)
-//                )
-//            }
-//
-//            // Cuerpo - Lista de elementos desplazable
-//            LazyColumn(
-//                modifier = Modifier
-//                    .weight(1f) // Limita la altura del cuerpo para que sea desplazable
-//                    .fillMaxWidth()
-//                    .background(MaterialTheme.colorScheme.background)
-//                    .padding(16.dp)
-//            ) {
-//                items(items) { item ->
-//                    Text(
-//                        text = item,
-//                        style = MaterialTheme.typography.bodyLarge,
-//                        color = MaterialTheme.colorScheme.onBackground,
-//                        modifier = Modifier
-//                            .padding(vertical = 4.dp)
-//                            .fillMaxWidth()
-//                    )
-//                    Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
-//                }
-//            }
-//
-//            // Pie
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .background(
-//                        brush = Brush.linearGradient(
-//                            colors = listOf(
-//                                Color(0xFF29C418), // Color inicial
-//                                Color(0xFF0D5708)  // Color final
-//                            )
-//                        )
-//                    )
-//                    .padding(16.dp)
-//            ) {
-//                Text(
-//                    text = "Pie de la Card",
-//                    style = MaterialTheme.typography.bodyMedium,
-//                    color = MaterialTheme.colorScheme.onSecondary
-//                )
-//            }
-//        }
-//    }
-//}
+@Composable
+fun LoadingOverlay(
+    isLoading: Boolean,
+    message: String = "Subiendo datos al servidor..."
+) {
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.7f))
+                .clickable(enabled = false) { /* Previene clicks */ },
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                modifier = Modifier
+                    .width(300.dp)
+                    .wrapContentHeight()
+                    .padding(16.dp),
+                elevation = CardDefaults.cardElevation(8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(56.dp),
+                        color = Color(0xFF1B87DE),
+                        strokeWidth = 6.dp
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center
+                    )
+
+                    // Barra de progreso lineal animada
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        color = Color(0xFF29C418)
+                    )
+
+                    // Texto del estado actual
+                    Text(
+                        text = "Por favor espere...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
+        }
+    }
+}

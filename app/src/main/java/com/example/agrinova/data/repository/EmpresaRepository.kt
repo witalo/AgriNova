@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.room.withTransaction
 import com.apollographql.apollo3.ApolloClient
+import com.example.agrinova.CreateMuestraVGMutation
 import com.example.agrinova.data.local.dao.EmpresaDao
 import com.example.agrinova.data.local.dao.UsuarioDao
 import com.example.agrinova.data.local.dao.ZonaDao
@@ -17,6 +18,7 @@ import com.example.agrinova.data.remote.model.FundoDataModel
 import com.example.agrinova.GetEmpresaDataQuery
 import com.example.agrinova.data.dto.DatoValvulaDto
 import com.example.agrinova.data.dto.LoteModuloDto
+import com.example.agrinova.data.dto.MuestraVGInput
 import com.example.agrinova.data.local.AppDatabase
 import com.example.agrinova.data.local.dao.CampaniaDao
 import com.example.agrinova.data.local.dao.CartillaEvaluacionDao
@@ -437,5 +439,39 @@ class EmpresaRepository(
         }
         // Llama al método DAO para insertar el dato y sus detalles
         datoDao.insertDatoWithDetalles(datoEntity, detalles)
+    }
+    suspend fun uploadMuestraData(fecha: String, cartillaId: Int): Result<Boolean> {
+        return try {
+            val datosLocales = datoDao.getDatoWithDetalleByDateAndCartillaId(fecha, cartillaId)
+
+            // Convertir datos a la estructura generada por Apollo
+            val muestrasVGInputList = datosLocales.map {
+                GraphQLMuestraVGInput(
+                    muestra = it.muestra.toDouble(),
+                    latitud = it.latitud.toDouble(),
+                    longitud = it.longitud.toDouble(),
+                    fecha_hora = it.fecha,
+                    variable_grupo_id = it.variableGrupoId,
+                    valvula_id = it.valvulaId
+                )
+            }
+            val responses = graphQLClient.mutation(CreateMuestraVGMutation)
+            ).execute()
+
+            // Enviar la lista al servidor mediante Apollo Client
+            val mutation = CreateMuestraVGMutation(muestrasVGInputList)
+            val response = graphQLClient.mutation(mutation).execute()
+
+            // Validar la respuesta
+            if (response.hasErrors() || response.data?.createMuestras?.success == false) {
+                val errorMsg = response.errors?.joinToString(", ") { it.message }
+                    ?: response.data?.createMuestras?.message ?: "Error desconocido"
+                throw Exception(errorMsg)
+            }
+
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

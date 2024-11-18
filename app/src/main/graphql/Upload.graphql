@@ -1,0 +1,6 @@
+mutation CreateMuestraVGMutation($muestras: [MuestraVGInput!]!) {
+    createMuestra(muestras: $muestras) {
+        success
+        message
+    }
+}

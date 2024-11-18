@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.example.agrinova.data.dto.DatoValvulaDto
+import com.example.agrinova.data.dto.DatoWithDetalle
 import com.example.agrinova.data.local.entity.DatoDetalleEntity
 import com.example.agrinova.data.local.entity.DatoEntity
 import kotlinx.coroutines.flow.Flow
@@ -40,4 +41,16 @@ interface DatoDao {
         val detallesWithDatoId = detalles.map { it.copy(datoId = datoId.toInt()) }
         insertDatoDetalles(detallesWithDatoId)
     }
+    @Query(
+        """
+        SELECT d.id AS datoId, d.valvulaId, d.fecha, dd.muestra, dd.latitud, dd.longitud, dd.variableGrupoId
+        FROM dato d
+        INNER JOIN datodetalle dd ON d.id = dd.datoId
+        WHERE DATE(d.fecha) = DATE(:fecha) AND d.cartillaId = :cartillaId
+        """
+    )
+    suspend fun getDatoWithDetalleByDateAndCartillaId(
+        fecha: String,
+        cartillaId: Int
+    ): List<DatoWithDetalle>
 }

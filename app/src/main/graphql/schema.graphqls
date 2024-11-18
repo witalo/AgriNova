@@ -15,15 +15,17 @@ type MuestraVGType {
 
   variableGrupo: VariableGrupoType
 
-  muestra: Decimal!
+  valvula: ValvulaType
 
-  fecha: Date
+  muestra: Float
+
+  fechaHora: String
 
   fechaCreacion: DateTime!
 
-  latitud: Float!
+  latitud: Float
 
-  longitud: Float!
+  longitud: Float
 
   variableGrupoId: Int
 }
@@ -376,6 +378,8 @@ type ValvulaType {
 
   poligonoSet: [PoligonoType]
 
+  muestravgSet: [MuestraVGType!]!
+
   campaniaId: Int
 }
 
@@ -431,9 +435,9 @@ The `ID` scalar type represents a unique identifier, often used to refetch an ob
 scalar ID
 
 type Mutation {
-  createMuestraVg(fecha: String, muestra: Float, variableGrupoId: Int): CreateMuestraVGMutation
+  createMuestra(muestras: [MuestraVGInput]!): CreateMuestraVGMutation
 
-  updateMuestraVg(fecha: String, id: ID!, muestra: Float, variableGrupoId: Int): UpdateMuestraVGMutation
+  updateMuestra(fecha: String, id: ID!, muestra: Float, variableGrupoId: Int): UpdateMuestraVGMutation
 
   loginEmpresa(correo: String!, password: String!, ruc: String!): LoginEmpresa
 
@@ -443,7 +447,23 @@ type Mutation {
 }
 
 type CreateMuestraVGMutation {
+  success: Boolean
+
   message: String
+}
+
+input MuestraVGInput {
+  muestra: Float!
+
+  latitud: Float!
+
+  longitud: Float!
+
+  fechaHora: String!
+
+  variableGrupoId: Int!
+
+  valvulaId: Int!
 }
 
 type UpdateMuestraVGMutation {

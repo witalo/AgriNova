@@ -23,6 +23,9 @@ class EvaluationViewModel @Inject constructor(
     private val empresaRepository: EmpresaRepository,
     private val usePreferences: UsePreferences,
 ) : ViewModel() {
+    private val _uploadStatus = MutableStateFlow<UploadState>(UploadState.Idle)
+    val uploadStatus: StateFlow<UploadState> = _uploadStatus.asStateFlow()
+
     val companyId: Flow<Int?> = usePreferences.companyId
     val userId: Flow<Int?> = usePreferences.userId
     private val _cartillas = MutableStateFlow<List<CartillaEvaluacionDomainModel>>(emptyList())
@@ -72,4 +75,32 @@ class EvaluationViewModel @Inject constructor(
             }
         }
     }
+    // Función para subir datos
+    fun uploadDataToServer(fecha: String, cartillaId: Int) {
+        viewModelScope.launch {
+            try {
+                _uploadStatus.value = UploadState.Loading
+
+                val result = empresaRepository.uploadMuestraData(fecha, cartillaId)
+
+                result.fold(
+                    onSuccess = {
+                        _uploadStatus.value = UploadState.Success("Datos subidos exitosamente")
+                    },
+                    onFailure = { error ->
+                        _uploadStatus.value = UploadState.Error("Error al subir datos: ${error.message}")
+                    }
+                )
+            } catch (e: Exception) {
+                _uploadStatus.value = UploadState.Error("Error inesperado: ${e.message}")
+            }
+        }
+    }
+}
+// Estados de la subida
+sealed class UploadState {
+    object Idle : UploadState()
+    object Loading : UploadState()
+    data class Success(val message: String) : UploadState()
+    data class Error(val message: String) : UploadState()
 }
