@@ -15,6 +15,7 @@ import com.example.agrinova.data.remote.model.UsuarioFundoDataModel
 import com.example.agrinova.data.remote.model.ZonaDataModel
 import com.example.agrinova.data.remote.model.FundoDataModel
 import com.example.agrinova.GetEmpresaDataQuery
+import com.example.agrinova.data.dto.DatoValvulaDto
 import com.example.agrinova.data.dto.LoteModuloDto
 import com.example.agrinova.data.local.AppDatabase
 import com.example.agrinova.data.local.dao.CampaniaDao
@@ -396,9 +397,9 @@ class EmpresaRepository(
             variables.map { it.toDomainModel() }
         }
     }
-    fun getDatosByDateAndCartillaId(date: String, cartillaId: Int): Flow<List<DatoDomainModel>> {
+    fun getDatosByDateAndCartillaId(date: String, cartillaId: Int): Flow<List<DatoValvulaDto>> {
         return datoDao.getDatosByDateAndCartillaId(date, cartillaId).map { datos ->
-            datos.map { it.toDomainModel() }
+            datos.map { it }
         }
     }
     @RequiresApi(Build.VERSION_CODES.O)

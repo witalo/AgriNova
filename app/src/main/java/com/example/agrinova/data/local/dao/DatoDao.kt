@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.example.agrinova.data.dto.DatoValvulaDto
 import com.example.agrinova.data.local.entity.DatoDetalleEntity
 import com.example.agrinova.data.local.entity.DatoEntity
 import kotlinx.coroutines.flow.Flow
@@ -21,8 +22,11 @@ interface DatoDao {
     @Query("SELECT * FROM dato WHERE id = :datoId")
     suspend fun getDatoById(datoId: Int): DatoEntity?
 
-    @Query("SELECT * FROM dato WHERE DATE(fecha) = DATE(:fecha) AND cartillaId = :cartillaId")
-    fun getDatosByDateAndCartillaId(fecha: String, cartillaId: Int): Flow<List<DatoEntity>>
+//    @Query("SELECT * FROM dato WHERE DATE(fecha) = DATE(:fecha) AND cartillaId = :cartillaId")
+//    fun getDatosByDateAndCartillaId(fecha: String, cartillaId: Int): Flow<List<DatoEntity>>
+
+    @Query("SELECT d.id as datoId, d.fecha as datoFecha, d.cartillaId as cartillaId, v.id as valvulaId, v.codigo as valvulaCodigo, l.id as loteId, l.codigo as loteCodigo FROM dato d INNER JOIN valvula v ON v.id = d.valvulaId INNER JOIN campania c ON c.id = v.campaniaId  INNER JOIN lote l ON l.id = c.loteId WHERE DATE(d.fecha) = DATE(:fecha) AND d.cartillaId = :cartillaId")
+    fun getDatosByDateAndCartillaId(fecha: String, cartillaId: Int): Flow<List<DatoValvulaDto>>
 
     @Insert
     suspend fun insertDato(dato: DatoEntity): Long

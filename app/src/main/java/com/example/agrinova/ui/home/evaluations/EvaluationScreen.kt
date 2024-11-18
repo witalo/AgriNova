@@ -11,7 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import java.text.SimpleDateFormat
+import java.util.Locale
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -62,7 +63,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.agrinova.R
+import com.example.agrinova.data.dto.DatoValvulaDto
 import com.example.agrinova.di.models.DatoDomainModel
 import java.time.LocalDate
 import java.time.ZoneId
@@ -80,8 +88,6 @@ fun EvaluationScreen(
     var selectedCartilla by remember { mutableStateOf<CartillaEvaluacionDomainModel?>(null) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     val datos by viewModel.filteredDatos.collectAsState() // Lista de datos filtrados
-    // Ejemplo de datos para la lista
-    val items = List(20) { "Item ${it + 1}" } // Lista de ejemplo con más elementos
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Llama a la función EvaluationCard y pásale la lista de datos
@@ -129,7 +135,7 @@ fun EvaluationCard(
     selectedDate: LocalDate?,
     onCartillaSelected: (CartillaEvaluacionDomainModel?) -> Unit,
     onDateSelected: (LocalDate?) -> Unit,
-    datos: List<DatoDomainModel>,
+    datos: List<DatoValvulaDto>,
 ) {
     val context = LocalContext.current // Obtener el contexto dentro del composable
 
@@ -198,20 +204,19 @@ fun EvaluationCard(
                             },
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
-                                .padding(8.dp), // Añadido para dar espacio alrededor del botón
+                                .padding(8.dp),
+                            shape = RoundedCornerShape(50.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF1B87DE), // Color personalizado de fondo
-                                contentColor = Color.White // Color del texto e icono
-                            ),
-                            shape = RoundedCornerShape(12.dp) // Forma redondeada
+                                containerColor = Color(0xFFFCC014), // Fondo azul
+                                contentColor = Color.Transparent // Evitar que el color afecte al icono
+                            )
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Send, // Icono hacia arriba
+                                painter = painterResource(id = R.drawable.cloud_upload), // Icono del recurso
                                 contentDescription = "Subir",
-                                modifier = Modifier.size(20.dp) // Tamaño del icono
+                                modifier = Modifier.size(30.dp), // Tamaño del icono
+                                tint = Color.Unspecified // Conservar el color original del icono
                             )
-                            Spacer(modifier = Modifier.width(8.dp)) // Espacio entre el icono y el texto
-                            Text("Subir") // Texto del botón
                         }
                     }
                 }
@@ -229,27 +234,49 @@ fun EvaluationCard(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp),
+                            .padding(vertical = 8.dp, horizontal = 16.dp), // Espaciado adicional
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        // Dato ID y Lote Código
                         Text(
-                            text = dato.id.toString(),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onBackground,
+                            text = "(${dato.datoId}) ${dato.loteCodigo}",
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), // Negrita
+                            color = Color(0xFF1B87DE), // Color personalizado
                             modifier = Modifier.padding(end = 8.dp) // Espacio entre las columnas
                         )
+
+                        // Código de la válvula
                         Text(
-                            text = dato.fecha,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onBackground,
+                            text = dato.valvulaCodigo,
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), // Negrita
+                            color = Color(0xFF29C418), // Otro color personalizado para distinción
                             modifier = Modifier.padding(horizontal = 8.dp) // Espacio entre columnas
                         )
+                        val originalDate = dato.datoFecha
+                        // Extraer solo la hora, minutos y segundos
+                        val timeOnly = try {
+                            val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                            val date = inputFormat.parse(originalDate)
+                            val outputFormat = SimpleDateFormat("hh:mm:ss a", Locale.getDefault()) // 'a' agrega AM/PM
+                            if (date != null) {
+                                outputFormat.format(date)
+                            } else {
+                                originalDate
+                            }
+                        } catch (e: Exception) {
+                            originalDate // Si falla, usar el texto original
+                        }
+
+                        // Fecha del dato
                         Text(
-                            text = dato.valvulaId.toString(),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onBackground
+                            text = timeOnly.toString(),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), // Negrita
+                            color = Color(0xFF0D5708), // Color personalizado
+                            modifier = Modifier.padding(start = 8.dp) // Espacio al lado izquierdo
                         )
                     }
+
+                    // Divider con opacidad para separar cada fila
                     Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
                 }
             }
@@ -269,7 +296,12 @@ fun EvaluationCard(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Total",
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Total registros = ") // Este texto estará en negrita
+                        }
+                        append(datos.size.toString()) // Este texto tendrá el estilo predeterminado
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSecondary
                 )

@@ -3,6 +3,7 @@ package com.example.agrinova.ui.home.evaluations
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.agrinova.data.dto.DatoValvulaDto
 import com.example.agrinova.data.repository.EmpresaRepository
 import com.example.agrinova.di.UsePreferences
 import com.example.agrinova.di.models.CartillaEvaluacionDomainModel
@@ -28,8 +29,8 @@ class EvaluationViewModel @Inject constructor(
     val cartillas: StateFlow<List<CartillaEvaluacionDomainModel>> = _cartillas.asStateFlow()
 
     // Estado para los datos filtrados
-    private val _filteredDatos = MutableStateFlow<List<DatoDomainModel>>(emptyList())
-    val filteredDatos: StateFlow<List<DatoDomainModel>> = _filteredDatos.asStateFlow()
+    private val _filteredDatos = MutableStateFlow<List<DatoValvulaDto>>(emptyList())
+    val filteredDatos: StateFlow<List<DatoValvulaDto>> = _filteredDatos.asStateFlow()
     init {
         viewModelScope.launch {
             companyId.collect { id ->
