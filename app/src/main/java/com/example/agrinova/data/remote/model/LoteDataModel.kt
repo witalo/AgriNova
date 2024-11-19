@@ -9,7 +9,7 @@ data class LoteDataModel(
     val nombre: String,
     val moduloId: Int,
     val activo: Boolean,
-    val campaniaSet: List<CampaniaDataModel>?
+    val campaniaSet: List<CampaniaDataModel>? = null
 )
 {
     fun toEntity(): LoteEntity {

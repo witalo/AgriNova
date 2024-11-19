@@ -8,8 +8,8 @@ data class FundoDataModel(
     val nombre: String,
     val activo: Boolean,
     val zonaId: Int,
-    val userFundoSet: List<UsuarioFundoDataModel>?,
-    val moduloSet: List<ModuloDataModel>?
+    val userFundoSet: List<UsuarioFundoDataModel>? = null,
+    val moduloSet: List<ModuloDataModel>? = null
 )
 {
     fun toEntity(): FundoEntity {

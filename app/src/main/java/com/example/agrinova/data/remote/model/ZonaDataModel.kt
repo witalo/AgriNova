@@ -9,7 +9,7 @@ data class ZonaDataModel(
     val nombre: String,
     val activo: Boolean,
     val empresaId: Int,
-    val fundoSet: List<FundoDataModel>?
+    val fundoSet: List<FundoDataModel>? = null
 ){
     fun toEntity(): ZonaEntity {
         return ZonaEntity(

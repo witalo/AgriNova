@@ -11,10 +11,10 @@ data class EmpresaDataModel(
     val correo: String,
     val telefono: String,
     val direccion: String,
-    val userSet: List<UsuarioDataModel>?,
-    val zonaSet: List<ZonaDataModel>?,
-    val cartillaEvaluacionSet: List<CartillaEvaluacionDataModel>?,
-    val cultivoSet: List<CultivoDataModel>?
+    val userSet: List<UsuarioDataModel>? = null,
+    val zonaSet: List<ZonaDataModel>? = null,
+    val cartillaEvaluacionSet: List<CartillaEvaluacionDataModel>? = null,
+    val cultivoSet: List<CultivoDataModel>? = null
 ){
     // Convierte `EmpresaDataModel` en `EmpresaEntity` para guardarla en la base de datos
     fun toEntity(): EmpresaEntity {

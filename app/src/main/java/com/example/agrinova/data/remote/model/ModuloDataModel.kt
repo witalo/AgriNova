@@ -8,7 +8,7 @@ data class ModuloDataModel(
     val nombre: String,
     val fundoId: Int,
     val activo: Boolean,
-    val loteSet: List<LoteDataModel>?
+    val loteSet: List<LoteDataModel>? = null
 )
 {
     fun toEntity(): ModuloEntity {
