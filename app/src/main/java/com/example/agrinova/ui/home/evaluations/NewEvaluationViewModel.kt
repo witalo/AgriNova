@@ -2,6 +2,7 @@ package com.example.agrinova.ui.home.evaluations
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -37,26 +38,51 @@ class NewEvaluationViewModel @Inject constructor(
 
     private val _locationData = MutableStateFlow<LocationModel?>(null)
     val locationData: StateFlow<LocationModel?> = _locationData.asStateFlow()
-
     fun onGpsCheckboxChanged(isChecked: Boolean) {
-        if (isChecked) {
-            val gpsEnabled = locationHelper.checkAndEnableGPS()
-            _isGpsEnabled.value = gpsEnabled
+        viewModelScope.launch {
+            try {
+                if (isChecked) {
+                    val gpsEnabled = locationHelper.checkAndEnableGPS()
+                    _isGpsEnabled.value = gpsEnabled
 
-            if (gpsEnabled) {
-                val location = locationHelper.getCurrentLocation()
-                location?.let {
-                    _locationData.value = LocationModel(
-                        latitude = it.first,
-                        longitude = it.second
-                    )
+                    if (gpsEnabled) {
+                        locationHelper.getCurrentLocation()?.let { location ->
+                            _locationData.value = LocationModel(
+                                latitude = location.first,
+                                longitude = location.second
+                            )
+                        }
+                    }
+                } else {
+                    _isGpsEnabled.value = false
+                    _locationData.value = null
                 }
+            } catch (e: Exception) {
+                Log.e("GPS_ERROR", "Error: ${e.message}")
+                _isGpsEnabled.value = false
             }
-        } else {
-            _isGpsEnabled.value = false
-            _locationData.value = null
         }
     }
+
+//    fun onGpsCheckboxChanged(isChecked: Boolean) {
+//        if (isChecked) {
+//            val gpsEnabled = locationHelper.checkAndEnableGPS()
+//            _isGpsEnabled.value = gpsEnabled
+//
+//            if (gpsEnabled) {
+//                val location = locationHelper.getCurrentLocation()
+//                location?.let {
+//                    _locationData.value = LocationModel(
+//                        latitude = it.first,
+//                        longitude = it.second
+//                    )
+//                }
+//            }
+//        } else {
+//            _isGpsEnabled.value = false
+//            _locationData.value = null
+//        }
+//    }
 
     val cartillaId: String = savedStateHandle["cartillaId"] ?: ""
     val userId: Flow<Int?> = usePreferences.userId

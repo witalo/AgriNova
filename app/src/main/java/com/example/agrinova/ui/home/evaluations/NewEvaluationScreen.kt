@@ -64,6 +64,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import android.Manifest
+import androidx.activity.ComponentActivity
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NewEvaluationScreen(
@@ -168,17 +170,29 @@ private fun EvaluationHeader(
     onCheckedChange: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
-    // Check and request location permissions if not granted
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
+    val activity = context as? ComponentActivity
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val locationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (locationGranted) {
             onCheckedChange(true)
         } else {
-            // Handle permission denial
-            Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Se requieren permisos de ubicación", Toast.LENGTH_SHORT).show()
         }
     }
+    // Check and request location permissions if not granted
+//    val launcher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.RequestPermission()
+//    ) { isGranted: Boolean ->
+//        if (isGranted) {
+//            onCheckedChange(true)
+//        } else {
+//            // Handle permission denial
+//            Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
+//        }
+//    }
     val lotes by viewModel.lotes.collectAsState()
     var selectedLote by remember { mutableStateOf<LoteModuloDto?>(null) }
 
@@ -279,19 +293,54 @@ private fun EvaluationHeader(
             ) {
                 Checkbox(
                     checked = isChecked,
-                    onCheckedChange =  {
-                        // Check permissions before changing state
-                        if (ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.ACCESS_FINE_LOCATION
-                            ) != PackageManager.PERMISSION_GRANTED
-                        ) {
-                            // Request permission
-                            launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    onCheckedChange = { checked ->
+                        if (checked) {
+                            // Verificar y solicitar permisos
+                            when {
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.ACCESS_FINE_LOCATION
+                                ) == PackageManager.PERMISSION_GRANTED -> {
+                                    // Ya tenemos permisos, proceder
+                                    onCheckedChange(true)
+                                }
+
+                                activity?.shouldShowRequestPermissionRationale(
+                                    Manifest.permission.ACCESS_FINE_LOCATION
+                                ) == true -> {
+                                    // Mostrar explicación de por qué necesitamos el permiso
+                                    Toast.makeText(
+                                        context,
+                                        "Se necesita acceso a la ubicación para esta función",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+
+                                else -> {
+                                    // Solicitar permisos
+                                    permissionLauncher.launch(
+                                        arrayOf(
+                                            Manifest.permission.ACCESS_FINE_LOCATION,
+                                            Manifest.permission.ACCESS_COARSE_LOCATION
+                                        )
+                                    )
+                                }
+                            }
                         } else {
-                            // Permissions already granted, proceed
-                            onCheckedChange(it)
+                            onCheckedChange(false)
                         }
+                        // Check permissions before changing state
+//                        if (ContextCompat.checkSelfPermission(
+//                                context,
+//                                Manifest.permission.ACCESS_FINE_LOCATION
+//                            ) != PackageManager.PERMISSION_GRANTED
+//                        ) {
+//                            // Request permission
+//                            launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+//                        } else {
+//                            // Permissions already granted, proceed
+//                            onCheckedChange(it)
+//                        }
                     },
                     colors = CheckboxDefaults.colors(
                         checkedColor = Color(0xFF43BD28)
@@ -418,7 +467,13 @@ private fun GrupoVariableCard(
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 4.dp, vertical = 4.dp),
-                            label = { Text(text = "Valor", fontSize = 12.sp, color = Color(0xFF2A69D5)) },
+                            label = {
+                                Text(
+                                    text = "Valor",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF2A69D5)
+                                )
+                            },
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Decimal // Teclado de números con punto decimal
                             ),
