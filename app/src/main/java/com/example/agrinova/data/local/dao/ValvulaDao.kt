@@ -23,10 +23,9 @@ interface ValvulaDao {
     @Query("SELECT * FROM valvula")
     fun getAllValvulas(): Flow<List<ValvulaEntity>>
 
-    @Query("SELECT valvula.id, valvula.codigo, valvula.nombre, valvula.campaniaId, valvula.activo FROM valvula " +
-            "INNER JOIN campania ON campania.id = valvula.campaniaId " +
-            "WHERE campania.loteId = :loteId AND campania.activo = 1 " +
-            "ORDER BY campania.id DESC LIMIT 1")
+    @Query("SELECT valvula.id, valvula.codigo, valvula.nombre, valvula.campaniaId, valvula.activo " +
+            "FROM valvula " +
+            "WHERE valvula.campaniaId = (SELECT campania.id FROM campania WHERE campania.loteId = :loteId AND campania.activo = 1 ORDER BY campania.id DESC LIMIT 1)")
     fun getValvulasByLoteId(loteId: Int): Flow<List<ValvulaEntity>>
 
     @Query("DELETE FROM valvula")
