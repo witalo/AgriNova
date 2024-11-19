@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -56,7 +57,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.agrinova.R
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -115,11 +118,14 @@ fun SecondLoginScreen(
             verticalArrangement = Arrangement.Center, // Centra verticalmente
             horizontalAlignment = Alignment.CenterHorizontally // Centra horizontalmente
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                "Login",
-                style = MaterialTheme.typography.headlineSmall, // En lugar de h6
-                textAlign = TextAlign.Center
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Image(
+                painter = painterResource(id = R.drawable.logo_verde),
+                contentDescription = "Imagen de login",
+                modifier = Modifier
+                    .height(150.dp)
+                    .fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(

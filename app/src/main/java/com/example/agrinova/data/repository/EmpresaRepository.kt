@@ -3,6 +3,7 @@ package com.example.agrinova.data.repository
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.room.Transaction
 import com.apollographql.apollo3.ApolloClient
 import com.example.agrinova.CreateMuestraVGMutation
 import com.example.agrinova.data.local.dao.EmpresaDao
@@ -482,4 +483,30 @@ class EmpresaRepository(
             datoDao.clearDatoByDateAndCartillaId(fecha, cartillaId)
         }
     }
+
+//    Sincronizacion de la data
+//    @Transaction
+//    suspend fun syncCompanyData(empresaId: Int) {
+//        // 1. Limpiar todas las tablas antes de sincronizar
+//        limpiarBaseDeDatosLocal()
+//
+//        // 2. Obtener datos desde GraphQL
+//        val respuesta = graphQLClient.query(
+//            GetEmpresaDataQuery(empresaId.toString())
+//        ).execute()
+//
+//        respuesta.data?.empresaById?.let { datosEmpresa ->
+//            try {
+//                // 3. Iniciar transacción para operaciones atómicas
+//                database.withTransaction {
+//                    // 4. Inserción en cascada respetando dependencias
+//                    insertarEmpresaCompleta(datosEmpresa)
+//                }
+//            } catch (e: Exception) {
+//                Log.e("Error Sincronización", "Fallo completo: ${e.message}", e)
+//                throw e
+//            }
+//        } ?: throw Exception("No se encontraron datos de empresa")
+//    }
+
 }

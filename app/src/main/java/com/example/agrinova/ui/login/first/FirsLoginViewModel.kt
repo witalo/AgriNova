@@ -68,7 +68,6 @@ class FirstLoginViewModel @Inject constructor(
                     _loginState.value = LoginState.Error("Error en el inicio de sesión")
                 } else {
                     val empresaData = response.data?.loginEmpresa?.empresa
-                    Log.d("Italo First Login", empresaData.toString())
                     if (empresaData != null) {
                         // Almacena el nombre y el ID de la empresa en UserPreferences
                         userPreferences.saveCompanyData(empresaData.razonSocial!!, empresaData.id!!)

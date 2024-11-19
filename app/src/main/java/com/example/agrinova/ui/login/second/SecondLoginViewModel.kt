@@ -67,7 +67,8 @@ class SecondLoginViewModel @Inject constructor(
         viewModelScope.launch {
             _syncState.value = SyncState.Loading
             try {
-//                empresaRepository.syncEmpresaData(empresaId)
+                // Sincroniza los datos de la empresa
+                empresaRepository.syncEmpresaData(empresaId)
                 _syncState.value = SyncState.Success
             } catch (e: Exception) {
                 _syncState.value = SyncState.Error(e.toString())
