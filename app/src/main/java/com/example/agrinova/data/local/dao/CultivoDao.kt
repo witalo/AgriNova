@@ -17,4 +17,7 @@ interface CultivoDao {
 
     @Query("SELECT * FROM cultivo WHERE id = :cultivoId")
     suspend fun getCultivoById(cultivoId: Int): CultivoEntity?
+
+    @Query("DELETE FROM cultivo")
+    suspend fun clearAll()
 }

@@ -29,4 +29,6 @@ interface LoteDao {
             "FROM lote l INNER JOIN modulo m ON m.id = l.moduloId WHERE m.fundoId = :fundoId")
     fun getAllLotesByFundo(fundoId: Int):   Flow<List<LoteModuloDto>>
 
+    @Query("DELETE FROM lote")
+    suspend fun clearAll()
 }

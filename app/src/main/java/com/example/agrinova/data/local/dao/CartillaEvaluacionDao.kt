@@ -36,10 +36,6 @@ interface CartillaEvaluacionDao {
 """)
     fun getCartillasByUsuarioId(usuarioId: Int): Flow<List<CartillaEvaluacionEntity>>
 
-//    @Query("""
-//        SELECT * FROM cartillaevaluacion
-//        INNER JOIN UsuarioCartillaCrossRef ON cartillaevaluacion.id = UsuarioCartillaCrossRef.cartillaId
-//        WHERE UsuarioCartillaCrossRef.usuarioId = :usuarioId
-//    """)
-//    fun getCartillasByUsuarioId(usuarioId: Int): Flow<List<CartillaEvaluacionEntity>>
+    @Query("DELETE FROM cartillaevaluacion")
+    suspend fun clearAll()
 }

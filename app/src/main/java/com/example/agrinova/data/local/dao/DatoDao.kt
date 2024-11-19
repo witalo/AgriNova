@@ -60,4 +60,7 @@ interface DatoDao {
     // Elimina los registros en Dato
     @Query("DELETE FROM dato WHERE cartillaId = :cartillaId AND DATE(fecha) = DATE(:fecha)")
     suspend fun clearDatoByDateAndCartillaId(fecha: String, cartillaId: Int)
+
+    @Query("DELETE FROM cultivo")
+    suspend fun clearAll()
 }

@@ -22,4 +22,7 @@ interface CampaniaDao {
     @Query("SELECT * FROM campania")
     fun getAllCampanias(): Flow<List<CampaniaEntity>>
 
+    @Query("DELETE FROM campania")
+    suspend fun clearAll()
+
 }

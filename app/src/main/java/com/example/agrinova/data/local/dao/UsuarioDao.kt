@@ -59,4 +59,7 @@ interface UsuarioDao {
     suspend fun isUserAssociatedWithFundo(dni: String, fundoId: Int): UsuarioEntity?
     @Query("SELECT * FROM usuario WHERE id = 1 LIMIT 1")
     suspend fun getCurrentUser(): UsuarioEntity?
+
+    @Query("DELETE FROM usuario")
+    suspend fun clearAll()
 }

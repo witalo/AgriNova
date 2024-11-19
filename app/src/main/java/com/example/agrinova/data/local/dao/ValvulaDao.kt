@@ -29,4 +29,6 @@ interface ValvulaDao {
             "ORDER BY campania.id DESC LIMIT 1")
     fun getValvulasByLoteId(loteId: Int): Flow<List<ValvulaEntity>>
 
+    @Query("DELETE FROM valvula")
+    suspend fun clearAll()
 }

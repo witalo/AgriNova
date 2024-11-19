@@ -22,4 +22,6 @@ interface ModuloDao {
     @Query("SELECT * FROM modulo")
     fun getAllModulos(): Flow<List<ModuloEntity>>
 
+    @Query("DELETE FROM modulo")
+    suspend fun clearAll()
 }

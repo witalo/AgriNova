@@ -20,6 +20,8 @@ interface FundoDao {
     suspend fun getFundoById(fundoId: Int): FundoEntity?
 
     @Query("SELECT * FROM fundo")
-    fun getAllFundos(): Flow<List<FundoEntity>> // Retorna un Flow para observar los cambios en la lista de fundos
+    fun getAllFundos(): Flow<List<FundoEntity>>
 
+    @Query("DELETE FROM fundo")
+    suspend fun clearAll()
 }

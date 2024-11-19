@@ -19,6 +19,7 @@ import com.example.agrinova.GetEmpresaDataQuery
 import com.example.agrinova.data.dto.DatoValvulaDto
 import com.example.agrinova.data.dto.DatoWithDetalleDto
 import com.example.agrinova.data.dto.LoteModuloDto
+import com.example.agrinova.data.local.AppDatabase
 import com.example.agrinova.data.local.dao.CampaniaDao
 import com.example.agrinova.data.local.dao.CartillaEvaluacionDao
 import com.example.agrinova.data.local.dao.CultivoDao
@@ -30,8 +31,10 @@ import com.example.agrinova.data.local.dao.ModuloDao
 import com.example.agrinova.data.local.dao.PoligonoDao
 import com.example.agrinova.data.local.dao.ValvulaDao
 import com.example.agrinova.data.local.dao.VariableGrupoDao
+import com.example.agrinova.data.local.entity.CultivoEntity
 import com.example.agrinova.data.local.entity.DatoDetalleEntity
 import com.example.agrinova.data.local.entity.DatoEntity
+import com.example.agrinova.data.local.entity.EmpresaEntity
 import com.example.agrinova.data.remote.model.CampaniaDataModel
 import com.example.agrinova.data.remote.model.CartillaEvaluacionDataModel
 import com.example.agrinova.data.remote.model.CultivoDataModel
@@ -363,8 +366,6 @@ class EmpresaRepository(
             }
         } ?: throw Exception("Error al sincronizar: Datos de empresa no encontrados.")
     }
-//    suspend fun saveEvaluacion(evaluacion: EvaluacionDto): Result<Unit>
-    // Función para sincronizar los datos de la empresa desde la API
 
     fun getFundos(): Flow<List<FundoDomainModel>> {
         return fundoDao.getAllFundos().map { fundos ->
@@ -484,29 +485,314 @@ class EmpresaRepository(
         }
     }
 
-//    Sincronizacion de la data
-//    @Transaction
-//    suspend fun syncCompanyData(empresaId: Int) {
-//        // 1. Limpiar todas las tablas antes de sincronizar
-//        limpiarBaseDeDatosLocal()
-//
-//        // 2. Obtener datos desde GraphQL
-//        val respuesta = graphQLClient.query(
-//            GetEmpresaDataQuery(empresaId.toString())
-//        ).execute()
-//
-//        respuesta.data?.empresaById?.let { datosEmpresa ->
-//            try {
-//                // 3. Iniciar transacción para operaciones atómicas
-//                database.withTransaction {
-//                    // 4. Inserción en cascada respetando dependencias
-//                    insertarEmpresaCompleta(datosEmpresa)
-//                }
-//            } catch (e: Exception) {
-//                Log.e("Error Sincronización", "Fallo completo: ${e.message}", e)
-//                throw e
-//            }
-//        } ?: throw Exception("No se encontraron datos de empresa")
-//    }
+    /*Sincronizacion de la data*/
+    @Transaction
 
+    suspend fun clearAllLocalData() {
+        // Limpiar tablas en orden inverso a las dependencias de claves foráneas
+        datoDetalleDao.clearAll()
+        datoDao.clearAll()
+        poligonoDao.clearAll()
+        valvulaDao.clearAll()
+        campaniaDao.clearAll()
+        loteDao.clearAll()
+        moduloDao.clearAll()
+        fundoDao.clearAll()
+        zonaDao.clearAll()
+        usuarioDao.clearAll()
+        cultivoDao.clearAll()
+        variableGrupoDao.clearAll()
+        grupoVariableDao.clearAll()
+        cartillaDao.clearAll()
+        empresaDao.clearAll()
+    }
+//    suspend fun syncCompanyData(empresaId: Int) {
+//        try {
+//            val response = graphQLClient.query(
+//                GetEmpresaDataQuery(empresaId.toString())
+//            ).execute()
+//
+//            response.data?.empresaById?.let { empresaData ->
+//                // Usa withContext para manejar la transacción
+//                withContext(Dispatchers.IO) {
+//                    // Iniciar bloque de sincronización
+//                    database.runInTransaction {
+//                        // Sincronizar Empresa
+//                        empresaData.let { data ->
+//                            val empresaDataModel = EmpresaDataModel(
+//                                id = data.id ?: return@let,
+//                                ruc = data.ruc ?: "",
+//                                razonSocial = data.razonSocial ?: "",
+//                                correo = data.correo ?: "",
+//                                telefono = data.telefono ?: "",
+//                                direccion = data.direccion ?: ""
+//                            )
+//                            upsertEmpresa(empresaDataModel.toEntity())
+//                        }
+//
+//                        // Sincronizar Cultivos
+//                        empresaData.cultivoSet?.forEach { cultivo ->
+//                            cultivo?.let {
+//                                val cultivoEntity = CultivoDataModel(
+//                                    id = it.id ?: return@let,
+//                                    codigo = it.codigo ?: "",
+//                                    nombre = it.nombre ?: "",
+//                                    activo = it.activo ?: false
+//                                )
+//                                database.cultivoDao().upsertCultivo(cultivoEntity.toEntity())
+//                            }
+//                        }
+//
+//                        // Sincronizar Usuarios
+//                        empresaData.userSet?.forEach { usuario ->
+//                            usuario?.let {
+//                                val usuarioEntity = UsuarioDataModel(
+//                                    id = it.id ?: return@let,
+//                                    firstName = it.firstName ?: "",
+//                                    lastName = it.lastName ?: "",
+//                                    document = it.document ?: "",
+//                                    email = it.email ?: "",
+//                                    phone = it.phone ?: "",
+//                                    isActive = it.isActive ?: false
+//                                )
+//                                database.usuarioDao().upsertUsuario(usuarioEntity.toEntity())
+//                            }
+//                        }
+//
+//                        // Sincronizar Zonas
+//                        empresaData.zonaSet?.forEach { zonaData ->
+//                            zonaData?.let { zona ->
+//                                val zonaEntity = ZonaDataModel(
+//                                    id = zona.id ?: return@let,
+//                                    codigo = zona.codigo ?: "",
+//                                    nombre = zona.nombre ?: "",
+//                                    activo = zona.activo ?: false,
+//                                    empresaId = zona.empresaId ?: 0
+//                                )
+//                                database.zonaDao().upsertZona(zonaEntity.toEntity())
+//
+//                                // Sincronizar Fundos de cada Zona
+//                                zona.fundoSet?.forEach { fundoData ->
+//                                    fundoData?.let { fundo ->
+//                                        val fundoEntity = FundoDataModel(
+//                                            id = fundo.id ?: return@let,
+//                                            codigo = fundo.codigo ?: "",
+//                                            nombre = fundo.nombre ?: "",
+//                                            activo = fundo.activo ?: false,
+//                                            zonaId = fundo.zonaId ?: 0
+//                                        )
+//                                        database.fundoDao().upsertFundo(fundoEntity.toEntity())
+//
+//                                        // Sincronizar Relaciones Usuario-Fundo
+//                                        fundo.userFundoSet?.forEach { userFundo ->
+//                                            userFundo?.let {
+//                                                val usuarioFundoEntity = UsuarioFundoDataModel(
+//                                                    userId = it.userId ?: return@let,
+//                                                    fundoId = it.fundoId ?: 0
+//                                                )
+//                                                database.usuarioDao()
+//                                                    .insertOrIgnoreUsuarioFundoCrossRef(
+//                                                        usuarioFundoEntity.toEntity()
+//                                                    )
+//                                            }
+//                                        }
+//
+//                                        // Sincronizar Módulos
+//                                        fundo.moduloSet?.forEach { moduloData ->
+//                                            moduloData?.let { modulo ->
+//                                                val moduloEntity = ModuloDataModel(
+//                                                    id = modulo.id ?: return@let,
+//                                                    codigo = modulo.codigo ?: "",
+//                                                    nombre = modulo.nombre ?: "",
+//                                                    activo = modulo.activo ?: false,
+//                                                    fundoId = modulo.fundoId ?: 0
+//                                                )
+//                                                database.moduloDao()
+//                                                    .upsertModulo(moduloEntity.toEntity())
+//
+//                                                // Sincronizar Lotes
+//                                                modulo.loteSet?.forEach { loteData ->
+//                                                    loteData?.let { lote ->
+//                                                        val loteEntity = LoteDataModel(
+//                                                            id = lote.id ?: return@let,
+//                                                            codigo = lote.codigo ?: "",
+//                                                            nombre = lote.nombre ?: "",
+//                                                            activo = lote.activo ?: false,
+//                                                            moduloId = lote.moduloId ?: 0
+//                                                        )
+//                                                        database.loteDao()
+//                                                            .upsertLote(loteEntity.toEntity())
+//
+//                                                        // Sincronizar Campañas
+//                                                        lote.campaniaSet?.forEach { campaniaData ->
+//                                                            campaniaData?.let { campania ->
+//                                                                val campaniaEntity =
+//                                                                    CampaniaDataModel(
+//                                                                        id = campania.id
+//                                                                            ?: return@let,
+//                                                                        numero = campania.numero
+//                                                                            ?: 0,
+//                                                                        centroCosto = campania.centroCosto
+//                                                                            ?: "",
+//                                                                        activo = campania.activo
+//                                                                            ?: false,
+//                                                                        loteId = campania.loteId
+//                                                                            ?: 0,
+//                                                                        cultivoId = campania.cultivoId
+//                                                                            ?: 0
+//                                                                    )
+//                                                                database.campaniaDao()
+//                                                                    .upsertCampania(
+//                                                                        campaniaEntity.toEntity()
+//                                                                    )
+//
+//                                                                // Sincronizar Válvulas
+//                                                                campania.valvulaSet?.forEach { valvulaData ->
+//                                                                    valvulaData?.let { valvula ->
+//                                                                        val valvulaEntity =
+//                                                                            ValvulaDataModel(
+//                                                                                id = valvula.id
+//                                                                                    ?: return@let,
+//                                                                                codigo = valvula.codigo
+//                                                                                    ?: "",
+//                                                                                nombre = valvula.nombre
+//                                                                                    ?: "",
+//                                                                                activo = valvula.activo
+//                                                                                    ?: false,
+//                                                                                campaniaId = valvula.campaniaId
+//                                                                                    ?: 0
+//                                                                            )
+//                                                                        database.valvulaDao()
+//                                                                            .upsertValvula(
+//                                                                                valvulaEntity.toEntity()
+//                                                                            )
+//
+//                                                                        // Sincronizar Polígonos
+//                                                                        valvula.poligonoSet?.forEach { poligonoData ->
+//                                                                            poligonoData?.let { poligono ->
+//                                                                                val poligonoEntity =
+//                                                                                    PoligonoDataModel(
+//                                                                                        id = poligono.id
+//                                                                                            ?: return@let,
+//                                                                                        latitud = poligono.latitud?.toFloat()
+//                                                                                            ?: 0.0f,
+//                                                                                        longitud = poligono.longitud?.toFloat()
+//                                                                                            ?: 0.0f,
+//                                                                                        valvulaId = poligono.valvulaId
+//                                                                                            ?: 0
+//                                                                                    )
+//                                                                                database.poligonoDao()
+//                                                                                    .upsertPoligono(
+//                                                                                        poligonoEntity.toEntity()
+//                                                                                    )
+//                                                                            }
+//                                                                        }
+//                                                                    }
+//                                                                }
+//                                                            }
+//                                                        }
+//                                                    }
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//
+//                        // Sincronizar Cartillas de Evaluación
+//                        empresaData.cartillaEvaluacionSet?.forEach { cartillaData ->
+//                            cartillaData?.let { cartilla ->
+//                                val cartillaEntity = CartillaEvaluacionDataModel(
+//                                    id = cartilla.id ?: return@let,
+//                                    codigo = cartilla.codigo ?: "",
+//                                    nombre = cartilla.nombre ?: "",
+//                                    activo = cartilla.activo ?: false,
+//                                    cultivoId = cartilla.cultivoId ?: 0
+//                                )
+//                                database.cartillaEvaluacionDao().upsertCartillaEvaluacion(
+//                                    cartillaEntity.toEntity()
+//                                )
+//
+//                                // Sincronizar Relaciones Usuario-Cartilla
+//                                cartilla.userCartillaSet?.forEach { userCartillaData ->
+//                                    userCartillaData?.let { userCartilla ->
+//                                        val usuarioCartillaEntity = UsuarioCartillaDataModel(
+//                                            usuarioId = userCartilla.userId ?: return@let,
+//                                            cartillaId = userCartilla.cartillaId ?: 0
+//                                        )
+//                                        database.cartillaEvaluacionDao()
+//                                            .insertOrIgnoreUsuarioCartillaCrossRef(
+//                                                usuarioCartillaEntity.toEntity()
+//                                            )
+//                                    }
+//                                }
+//
+//                                // Sincronizar Grupos Variables
+//                                cartilla.grupovariableSet?.forEach { grupoVariableData ->
+//                                    grupoVariableData?.let { grupoVariable ->
+//                                        val grupoVariableEntity = GrupoVariableDataModel(
+//                                            id = grupoVariable.id ?: return@let,
+//                                            calculado = grupoVariable.calculado ?: false,
+//                                            grupoCodigo = grupoVariable.grupoCodigo ?: "",
+//                                            grupoNombre = grupoVariable.grupoNombre ?: "",
+//                                            grupoId = grupoVariable.grupoId ?: 0,
+//                                            cartillaEvaluacionId = grupoVariable.cartillaEvaluacionId
+//                                                ?: 0
+//                                        )
+//                                        database.grupoVariableDao().upsertGrupoVariable(
+//                                            grupoVariableEntity.toEntity()
+//                                        )
+//
+//                                        // Sincronizar Variables Grupo
+//                                        grupoVariable.variableGrupoSet?.forEach { variableGrupoData ->
+//                                            variableGrupoData?.let { variableGrupo ->
+//                                                val variableGrupoEntity = VariableGrupoDataModel(
+//                                                    id = variableGrupo.id ?: return@let,
+//                                                    minimo = variableGrupo.minimo ?: 0,
+//                                                    maximo = variableGrupo.maximo ?: 0,
+//                                                    calculado = variableGrupo.calculado ?: false,
+//                                                    variableEvaluacionNombre = variableGrupo.variableEvaluacionNombre
+//                                                        ?: "",
+//                                                    grupoVariableId = variableGrupo.grupoVariableId
+//                                                        ?: 0
+//                                                )
+//                                                database.variableGrupoDao().upsertVariableGrupo(
+//                                                    variableGrupoEntity.toEntity()
+//                                                )
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            } ?: throw Exception("Error al sincronizar: Datos de empresa no encontrados.")
+//        } catch (e: Exception) {
+//            Log.e("SyncEmpresa", "Error en sincronización completa: ${e.message}", e)
+//            throw e
+//        }
+//    }
+//    // Extensiones de DAO para upsert
+//    @Transaction
+//    suspend fun upsertEmpresa(empresa: EmpresaEntity) {
+//        val existingEmpresa = getEmpresaById(empresa.id)
+//        if (existingEmpresa != null) {
+//            updateEmpresa(empresa)
+//        } else {
+//            insertEmpresa(empresa)
+//        }
+//    }
+//
+//    // Implementar métodos upsert similares para cada DAO
+//    @Transaction
+//    suspend fun upsertCultivo(cultivo: CultivoEntity) {
+//        val existingCultivo = getCultivoById(cultivo.id)
+//        if (existingCultivo != null) {
+//            updateCultivo(cultivo)
+//        } else {
+//            insertCultivo(cultivo)
+//        }
+//    }
 }

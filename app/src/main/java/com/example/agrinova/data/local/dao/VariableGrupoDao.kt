@@ -25,4 +25,7 @@ interface VariableGrupoDao {
 
     @Query("SELECT * FROM variablegrupo WHERE grupoVariableId = :grupoVariableId")
     fun getVariablesGrupoByGrupoVariableId(grupoVariableId: Int):   Flow<List<VariableGrupoEntity>>
+
+    @Query("DELETE FROM variablegrupo")
+    suspend fun clearAll()
 }

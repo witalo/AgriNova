@@ -26,4 +26,6 @@ interface GrupoVariableDao {
     @Query("SELECT * FROM grupovariable WHERE cartillaEvaluacionId = :cartillaId")
     fun getGruposVariableByCartillaId(cartillaId: Int):   Flow<List<GrupoVariableEntity>>
 
+    @Query("DELETE FROM grupovariable")
+    suspend fun clearAll()
 }

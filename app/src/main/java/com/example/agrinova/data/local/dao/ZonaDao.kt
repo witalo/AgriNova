@@ -17,4 +17,7 @@ interface ZonaDao {
 
     @Query("SELECT * FROM zona WHERE id = :zonaId")
     suspend fun getZonaById(zonaId: Int): ZonaEntity?
+
+    @Query("DELETE FROM zona")
+    suspend fun clearAll()
 }

@@ -25,4 +25,6 @@ interface DatoDetalleDao {
     @Query("DELETE FROM datodetalle WHERE datoId IN (:datoIds)")
     suspend fun clearDatoDetalleByDatoIds(datoIds: List<Int>)
 
+    @Query("DELETE FROM cultivo")
+    suspend fun clearAll()
 }

@@ -22,4 +22,6 @@ interface PoligonoDao {
     @Query("SELECT * FROM poligono")
     fun getAllPoligonos(): Flow<List<PoligonoEntity>>
 
+    @Query("DELETE FROM poligono")
+    suspend fun clearAll()
 }
