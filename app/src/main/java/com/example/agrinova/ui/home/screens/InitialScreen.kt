@@ -10,13 +10,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,11 +28,11 @@ import androidx.navigation.NavHostController
 
 @Composable
 fun InitialScreen(
-    viewModel: ProfileViewModel = hiltViewModel(),
     navController: NavHostController,
-//    onNavigate: (String) -> Unit,
+    viewModel: InitialViewModel = hiltViewModel(),
 ) {
-    val options = listOf("Evaluaciones", "NewEvaluacion", "Opción 3", "Opción 4")  // Opciones de ejemplo
+    val user by viewModel.uiData.collectAsState()
+    val options = listOf("Evaluaciones", "Otras opciones adicionales")  // Opciones de ejemplo
 
     Column(
         modifier = Modifier
@@ -40,8 +42,8 @@ fun InitialScreen(
         verticalArrangement = Arrangement.Top
     ) {
         Text(
-            text = "Bienvenido",
-            style = MaterialTheme.typography.headlineMedium,
+            text = "Bienvenido ${user.userFirstName} ${user.userLastName}",
+            style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
@@ -95,25 +97,10 @@ fun OptionCard(option: String, onOptionClick: () -> Unit) {
             }
 
             Icon(
-                imageVector = Icons.Default.ArrowDropDown,
+                imageVector = Icons.Default.CheckCircle,
                 contentDescription = "Ir a $option",
-                tint = Color(0xFFFAF8F8)  // También puedes usar un color del esquema de color, e.g., MaterialTheme.colorScheme.primary
+                tint = Color(0xFFFCC31B)
             )
         }
     }
 }
-//@Composable
-//fun InitialScreen() {
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(16.dp),
-//        horizontalAlignment = Alignment.CenterHorizontally,
-//        verticalArrangement = Arrangement.Center
-//    ) {
-//        Text(
-//            text = "Bienvenido a Inicio",
-//            style = MaterialTheme.typography.headlineMedium
-//        )
-//    }
-//}

@@ -12,19 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -34,7 +31,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,28 +44,21 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.agrinova.di.models.CartillaEvaluacionDomainModel
-import com.example.agrinova.ui.home.screens.ProfileViewModel
 
 import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Build
-import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -78,10 +67,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.agrinova.R
 import com.example.agrinova.data.dto.DatoValvulaDto
-import com.example.agrinova.di.models.DatoDomainModel
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.*
@@ -93,16 +80,12 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun EvaluationScreen(
     viewModel: EvaluationViewModel = hiltViewModel(),
-    navController: NavHostController,
-//    onNavigate: (String) -> Unit,
+    navController: NavHostController
 ) {
     val context = LocalContext.current
     val cartillas by viewModel.cartillas.collectAsState() // Lista de fundos
     val selectedCartilla by viewModel.selectedCartilla.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
-
-//    var selectedCartilla by remember { mutableStateOf<CartillaEvaluacionDomainModel?>(null) }
-//    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     val datos by viewModel.filteredDatos.collectAsState() // Lista de datos filtrados
 
     val uploadStatus by viewModel.uploadStatus.collectAsState()
@@ -143,10 +126,16 @@ fun EvaluationScreen(
             selectedCartilla = selectedCartilla,
             selectedDate = selectedDate,
             onCartillaSelected = {viewModel.setSelectedCartilla(it) },
-            onDateSelected = { viewModel.setSelectedDate(it) }, // Esta función actualiza la fecha seleccionada
+            onDateSelected = { localDate ->
+                // Convertir LocalDate a String en formato "yyyy-MM-dd"
+                localDate?.let {
+                    val formattedDate = it.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                    viewModel.setSelectedDate(formattedDate)
+                }
+            }, // Esta función actualiza la fecha seleccionada
             datos = datos,
             onUploadClick = {
-                if (selectedDate == null || selectedCartilla == null) {
+                if (selectedCartilla == null) {
                     Toast.makeText(
                         context,
                         "Seleccione una fecha y una cartilla",
@@ -158,13 +147,13 @@ fun EvaluationScreen(
                     Toast.makeText(context, "No hay datos para subir", Toast.LENGTH_SHORT).show()
                     return@EvaluationCard
                 }
-                viewModel.uploadDataToServer(selectedDate.toString(), selectedCartilla!!.id)
+                viewModel.uploadDataToServer(selectedDate, selectedCartilla!!.id)
             }
         )
         // Llamada a cargar los datos cuando cartilla y fecha están seleccionados
-        selectedDate?.let { date ->
+        selectedDate.let { date ->
             selectedCartilla?.let { cartilla ->
-                viewModel.loadDatosByDateAndCartilla(date.toString(), cartilla.id)
+                viewModel.loadDatosByDateAndCartilla(date, cartilla.id)
             }
         }
         // Botón flotante en la esquina inferior derecha
@@ -200,7 +189,7 @@ fun EvaluationScreen(
 fun EvaluationCard(
     cartillas: List<CartillaEvaluacionDomainModel>,
     selectedCartilla: CartillaEvaluacionDomainModel?,
-    selectedDate: LocalDate?,
+    selectedDate: String,
     onCartillaSelected: (CartillaEvaluacionDomainModel?) -> Unit,
     onDateSelected: (LocalDate?) -> Unit,
     datos: List<DatoValvulaDto>,
@@ -244,37 +233,63 @@ fun EvaluationCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         OutlinedTextField(
-                            value = selectedDate?.toString() ?: "Fecha",
+                            value = selectedDate, // Usa el String directamente
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Fecha") },
                             modifier = Modifier.weight(1f),
                             trailingIcon = {
                                 IconButton(onClick = {
-                                    // Mostrar el selector de fecha
                                     showDatePickerDialog(context) { calendar ->
-                                        // Convertir la fecha seleccionada a LocalDate
-                                        val selectedLocalDate = calendar?.time?.toInstant()
-                                            ?.atZone(ZoneId.systemDefault())?.toLocalDate()
-                                        onDateSelected(selectedLocalDate) // Pasar la fecha seleccionada
+                                        calendar?.let {
+                                            val selectedLocalDate = it.time.toInstant()
+                                                .atZone(ZoneId.systemDefault())
+                                                .toLocalDate()
+
+                                            // Llama a onDateSelected con el LocalDate
+                                            onDateSelected(selectedLocalDate)
+                                        }
                                     }
                                 }) {
                                     Icon(
                                         imageVector = Icons.Default.DateRange,
-                                        contentDescription = "Fecha"
+                                        contentDescription = "Seleccionar fecha"
                                     )
                                 }
                             }
                         )
+//                        OutlinedTextField(
+//                            value = selectedDate?.toString() ?: "Fecha",
+//                            onValueChange = {},
+//                            readOnly = true,
+//                            label = { Text("Fecha") },
+//                            modifier = Modifier.weight(1f),
+//                            trailingIcon = {
+//                                IconButton(onClick = {
+//                                    // Mostrar el selector de fecha
+//                                    showDatePickerDialog(context) { calendar ->
+//                                        // Convertir la fecha seleccionada a LocalDate
+//                                        val selectedLocalDate = calendar?.time?.toInstant()
+//                                            ?.atZone(ZoneId.systemDefault())?.toLocalDate()
+//                                        onDateSelected(selectedLocalDate) // Pasar la fecha seleccionada
+//                                    }
+//                                }) {
+//                                    Icon(
+//                                        imageVector = Icons.Default.DateRange,
+//                                        contentDescription = "Fecha"
+//                                    )
+//                                }
+//                            }
+//                        )
                         // Actualización del botón de subida
                         Button(
                             onClick = onUploadClick,
-                            enabled = selectedDate != null && selectedCartilla != null && datos.isNotEmpty(),
+                            enabled = selectedCartilla != null && datos.isNotEmpty(),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(8.dp),
                             shape = RoundedCornerShape(50.dp),
-                            colors = if (selectedDate == null || selectedCartilla == null || datos.isEmpty())
+                            colors = if (selectedCartilla == null || datos.isEmpty())
                                 ButtonDefaults.buttonColors(
                                     containerColor = Color.Gray,
                                     contentColor = Color.DarkGray
@@ -346,7 +361,7 @@ fun EvaluationCard(
                     }
 
                     // Divider con opacidad para separar cada fila
-                    Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
                 }
             }
 

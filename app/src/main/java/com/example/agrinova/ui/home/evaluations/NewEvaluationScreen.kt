@@ -89,7 +89,6 @@ fun NewEvaluationScreen(
     var showSuccessDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-    var isChecked by remember { mutableStateOf(false) }
     // Monitor save status
     LaunchedEffect(saveStatus) {
         saveStatus?.fold(
@@ -194,10 +193,11 @@ private fun EvaluationHeader(
 //        }
 //    }
     val lotes by viewModel.lotes.collectAsState()
-    var selectedLote by remember { mutableStateOf<LoteModuloDto?>(null) }
+    val selectedLote = viewModel.selectedLote.collectAsState()
 
     val valvulas by viewModel.valvulas.collectAsState()
-    var selectedValvula by remember { mutableStateOf<ValvulaDomainModel?>(null) }
+    val selectedValvula = viewModel.selectedValvula.collectAsState()
+
 
     Column(
         modifier = modifier.shadow(elevation = 4.dp)
@@ -210,71 +210,79 @@ private fun EvaluationHeader(
             horizontalArrangement = Arrangement.spacedBy(1.dp)
         ) {
             // Primer combo
-            ExposedDropdownMenuBox(modifier = Modifier
-                .weight(1f)
-                .padding(vertical = 4.dp, horizontal = 8.dp),
+            ExposedDropdownMenuBox(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 4.dp, horizontal = 8.dp),
                 expanded = viewModel.isCombo1Expanded.value,
-                onExpandedChange = { viewModel.isCombo1Expanded.value = it }) {
+                onExpandedChange = { viewModel.isCombo1Expanded.value = it }
+            ) {
                 OutlinedTextField(
                     modifier = Modifier
                         .fillMaxWidth()
                         .menuAnchor(),
                     readOnly = true,
-                    value = if (selectedLote?.loteCodigo != null && selectedLote?.moduloCodigo != null) {
-                        "${selectedLote?.loteCodigo}:${selectedLote?.moduloCodigo}"
-                    } else {
-                        ""
-                    },
+                    value = selectedLote.value?.let { lote ->
+                        "${lote.loteCodigo}:${lote.moduloCodigo}"
+                    } ?: "",
                     onValueChange = {},
                     label = { Text("Lote") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.isCombo1Expanded.value) },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.isCombo1Expanded.value)
+                    },
                     colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
                 )
 
-                ExposedDropdownMenu(expanded = viewModel.isCombo1Expanded.value,
-                    onDismissRequest = { viewModel.isCombo1Expanded.value = false }) {
+                ExposedDropdownMenu(
+                    expanded = viewModel.isCombo1Expanded.value,
+                    onDismissRequest = { viewModel.isCombo1Expanded.value = false }
+                ) {
                     lotes.forEach { lote ->
-                        DropdownMenuItem(text = { Text("${lote.loteCodigo}:${lote.moduloCodigo}") },
+                        DropdownMenuItem(
+                            text = { Text("${lote.loteCodigo}:${lote.moduloCodigo}") },
                             onClick = {
-                                selectedLote = lote // Actuasliza el lote seleccionado
-                                viewModel.onLoteSelected(lote) // Llama a la función del ViewModel si necesitas lógica adicional
+                                viewModel.onLoteSelected(lote) // Actualiza el lote seleccionado en el ViewModel
                                 viewModel.isCombo1Expanded.value = false // Cierra el menú
-                            })
+                            }
+                        )
                     }
                 }
             }
 
             // Segundo combo
-            ExposedDropdownMenuBox(modifier = Modifier
-                .weight(1f)
-                .padding(vertical = 4.dp, horizontal = 8.dp),
+            ExposedDropdownMenuBox(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 4.dp, horizontal = 8.dp),
                 expanded = viewModel.isCombo2Expanded.value,
-                onExpandedChange = { viewModel.isCombo2Expanded.value = it }) {
+                onExpandedChange = { viewModel.isCombo2Expanded.value = it }
+            ) {
                 OutlinedTextField(
                     modifier = Modifier
                         .fillMaxWidth()
                         .menuAnchor(),
                     readOnly = true,
-                    value = if (selectedValvula != null) {
-                        "${selectedValvula?.codigo}"
-                    } else {
-                        ""
-                    },
+                    value = selectedValvula.value?.codigo ?: "",
                     onValueChange = {},
                     label = { Text("Valvula") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.isCombo2Expanded.value) },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.isCombo2Expanded.value)
+                    },
                     colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
                 )
 
-                ExposedDropdownMenu(expanded = viewModel.isCombo2Expanded.value,
-                    onDismissRequest = { viewModel.isCombo2Expanded.value = false }) {
+                ExposedDropdownMenu(
+                    expanded = viewModel.isCombo2Expanded.value,
+                    onDismissRequest = { viewModel.isCombo2Expanded.value = false }
+                ) {
                     valvulas.forEach { valvula ->
-                        DropdownMenuItem(text = { Text(valvula.codigo) },
+                        DropdownMenuItem(
+                            text = { Text(valvula.codigo) },
                             onClick = {
-                                selectedValvula = valvula
-                                viewModel.onValvulaSelected(valvula)
-                                viewModel.isCombo2Expanded.value = false
-                            })
+                                viewModel.onValvulaSelected(valvula) // Actualiza la válvula seleccionada en el ViewModel
+                                viewModel.isCombo2Expanded.value = false // Cierra el menú
+                            }
+                        )
                     }
                 }
             }

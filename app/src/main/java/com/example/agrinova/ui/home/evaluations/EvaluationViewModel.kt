@@ -13,6 +13,7 @@ import com.example.agrinova.di.UsePreferences
 import com.example.agrinova.di.models.CartillaEvaluacionDomainModel
 import com.example.agrinova.di.models.DatoDomainModel
 import com.example.agrinova.di.models.FundoDomainModel
+import com.example.agrinova.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,16 +29,16 @@ class EvaluationViewModel @Inject constructor(
     private val empresaRepository: EmpresaRepository,
     private val usePreferences: UsePreferences
 ) : ViewModel() {
+    private val _selectedDate = MutableStateFlow(Constants.DATE_NOW) // Inicializa con la fecha actual
+    val selectedDate: StateFlow<String> get() = _selectedDate
+
     private val _selectedCartilla = MutableStateFlow<CartillaEvaluacionDomainModel?>(null)
     val selectedCartilla: StateFlow<CartillaEvaluacionDomainModel?> = _selectedCartilla
-
-    private val _selectedDate = MutableStateFlow<LocalDate?>(null)
-    val selectedDate: StateFlow<LocalDate?> = _selectedDate
 
     private val _uploadStatus = MutableStateFlow<UploadState>(UploadState.Idle)
     val uploadStatus: StateFlow<UploadState> = _uploadStatus.asStateFlow()
 
-    val companyId: Flow<Int?> = usePreferences.companyId
+    private val companyId: Flow<Int?> = usePreferences.companyId
     val userId: Flow<Int?> = usePreferences.userId
     private val _cartillas = MutableStateFlow<List<CartillaEvaluacionDomainModel>>(emptyList())
     val cartillas: StateFlow<List<CartillaEvaluacionDomainModel>> = _cartillas.asStateFlow()
@@ -51,7 +52,6 @@ class EvaluationViewModel @Inject constructor(
                 id?.let {
                     userId.collect { user ->
                         user?.let {
-                            Log.d("Cartilla 1", user.toString())
                             loadCartillas(user)
                         }
                     }
@@ -113,7 +113,7 @@ class EvaluationViewModel @Inject constructor(
         _selectedCartilla.value = cartilla
     }
 
-    fun setSelectedDate(date: LocalDate?) {
+    fun setSelectedDate(date: String) {
         _selectedDate.value = date
     }
 }

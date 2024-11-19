@@ -64,26 +64,6 @@ class NewEvaluationViewModel @Inject constructor(
         }
     }
 
-//    fun onGpsCheckboxChanged(isChecked: Boolean) {
-//        if (isChecked) {
-//            val gpsEnabled = locationHelper.checkAndEnableGPS()
-//            _isGpsEnabled.value = gpsEnabled
-//
-//            if (gpsEnabled) {
-//                val location = locationHelper.getCurrentLocation()
-//                location?.let {
-//                    _locationData.value = LocationModel(
-//                        latitude = it.first,
-//                        longitude = it.second
-//                    )
-//                }
-//            }
-//        } else {
-//            _isGpsEnabled.value = false
-//            _locationData.value = null
-//        }
-//    }
-
     val cartillaId: String = savedStateHandle["cartillaId"] ?: ""
     val userId: Flow<Int?> = usePreferences.userId
     val fundoId: Flow<Int?> = usePreferences.fundoId
@@ -148,12 +128,13 @@ class NewEvaluationViewModel @Inject constructor(
                 if (fundoId != null) {
                     empresaRepository.getLotesByFundo(fundoId).collect { loteList ->
                         _lotes.value = loteList
-//                        _selectedLote.value = null
+                        _selectedLote.value = null
                     }
                 }
 
             } catch (e: Exception) {
                 _lotes.value = emptyList()
+                _selectedLote.value = null
             }
         }
     }
@@ -164,11 +145,11 @@ class NewEvaluationViewModel @Inject constructor(
                 empresaRepository.getValvulasByLoteId(loteId).collect { valvulasList ->
                     _valvulas.value = valvulasList
                     // Limpiamos la válvula seleccionada cuando cambia el lote
-//                    _selectedValvula.value = null
+                    _selectedValvula.value = null
                 }
             } catch (e: Exception) {
                 _valvulas.value = emptyList()
-//                _selectedValvula.value = null
+                _selectedValvula.value = null
             }
         }
     }
@@ -201,7 +182,7 @@ class NewEvaluationViewModel @Inject constructor(
     // Función para manejar la selección del primer combo
     fun onLoteSelected(lote: LoteModuloDto) {
         _selectedLote.value = lote
-        // Cargar las válvulas del lote seleccionado
+        _selectedValvula.value = null // Limpiar válvula seleccionada
         loadValvulas(lote.loteId)
     }
 
@@ -210,7 +191,6 @@ class NewEvaluationViewModel @Inject constructor(
         _selectedValvula.value = valvula
     }
 
-    // Función para alternar la expansión de un grupo
     // Función para alternar la expansión de un grupo
     fun toggleGroupExpansion(grupoId: Int) {
         viewModelScope.launch {
