@@ -136,6 +136,7 @@ object AppModule {
         cultivoDao: CultivoDao,
         datoDao: DatoDao,
         datoDetalleDao: DatoDetalleDao,
+        database: AppDatabase
         ): EmpresaRepository {
         // Usa GraphQLClient.apolloClient directamente
         return EmpresaRepository(
@@ -154,7 +155,8 @@ object AppModule {
             cultivoDao = cultivoDao,
             datoDao = datoDao,
             datoDetalleDao = datoDetalleDao,
-            graphQLClient = GraphQLClient.apolloClient
+            graphQLClient = GraphQLClient.apolloClient,
+            database = database
         )
     }
 
