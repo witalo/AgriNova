@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.example.agrinova.data.local.entity.UsuarioEntity
 import com.example.agrinova.data.local.entity.UsuarioFundoCrossRef
@@ -61,5 +62,13 @@ interface UsuarioDao {
     suspend fun getCurrentUser(): UsuarioEntity?
 
     @Query("DELETE FROM usuario")
-    suspend fun clearAll()
+    suspend fun clearAllUsuario()
+
+    @Query("DELETE FROM UsuarioFundoCrossRef")
+    suspend fun clearAllUsuarioFundo()
+    @Transaction
+    suspend fun clearAll() {
+        clearAllUsuarioFundo()
+        clearAllUsuario()
+    }
 }

@@ -68,7 +68,8 @@ class SecondLoginViewModel @Inject constructor(
             _syncState.value = SyncState.Loading
             try {
                 // Sincroniza los datos de la empresa
-                empresaRepository.syncEmpresaData(empresaId)
+                empresaRepository.clearAllLocalData()
+                empresaRepository.syncCompanyData(empresaId)
                 _syncState.value = SyncState.Success
             } catch (e: Exception) {
                 _syncState.value = SyncState.Error(e.toString())
@@ -96,7 +97,7 @@ class SecondLoginViewModel @Inject constructor(
 //                        }
                         val userData = usuarioRepository.validateUser(dni, fundoId)
                         // Guarda los datos del usuario si la validación es exitosa
-                        Log.d("DATOS", userData.toString())
+                        Log.d("DATOS", moduleId.toString())
                         userPreferences.saveUserData(
                             userData.id,
                             userData.firstName,

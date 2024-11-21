@@ -9,7 +9,7 @@ data class GrupoVariableDataModel(
     val grupoNombre: String,
     val grupoId: Int,
     val cartillaEvaluacionId: Int,
-    val variableGrupoSet: List<VariableGrupoDataModel>?
+    val variableGrupoSet: List<VariableGrupoDataModel>? = null
 )
 {
     fun toEntity(): GrupoVariableEntity {

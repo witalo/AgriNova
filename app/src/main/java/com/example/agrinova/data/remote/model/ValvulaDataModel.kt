@@ -8,7 +8,7 @@ data class ValvulaDataModel(
     val nombre: String,
     val campaniaId: Int,
     val activo: Boolean,
-    val poligonoSet: List<PoligonoDataModel>?
+    val poligonoSet: List<PoligonoDataModel>? = null
 )
 {
     fun toEntity(): ValvulaEntity {

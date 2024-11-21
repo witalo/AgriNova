@@ -60,7 +60,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class EmpresaRepository(
-    private val database: AppDatabase,
     private val empresaDao: EmpresaDao,
     private val cultivoDao: CultivoDao,
     private val usuarioDao: UsuarioDao,
@@ -511,11 +510,9 @@ class EmpresaRepository(
             val response = graphQLClient.query(
                 GetEmpresaDataQuery(empresaId.toString())
             ).execute()
-
             response.data?.empresaById?.let { empresaData ->
                 // Procesar empresa principal
                 syncEmpresa(empresaData)
-
                 // Procesar datos relacionados
                 syncCultivos(empresaData.cultivoSet)
                 syncUsuarios(empresaData.userSet)
@@ -570,7 +567,6 @@ class EmpresaRepository(
         }
         println("Sincronización de cultivos completada")
     }
-
     private suspend fun syncUsuarios(userSet: List<GetEmpresaDataQuery.UserSet?>?) {
         userSet?.forEach { usuario ->
             try {
@@ -596,7 +592,105 @@ class EmpresaRepository(
         }
         println("Sincronización de usuarios completada")
     }
+    private suspend fun syncCartillas(cartillaSet: List<GetEmpresaDataQuery.CartillaEvaluacionSet?>?) {
+        cartillaSet?.forEach { cartilla ->
+            try {
+                val cartillaDataModel = CartillaEvaluacionDataModel(
+                    id = cartilla?.id ?: 0,
+                    codigo = cartilla?.codigo ?: "",
+                    nombre = cartilla?.nombre ?: "",
+                    activo = cartilla?.activo ?: false,
+                    cultivoId = cartilla?.cultivoId ?: 0
+                )
+                val cartillaEntity = cartillaDataModel.toEntity()
+                val existingCartilla = cartillaDao.getCartillaEvaluacionById(cartillaEntity.id)
+                if (existingCartilla != null) {
+                    cartillaDao.updateCartillaEvaluacion(cartillaEntity)
+                } else {
+                    cartillaDao.insertCartillaEvaluacion(cartillaEntity)
+                }
+                val grupoDataModels = cartilla?.grupovariableSet?.map { grupo ->
+                    GrupoVariableDataModel(
+                        id = grupo.id ?: 0,
+                        calculado = grupo.calculado,
+                        grupoCodigo = grupo.grupoCodigo?:"",
+                        grupoNombre = grupo.grupoNombre?:"",
+                        grupoId = grupo.grupoId?:0,
+                        cartillaEvaluacionId = cartillaEntity.id
+                    )
+                }
+                syncGrupoVariable(grupoDataModels)
+                val usuarioCartillaDataModels = cartilla?.userCartillaSet?.map { userCartilla ->
+                    UsuarioCartillaDataModel(
+                        usuarioId = userCartilla?.userId ?: 0,
+                        cartillaId = userCartilla?.cartillaId ?: 0
+                    )
+                }
+                syncUsuarioCartillaCrossRef(usuarioCartillaDataModels)
+            } catch (e: Exception) {
+                Log.e("SyncCartilla", "Error al sincronizar cartilla: ${e.message}", e)
+            }
+        }
+        println("Sincronización de cartillas completada")
+    }
+    private suspend fun syncUsuarioCartillaCrossRef(userCartillaSet: List<UsuarioCartillaDataModel>?) {
+        userCartillaSet?.forEach { userCartilla ->
+            try {
+                val userCartillaEntity = userCartilla.toEntity()
+                val exists = cartillaDao.checkUsuarioCartillaExists(userCartillaEntity.usuarioId, userCartillaEntity.cartillaId) > 0
 
+                if (!exists) {
+                    cartillaDao.insertUsuarioCartillaCrossRef(userCartillaEntity)
+                }
+            } catch (e: Exception) {
+                Log.e("SyncUsuarioCartilla", "Error al sincronizar usuario con cartilla: ${e.message}", e)
+            }
+        }
+        println("Sincronización de usuario con cartilla completada")
+    }
+    private suspend fun syncGrupoVariable(grupoSet: List<GrupoVariableDataModel>?) {
+        grupoSet?.forEach { grupo ->
+            try {
+                val grupoEntity = grupo.toEntity()
+                val existingGrupo = grupoVariableDao.getGrupoVariableById(grupoEntity.id)
+                if (existingGrupo != null) {
+                    grupoVariableDao.updateGrupoVariable(grupoEntity)
+                } else {
+                    grupoVariableDao.insertGrupoVariable(grupoEntity)
+                }
+                val variableDataModels = grupo.variableGrupoSet?.map { variable ->
+                    VariableGrupoDataModel(
+                        id = variable.id,
+                        minimo = variable.minimo,
+                        maximo = variable.maximo,
+                        calculado = variable.calculado,
+                        variableEvaluacionNombre = variable.variableEvaluacionNombre,
+                        grupoVariableId  = grupoEntity.id
+                    )
+                }
+                syncVariableGrupo(variableDataModels)
+            } catch (e: Exception) {
+                Log.e("SyncGrupoVariable", "Error al sincronizar grupo variable: ${e.message}", e)
+            }
+        }
+        println("Sincronización de grupos variable completada")
+    }
+    private suspend fun syncVariableGrupo(variableSet: List<VariableGrupoDataModel>?) {
+        variableSet?.forEach { variable ->
+            try {
+                val variableEntity = variable.toEntity()
+                val existingVariable = variableGrupoDao.getVariableGrupoById(variableEntity.id)
+                if (existingVariable != null) {
+                    variableGrupoDao.updateVariableGrupo(variableEntity)
+                } else {
+                    variableGrupoDao.insertVariableGrupo(variableEntity)
+                }
+            } catch (e: Exception) {
+                Log.e("SyncVariableGrupo", "Error al sincronizar viariable grupo: ${e.message}", e)
+            }
+        }
+        println("Sincronización de variables grupo completada")
+    }
     private suspend fun syncZonas(zonaSet: List<GetEmpresaDataQuery.ZonaSet?>?) {
         zonaSet?.forEach { zona ->
             try {
@@ -631,14 +725,12 @@ class EmpresaRepository(
         }
         println("Sincronización de zonas completada")
     }
-
     private suspend fun syncFundos(fundoSet: List<FundoDataModel>?) {
         // Verificamos si fundoSet no es nulo ni vacío
         if (fundoSet.isNullOrEmpty()) {
             println("No hay fondos para sincronizar")
             return
         }
-
         fundoSet.forEach { fundo ->
             try {
                 val fundoEntity = fundo.toEntity()
@@ -658,13 +750,34 @@ class EmpresaRepository(
                     )
                 }
                 syncModulos(moduloDataModels)
+                val usuarioFundoDataModels = fundo.userFundoSet?.map { userFundo ->
+                    UsuarioFundoDataModel(
+                        userId = userFundo.userId,
+                        fundoId = userFundo.fundoId
+                    )
+                }
+                Log.d("AgriSort Modulo:", usuarioFundoDataModels.toString())
+                syncUsuarioFundoCrossRef(usuarioFundoDataModels)
             } catch (e: Exception) {
                 Log.e("SyncFundos", "Error al sincronizar fundo: ${e.message}", e)
             }
         }
         println("Sincronización de fundos completada")
     }
-
+    private suspend fun syncUsuarioFundoCrossRef(userFundoSet: List<UsuarioFundoDataModel>?) {
+        userFundoSet?.forEach { userFundo ->
+            try {
+                val userFundoEntity = userFundo.toEntity()
+                val exists = usuarioDao.checkUsuarioFundoExists(userFundoEntity.usuarioId, userFundoEntity.fundoId) > 0
+                if (!exists) {
+                    usuarioDao.insertUsuarioFundoCrossRef(userFundoEntity)
+                }
+            } catch (e: Exception) {
+                Log.e("SyncUsuarioFundo", "Error al sincronizar usuario con fundo: ${e.message}", e)
+            }
+        }
+        println("Sincronización de usuario con fundo completada")
+    }
     private suspend fun syncModulos(moduloSet: List<ModuloDataModel>?) {
         moduloSet?.forEach { modulo ->
             try {
@@ -684,6 +797,7 @@ class EmpresaRepository(
                         moduloId = moduloEntity.id
                     )
                 }
+                Log.d("AgriSort Lote:", loteDataModels.toString())
                 syncLotes(loteDataModels)
             } catch (e: Exception) {
                 Log.e("SyncModulo", "Error al sincronizar módulo: ${e.message}", e)
@@ -691,29 +805,98 @@ class EmpresaRepository(
         }
         println("Sincronización de modulos completada")
     }
-
     private suspend fun syncLotes(loteSet: List<LoteDataModel>?) {
         loteSet?.forEach { lote ->
             try {
-                val loteEntity = LoteDataModel(
-                    id = lote.id ?: 0,
-                    codigo = lote.codigo ?: "",
-                    nombre = lote.nombre ?: "",
-                    activo = lote.activo ?: false,
-                    moduloId = lote.moduloId ?: 0
-                ).toEntity()
-
+                val loteEntity = lote.toEntity()
                 val existingLote = loteDao.getLoteById(loteEntity.id)
                 if (existingLote != null) {
                     loteDao.updateLote(loteEntity)
                 } else {
                     loteDao.insertLote(loteEntity)
                 }
+                val campaniaDataModels = lote.campaniaSet?.map { campania ->
+                    CampaniaDataModel(
+                        id = campania.id,
+                        numero = campania.numero,
+                        centroCosto = campania.centroCosto,
+                        loteId = campania.loteId,
+                        cultivoId = campania.cultivoId,
+                        activo = campania.activo
+                    )
+                }
+                syncCampania(campaniaDataModels)
             } catch (e: Exception) {
                 Log.e("SyncLote", "Error al sincronizar lote: ${e.message}", e)
             }
         }
+        println("Sincronización de lotes completada")
     }
-
-
+    private suspend fun syncCampania(campaniaSet: List<CampaniaDataModel>?) {
+        campaniaSet?.forEach { campania ->
+            try {
+                val campaniaEntity = campania.toEntity()
+                val existingCampania = campaniaDao.getCampaniaById(campaniaEntity.id)
+                if (existingCampania != null) {
+                    campaniaDao.updateCampania(campaniaEntity)
+                } else {
+                    campaniaDao.insertCampania(campaniaEntity)
+                }
+                val valvulaDataModels = campania.valvulaSet?.map { valvula ->
+                    ValvulaDataModel(
+                        id = valvula.id,
+                        codigo = valvula.codigo,
+                        nombre = valvula.nombre,
+                        campaniaId = campaniaEntity.id,
+                        activo = valvula.activo
+                    )
+                }
+                syncValvula(valvulaDataModels)
+            } catch (e: Exception) {
+                Log.e("SyncCampaña", "Error al sincronizar campaña: ${e.message}", e)
+            }
+        }
+        println("Sincronización de campaña completada")
+    }
+    private suspend fun syncValvula(valvulaSet: List<ValvulaDataModel>?) {
+        valvulaSet?.forEach { valvula ->
+            try {
+                val valvulaEntity = valvula.toEntity()
+                val existingValvula = valvulaDao.getValvulaById(valvulaEntity.id)
+                if (existingValvula != null) {
+                    valvulaDao.updateValvula(valvulaEntity)
+                } else {
+                    valvulaDao.insertValvula(valvulaEntity)
+                }
+                val poligonoDataModels = valvula.poligonoSet?.map { poligono ->
+                    PoligonoDataModel(
+                        id = poligono.id,
+                        latitud = poligono.latitud,
+                        longitud = poligono.longitud,
+                        valvulaId = valvulaEntity.id
+                    )
+                }
+                syncPoligono(poligonoDataModels)
+            } catch (e: Exception) {
+                Log.e("SyncValvula", "Error al sincronizar valvula: ${e.message}", e)
+            }
+        }
+        println("Sincronización de valvula completada")
+    }
+    private suspend fun syncPoligono(poligonoSet: List<PoligonoDataModel>?) {
+        poligonoSet?.forEach { poligono ->
+            try {
+                val poligonoEntity = poligono.toEntity()
+                val existingPoligono = poligonoDao.getPoligonoById(poligonoEntity.id)
+                if (existingPoligono != null) {
+                    poligonoDao.updatePoligono(poligonoEntity)
+                } else {
+                    poligonoDao.insertPoligono(poligonoEntity)
+                }
+            } catch (e: Exception) {
+                Log.e("SyncPoligono", "Error al sincronizar poligono: ${e.message}", e)
+            }
+        }
+        println("Sincronización de poligono completada")
+    }
 }

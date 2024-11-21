@@ -73,7 +73,8 @@ class FirstLoginViewModel @Inject constructor(
                         userPreferences.saveCompanyData(empresaData.razonSocial!!, empresaData.id!!)
 
                         // Sincroniza los datos de la empresa
-                        empresaRepository.syncEmpresaData(empresaData.id.toInt())
+                        empresaRepository.syncCompanyData(empresaData.id.toInt())
+//                        empresaRepository.syncEmpresaData(empresaData.id.toInt())
                         // getEmpresaData(empresaData.id)
 
                         _loginState.value = LoginState.Success(companyName = empresaData.razonSocial, companyId = empresaData.id)

@@ -10,7 +10,7 @@ data class CampaniaDataModel(
     val loteId: Int,
     val cultivoId: Int,
     val activo: Boolean,
-    val valvulaSet: List<ValvulaDataModel>?
+    val valvulaSet: List<ValvulaDataModel>? = null
 )
 {
     fun toEntity(): CampaniaEntity {

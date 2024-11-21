@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.example.agrinova.data.local.entity.CartillaEvaluacionEntity
 import com.example.agrinova.data.local.entity.FundoEntity
@@ -37,5 +38,14 @@ interface CartillaEvaluacionDao {
     fun getCartillasByUsuarioId(usuarioId: Int): Flow<List<CartillaEvaluacionEntity>>
 
     @Query("DELETE FROM cartillaevaluacion")
-    suspend fun clearAll()
+    suspend fun clearAllCartilla()
+
+    @Query("DELETE FROM UsuarioCartillaCrossRef")
+    suspend fun clearAllUsuarioCartilla()
+
+    @Transaction
+    suspend fun clearAll() {
+        clearAllUsuarioCartilla()
+        clearAllCartilla()
+    }
 }

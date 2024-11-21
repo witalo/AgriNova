@@ -57,9 +57,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.agrinova.R
+import com.example.agrinova.ui.home.evaluations.UploadState
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,6 +70,7 @@ fun SecondLoginScreen(
     viewModel: SecondLoginViewModel = hiltViewModel(),
     onNavigateToHome: () -> Unit  // Cambiado para recibir solo la función de navegación
 ) {
+    val context = LocalContext.current
     // Define el estado del snackbar
     val snackbarHostState = remember { SnackbarHostState() }
     // Control de coroutine para mostrar el snackbar
@@ -274,6 +277,11 @@ fun SecondLoginScreen(
                 onClick = {
                     empresaId?.let { id: Int -> // Asegurarse de que id no es nulo antes de llamar a syncData
                         viewModel.syncData(id)
+                        Toast.makeText(
+                            context,
+                            "Data sincronizada",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 },
                 modifier = Modifier.widthIn(min = 150.dp, max = 250.dp).padding(bottom = 4.dp),

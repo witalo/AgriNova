@@ -168,34 +168,4 @@ object AppModule {
     fun provideContext(application: Application): Context {
         return application.applicationContext
     }
-//    @Provides
-//    @Singleton
-//    fun provideGetLocationUseCase(
-//        context: Context,
-//        locationRepository: LocationRepository
-//    ): GetLocationUseCase {
-//        return GetLocationUseCase(context, locationRepository)
-//    }
-//
-//    @Provides
-//    @Singleton
-//    fun provideLocationRepository(
-//        context: Context,
-//        permissionHandler: PermissionHandler,
-//        locationDataSource: LocationDataSource
-//    ): LocationRepository {
-//        return LocationRepository(context, permissionHandler, locationDataSource)
-//    }
-//
-//    @Provides
-//    @Singleton
-//    fun provideLocationDataSource(context: Context): LocationDataSource {
-//        return LocationDataSource(context)
-//    }
-//
-//    @Provides
-//    @Singleton
-//    fun providePermissionHandler(): PermissionHandler {
-//        return PermissionHandler()
-//    }
 }

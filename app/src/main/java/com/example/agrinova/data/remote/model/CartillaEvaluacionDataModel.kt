@@ -8,8 +8,8 @@ data class CartillaEvaluacionDataModel(
     val nombre: String,
     val activo: Boolean,
     val cultivoId: Int,
-    val userCartillaSet: List<UsuarioCartillaDataModel>?,
-    val grupoVariableSet: List<GrupoVariableDataModel>?,
+    val userCartillaSet: List<UsuarioCartillaDataModel>? = null,
+    val grupoVariableSet: List<GrupoVariableDataModel>? = null,
 )
 {
     fun toEntity(): CartillaEvaluacionEntity {
