@@ -62,6 +62,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.agrinova.R
 import com.example.agrinova.ui.home.evaluations.UploadState
+import com.example.agrinova.ui.login.loading.LoadingDialog
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -336,6 +337,12 @@ fun SecondLoginScreen(
             }
         }
     }
+    }
+        // Mostrar el LoadingDialog cuando estamos sincronizando
+    if (syncState is SyncState.Loading) {
+        LoadingDialog(
+            message = "Sincronizando datos de la empresa\nEsto puede tomar unos momentos..."
+        )
     }
     }
 }

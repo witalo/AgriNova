@@ -1,5 +1,9 @@
 package com.example.agrinova.ui.login.first
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -15,6 +19,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.agrinova.R
+import com.example.agrinova.ui.login.loading.ModernLoadingOverlay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -114,42 +119,79 @@ fun FirstLoginScreen(
                     Text(text = "Registrar", color = MaterialTheme.colorScheme.onPrimary)
                 }
 
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+//                if (isLoading) {
+//                    CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+//                }
+            }
+            // Observar el estado del login -----------------------------
+
+
+
+
+        }
+        val loginState by viewModel.loginState.collectAsState()
+        AnimatedVisibility(
+            visible = loginState is LoginState.Loading,
+            enter = fadeIn(animationSpec = tween(300)),
+            exit = fadeOut(animationSpec = tween(300))
+            // Puedes ajustar las duraciones y curvas de animación
+//                        animationSpec = tween(
+//                        durationMillis = 2000,
+//                easing = FastOutSlowInEasing
+//            )
+        ) {
+            ModernLoadingOverlay(
+                message = "Sincronizando datos de la empresa...\nPor favor, espere un momento"
+            )
+        }
+        // Manejar estados
+        LaunchedEffect(loginState) {
+            when (loginState) {
+                is LoginState.Success -> {
+                    val state = loginState as LoginState.Success
+                    onLoginSuccess(state.companyName, state.companyId.toInt())
                 }
+                is LoginState.Error -> {
+                    val errorMessage = (loginState as LoginState.Error).message
+                    snackbarHostState.showSnackbar(
+                        message = errorMessage,
+                        duration = SnackbarDuration.Long
+                    )
+                }
+                else -> { /* No action needed */ }
             }
         }
 
         // Observa el estado de autenticación
-        val loginState by viewModel.loginState.collectAsState()
-        when (loginState) {
-            is LoginState.Success -> {
-                val companyName = (loginState as LoginState.Success).companyName
-                val companyId = (loginState as LoginState.Success).companyId
-                LaunchedEffect(Unit) {
-                    onLoginSuccess(companyName, companyId)
-                    // Limpiar los campos después del inicio de sesión exitoso
-                    ruc = ""
-                    correo = ""
-                    password = ""
-                    isLoading = false // Reiniciar la carga
-                }
-            }
-            is LoginState.Error -> {
-                isLoading = false // Reiniciar la carga
-                val errorMessage = (loginState as LoginState.Error).message
-                LaunchedEffect(errorMessage) {
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(errorMessage)
-                    }
-                }
-            }
-            is LoginState.Loading -> {
-                CircularProgressIndicator()
-            }
-            is LoginState.Idle -> {
-                // Puedes manejar el estado Idle si lo deseas
-            }
-        }
+//        val loginState by viewModel.loginState.collectAsState()
+//        when (loginState) {
+//            is LoginState.Success -> {
+//                val companyName = (loginState as LoginState.Success).companyName
+//                val companyId = (loginState as LoginState.Success).companyId
+//                LaunchedEffect(Unit) {
+//                    onLoginSuccess(companyName, companyId.toInt())
+//                    // Limpiar los campos después del inicio de sesión exitoso
+//                    ruc = ""
+//                    correo = ""
+//                    password = ""
+//                    isLoading = false // Reiniciar la carga
+//                }
+//            }
+//            is LoginState.Error -> {
+//                isLoading = false // Reiniciar la carga
+//                val errorMessage = (loginState as LoginState.Error).message
+//                LaunchedEffect(errorMessage) {
+//                    coroutineScope.launch {
+//                        snackbarHostState.showSnackbar(errorMessage)
+//                    }
+//                }
+//            }
+//            is LoginState.Loading -> {
+//                CircularProgressIndicator()
+//            }
+//            is LoginState.Idle -> {
+//                // Puedes manejar el estado Idle si lo deseas
+//            }
+//        }
     }
 }
