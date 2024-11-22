@@ -67,6 +67,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
 import com.example.agrinova.R
 import com.example.agrinova.data.dto.DatoValvulaDto
 import java.time.LocalDate
@@ -331,7 +332,7 @@ fun EvaluationCard(
                             text = "(${dato.datoId}) ${dato.loteCodigo}",
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), // Negrita
                             color = Color(0xFF1B87DE), // Color personalizado
-                            modifier = Modifier.padding(end = 8.dp) // Espacio entre las columnas
+                            modifier = Modifier.padding(end = 3.dp) // Espacio entre las columnas
                         )
 
                         // Código de la válvula
@@ -339,7 +340,7 @@ fun EvaluationCard(
                             text = dato.valvulaCodigo,
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), // Negrita
                             color = Color(0xFF29C418), // Otro color personalizado para distinción
-                            modifier = Modifier.padding(horizontal = 8.dp) // Espacio entre columnas
+                            modifier = Modifier.padding(horizontal = 3.dp) // Espacio entre columnas
                         )
                         val originalDate = dato.datoFecha
                         // Extraer solo la hora, minutos y segundos
@@ -356,7 +357,7 @@ fun EvaluationCard(
                             text = timeOnly.toString(),
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), // Negrita
                             color = Color(0xFF0D5708), // Color personalizado
-                            modifier = Modifier.padding(start = 8.dp) // Espacio al lado izquierdo
+                            modifier = Modifier.padding(start = 3.dp) // Espacio al lado izquierdo
                         )
                     }
 
@@ -436,6 +437,7 @@ fun <T> GenericSelector(
             label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
             modifier = Modifier
                 .menuAnchor()
                 .fillMaxWidth()
@@ -447,7 +449,10 @@ fun <T> GenericSelector(
         ) {
             items.forEach { item ->
                 DropdownMenuItem(
-                    text = { Text(getDisplayText(item)) },
+                    text = { Text(
+                        text = getDisplayText(item),
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp) // Ajusta el tamaño aquí
+                    ) },
                     onClick = {
                         onItemSelected(item)
                         expanded = false
