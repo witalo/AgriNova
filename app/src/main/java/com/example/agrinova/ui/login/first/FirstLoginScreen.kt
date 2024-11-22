@@ -27,9 +27,11 @@ fun FirstLoginScreen(
     viewModel: FirstLoginViewModel = hiltViewModel(),
     onLoginSuccess: (String, Int) -> Unit
 ) {
-    var ruc by remember { mutableStateOf("20498655468") }
-    var correo by remember { mutableStateOf("alozada@fundoamerica.com.pe") }
-    var password by remember { mutableStateOf("") }
+    var ruc by remember { mutableStateOf("20460214526") }
+//    var ruc by remember { mutableStateOf("20498655468") }
+//    var correo by remember { mutableStateOf("alozada@fundoamerica.com.pe") }
+    var correo by remember { mutableStateOf("fundo@gmail.com") }
+    var password by remember { mutableStateOf("america") }
     var isLoading by remember { mutableStateOf(false) }
 
     // Para mostrar mensajes de error en Snackbar

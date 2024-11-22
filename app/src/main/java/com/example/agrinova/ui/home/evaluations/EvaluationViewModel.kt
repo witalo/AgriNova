@@ -92,7 +92,8 @@ class EvaluationViewModel @Inject constructor(
             try {
                 _uploadStatus.value = UploadState.Loading
                 // Subir los datos al servidor
-                val result = empresaRepository.uploadMuestraData(fecha, cartillaId)
+                val result = empresaRepository.uploadDatos(fecha, cartillaId)
+//                val result = empresaRepository.uploadMuestraData(fecha, cartillaId)
 
                 result.fold(
                     onSuccess = {

@@ -1,7 +1,5 @@
 type Query {
-  muestrasVg: [MuestraVGType]
-
-  muestraVgById(pk: ID): MuestraVGType
+  datosByUserId(pk: ID): [DatoType]
 
   empresas: [EmpresaType]
 
@@ -10,24 +8,24 @@ type Query {
   userById(pk: ID): UserType
 }
 
-type MuestraVGType {
+type DatoType {
   id: Int
 
-  variableGrupo: VariableGrupoType
+  usuario: UserType
 
   valvula: ValvulaType
-
-  muestra: Float
 
   fechaHora: String
 
   fechaCreacion: DateTime!
 
-  latitud: Float
+  datodetalleSet: [DatoDetalleType!]!
 
-  longitud: Float
+  usuarioId: Int
 
-  variableGrupoId: Int
+  valvulaId: Int
+
+  datoDetalle: [DatoDetalleType]
 }
 
 """
@@ -35,86 +33,148 @@ The `Int` scalar type represents non-fractional signed whole numeric values. Int
 """
 scalar Int
 
-type VariableGrupoType {
+type UserType {
   id: Int
 
-  grupoVariable: GrupoVariableType
+  password: String!
 
-  minimo: Int
+  lastLogin: DateTime
 
-  maximo: Int
+  """
+  Indica que este usuario tiene todos los permisos sin asignárselos explícitamente.
+  """
+  isSuperuser: Boolean!
 
-  calculado: Boolean!
+  """
+  Requerido. 150 carácteres como máximo. Únicamente letras, dígitos y @/./+/-/_ 
+  """
+  username: String!
 
-  fechaCreacion: DateTime!
+  firstName: String!
 
-  fechaModificacion: DateTime!
+  lastName: String!
 
-  muestravgSet: [MuestraVGType!]!
+  email: String!
 
-  grupoVariableId: Int
+  """
+  Indica si el usuario puede entrar en este sitio de administración.
+  """
+  isStaff: Boolean!
 
-  variableEvaluacionId: Int
+  """
+  Indica si el usuario debe ser tratado como activo. Desmarque esta opción en lugar de borrar la cuenta.
+  """
+  isActive: Boolean!
 
-  variableEvaluacionNombre: String
-}
+  dateJoined: DateTime!
 
-type GrupoVariableType {
-  id: Int
+  document: String
 
-  cartillaEvaluacion: CartillaEvaluacionType
+  phone: String
 
-  calculado: Boolean!
+  photo: String
 
-  fechaCreacion: DateTime!
+  funds: [FundoType!]!
 
-  fechaModificacion: DateTime!
+  evaluationCards: [CartillaEvaluacionType!]!
 
-  variablegrupoSet: [VariableGrupoType!]!
+  datoSet: [DatoType!]!
 
-  grupoId: Int
-
-  grupoCodigo: String
-
-  grupoNombre: String
-
-  cartillaEvaluacionId: Int
-
-  variableGrupoSet: [VariableGrupoType]
-}
-
-type CartillaEvaluacionType {
-  id: Int
-
-  codigo: String
-
-  nombre: String
-
-  descripcion: String
-
-  cultivo: CultivoType
-
-  muestra: Int!
-
-  activo: Boolean!
-
-  fechaCreacion: DateTime!
-
-  fechaModificacion: DateTime!
-
-  userSet: [UserType!]!
-
-  grupovariableSet: [GrupoVariableType!]!
-
-  cultivoId: Int
-
-  userCartillaSet: [UserCartillaType]
+  fundoSet: [FundoType]
 }
 
 """
 The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.
 """
 scalar String
+
+"""
+The `DateTime` scalar type represents a DateTime
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar DateTime
+
+"""
+The `Boolean` scalar type represents `true` or `false`.
+"""
+scalar Boolean
+
+type FundoType {
+  id: Int
+
+  codigo: String
+
+  nombre: String
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  zona: ZonaType
+
+  activo: Boolean!
+
+  userSet: [UserType!]!
+
+  moduloSet: [ModuloType]
+
+  zonaId: Int
+
+  userFundoSet: [UserFundoType]
+}
+
+type ZonaType {
+  id: Int
+
+  codigo: String
+
+  nombre: String
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  empresa: EmpresaType
+
+  activo: Boolean!
+
+  fundoSet: [FundoType]
+
+  empresaId: Int
+}
+
+type EmpresaType {
+  id: Int
+
+  ruc: String
+
+  razonSocial: String
+
+  direccion: String
+
+  telefono: String
+
+  correo: String
+
+  password: String
+
+  logo: String
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  activo: Boolean!
+
+  zonaSet: [ZonaType]
+
+  userSet: [UserType]
+
+  cultivoSet: [CultivoType]
+
+  cartillaEvaluacionSet: [CartillaEvaluacionType]
+}
 
 type CultivoType {
   id: Int
@@ -135,18 +195,6 @@ type CultivoType {
 
   cartillaevaluacionSet: [CartillaEvaluacionType!]!
 }
-
-"""
-The `DateTime` scalar type represents a DateTime
-value as specified by
-[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
-"""
-scalar DateTime
-
-"""
-The `Boolean` scalar type represents `true` or `false`.
-"""
-scalar Boolean
 
 type CampaniaType {
   id: Int
@@ -227,136 +275,6 @@ type ModuloType {
   fundoId: Int
 }
 
-type FundoType {
-  id: Int
-
-  codigo: String
-
-  nombre: String
-
-  fechaCreacion: DateTime!
-
-  fechaModificacion: DateTime!
-
-  zona: ZonaType
-
-  activo: Boolean!
-
-  userSet: [UserType!]!
-
-  moduloSet: [ModuloType]
-
-  zonaId: Int
-
-  userFundoSet: [UserFundoType]
-}
-
-type ZonaType {
-  id: Int
-
-  codigo: String
-
-  nombre: String
-
-  fechaCreacion: DateTime!
-
-  fechaModificacion: DateTime!
-
-  empresa: EmpresaType
-
-  activo: Boolean!
-
-  fundoSet: [FundoType]
-
-  empresaId: Int
-}
-
-type EmpresaType {
-  id: Int
-
-  ruc: String
-
-  razonSocial: String
-
-  direccion: String
-
-  telefono: String
-
-  correo: String
-
-  password: String
-
-  logo: String
-
-  fechaCreacion: DateTime!
-
-  fechaModificacion: DateTime!
-
-  activo: Boolean!
-
-  zonaSet: [ZonaType]
-
-  userSet: [UserType]
-
-  cultivoSet: [CultivoType]
-
-  cartillaEvaluacionSet: [CartillaEvaluacionType]
-}
-
-type UserType {
-  id: Int
-
-  password: String!
-
-  lastLogin: DateTime
-
-  """
-  Indica que este usuario tiene todos los permisos sin asignárselos explícitamente.
-  """
-  isSuperuser: Boolean!
-
-  """
-  Requerido. 150 carácteres como máximo. Únicamente letras, dígitos y @/./+/-/_ 
-  """
-  username: String!
-
-  firstName: String!
-
-  lastName: String!
-
-  email: String!
-
-  """
-  Indica si el usuario puede entrar en este sitio de administración.
-  """
-  isStaff: Boolean!
-
-  """
-  Indica si el usuario debe ser tratado como activo. Desmarque esta opción en lugar de borrar la cuenta.
-  """
-  isActive: Boolean!
-
-  dateJoined: DateTime!
-
-  document: String
-
-  phone: String
-
-  photo: String
-
-  funds: [FundoType!]!
-
-  evaluationCards: [CartillaEvaluacionType!]!
-
-  fundoSet: [FundoType]
-}
-
-type UserFundoType {
-  userId: Int
-
-  fundoId: Int
-}
-
 type ValvulaType {
   id: Int
 
@@ -378,7 +296,7 @@ type ValvulaType {
 
   poligonoSet: [PoligonoType]
 
-  muestravgSet: [MuestraVGType!]!
+  datoSet: [DatoType!]!
 
   campaniaId: Int
 }
@@ -423,10 +341,108 @@ type VariedadType {
   cultivoId: Int
 }
 
+type CartillaEvaluacionType {
+  id: Int
+
+  codigo: String
+
+  nombre: String
+
+  descripcion: String
+
+  cultivo: CultivoType
+
+  muestra: Int!
+
+  activo: Boolean!
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  userSet: [UserType!]!
+
+  grupovariableSet: [GrupoVariableType!]!
+
+  cultivoId: Int
+
+  userCartillaSet: [UserCartillaType]
+}
+
+type GrupoVariableType {
+  id: Int
+
+  cartillaEvaluacion: CartillaEvaluacionType
+
+  calculado: Boolean!
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  variablegrupoSet: [VariableGrupoType!]!
+
+  grupoId: Int
+
+  grupoCodigo: String
+
+  grupoNombre: String
+
+  cartillaEvaluacionId: Int
+
+  variableGrupoSet: [VariableGrupoType]
+}
+
+type VariableGrupoType {
+  id: Int
+
+  grupoVariable: GrupoVariableType
+
+  minimo: Int
+
+  maximo: Int
+
+  calculado: Boolean!
+
+  fechaCreacion: DateTime!
+
+  fechaModificacion: DateTime!
+
+  datodetalleSet: [DatoDetalleType!]!
+
+  grupoVariableId: Int
+
+  variableEvaluacionId: Int
+
+  variableEvaluacionNombre: String
+}
+
+type DatoDetalleType {
+  id: Int
+
+  dato: DatoType
+
+  variableGrupo: VariableGrupoType
+
+  muestra: Float
+
+  latitud: Float
+
+  longitud: Float
+
+  variableGrupoId: Int
+}
+
 type UserCartillaType {
   userId: Int
 
   cartillaId: Int
+}
+
+type UserFundoType {
+  userId: Int
+
+  fundoId: Int
 }
 
 """
@@ -435,9 +451,7 @@ The `ID` scalar type represents a unique identifier, often used to refetch an ob
 scalar ID
 
 type Mutation {
-  createMuestra(muestras: [MuestraVGInput]!): CreateMuestraVGMutation
-
-  updateMuestra(fecha: String, id: ID!, muestra: Float, variableGrupoId: Int): UpdateMuestraVGMutation
+  createDatos(datos: [DatoInput]!): CreateDatosMutation
 
   loginEmpresa(correo: String!, password: String!, ruc: String!): LoginEmpresa
 
@@ -446,28 +460,32 @@ type Mutation {
   updateUser(document: String, email: String, firstName: String, id: ID!, isActive: Boolean, lastName: String, password: String, phone: String): UpdateUserMutation
 }
 
-type CreateMuestraVGMutation {
+type CreateDatosMutation {
   success: Boolean
 
   message: String
+
+  datos: [DatoType]
 }
 
-input MuestraVGInput {
+input DatoInput {
+  usuarioId: Int!
+
+  valvulaId: Int!
+
+  fechaHora: String!
+
+  datoDetalle: [DatoDetalleInput]!
+}
+
+input DatoDetalleInput {
+  variableGrupoId: Int!
+
   muestra: Float!
 
   latitud: Float!
 
   longitud: Float!
-
-  fechaHora: String!
-
-  variableGrupoId: Int!
-
-  valvulaId: Int!
-}
-
-type UpdateMuestraVGMutation {
-  message: String
 }
 
 type LoginEmpresa {

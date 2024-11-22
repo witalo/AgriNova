@@ -6,7 +6,7 @@ import androidx.annotation.RequiresApi
 import androidx.room.Transaction
 import androidx.room.withTransaction
 import com.apollographql.apollo3.ApolloClient
-import com.example.agrinova.CreateMuestraVGMutation
+import com.example.agrinova.CreateDatosMutation
 import com.example.agrinova.data.local.dao.EmpresaDao
 import com.example.agrinova.data.local.dao.UsuarioDao
 import com.example.agrinova.data.local.dao.ZonaDao
@@ -48,7 +48,7 @@ import com.example.agrinova.di.models.FundoDomainModel
 import com.example.agrinova.di.models.GrupoVariableDomainModel
 import com.example.agrinova.di.models.ValvulaDomainModel
 import com.example.agrinova.di.models.VariableGrupoDomainModel
-import com.example.agrinova.type.MuestraVGInput
+import com.example.agrinova.type.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -406,6 +406,7 @@ class EmpresaRepository(
     suspend fun insertDatoWithDetalles(
         valvulaId: Int,
         cartillaId: Int,
+        usuarioId: Int,
         variableValues: Map<Int, String>
     ): Result<Unit> = runCatching {
         val fechaActual = LocalDateTime.now()
@@ -416,6 +417,7 @@ class EmpresaRepository(
         val datoEntity = DatoEntity(
             valvulaId = valvulaId,
             cartillaId = cartillaId,
+            usuarioId = usuarioId,
             fecha = fechaFormateada
         )
 
@@ -438,37 +440,89 @@ class EmpresaRepository(
         // Llama al método DAO para insertar el dato y sus detalles
         datoDao.insertDatoWithDetalles(datoEntity, detalles)
     }
-    suspend fun uploadMuestraData(fecha: String, cartillaId: Int): Result<Boolean> {
-        return try {
-            val datosLocales = datoDao.getDatoWithDetalleByDateAndCartillaId(fecha, cartillaId)
+//    suspend fun uploadMuestraData(fecha: String, cartillaId: Int): Result<Boolean> {
+//        return try {
+//            val datosLocales = datoDao.getDatoWithDetalleByDateAndCartillaId(fecha, cartillaId)
+//
+//            // Convertir datos a la estructura generada por Apollo
+//            val muestrasVGInputList = datosLocales.map {
+//                MuestraVGInput(
+//                    valvulaId = it.valvulaId,
+//                    fechaHora = it.fecha,
+//                    latitud = it.latitud.toDouble(),
+//                    longitud = it.longitud.toDouble(),
+//                    muestra = it.muestra.toDouble(),
+//                    variableGrupoId = it.variableGrupoId
+//                )
+//            }
+//            // Enviar la lista al servidor mediante Apollo Client
+//            val mutation = CreateMuestraVGMutation(muestrasVGInputList)
+//            val response = graphQLClient.mutation(mutation).execute()
+//
+//            // Validar la respuesta
+//            if (response.hasErrors() || response.data?.createMuestra?.success == false) {
+//                val errorMsg = response.errors?.joinToString(", ") { it.message }
+//                    ?: response.data?.createMuestra?.message ?: "Error desconocido"
+//                throw Exception(errorMsg)
+//            }
+//
+//            Result.success(true)
+//        } catch (e: Exception) {
+//            Result.failure(e)
+//        }
+//    }
+    suspend fun uploadDatos(fecha: String, cartillaId: Int): Result<Boolean> = withContext(Dispatchers.IO) {
+        Log.d("Upload 1:", "${fecha}::${cartillaId}")
+        try {
+            // 1. Obtener datos locales de manera eficiente
+            val datos = datoDao.getDatosByCartilla(cartillaId, fecha)
+            if (datos.isEmpty()) {
+                return@withContext Result.success(true) // No hay datos para enviar
+            }
 
-            // Convertir datos a la estructura generada por Apollo
-            val muestrasVGInputList = datosLocales.map {
-                MuestraVGInput(
-                    valvulaId = it.valvulaId,
-                    fechaHora = it.fecha,
-                    latitud = it.latitud.toDouble(),
-                    longitud = it.longitud.toDouble(),
-                    muestra = it.muestra.toDouble(),
-                    variableGrupoId = it.variableGrupoId
+            // 2. Obtener detalles en batch
+            val detalles = datoDao.getDatoDetallesByDatoIds(datos.map { it.id })
+            Log.d("Upload 2:", "${detalles}")
+            // 3. Agrupar detalles por datoId eficientemente
+            val detallesPorDato = detalles.groupBy { it.datoId }
+
+            // 4. Construir los inputs para la mutación
+            val datosInput = datos.map { dato ->
+                DatoInput(
+                    usuarioId = dato.usuarioId,
+                    valvulaId = dato.valvulaId,
+                    fechaHora = dato.fecha,
+                    datoDetalle = detallesPorDato[dato.id]?.map { detalle ->
+                        DatoDetalleInput(
+                            variableGrupoId = detalle.variableGrupoId,
+                            muestra = detalle.muestra.toDouble(),
+                            latitud = detalle.latitud.toDouble(),
+                            longitud = detalle.longitud.toDouble()
+                        )
+                    } ?: emptyList()
                 )
             }
-            // Enviar la lista al servidor mediante Apollo Client
-            val mutation = CreateMuestraVGMutation(muestrasVGInputList)
-            val response = graphQLClient.mutation(mutation).execute()
-
-            // Validar la respuesta
-            if (response.hasErrors() || response.data?.createMuestra?.success == false) {
-                val errorMsg = response.errors?.joinToString(", ") { it.message }
-                    ?: response.data?.createMuestra?.message ?: "Error desconocido"
-                throw Exception(errorMsg)
+            Log.d("Upload 3:", "${datosInput}")
+            // 5. Ejecutar la mutación GraphQL en chunks para manejar grandes cantidades de datos
+            val chunkSize = 100 // Ajustar según necesidades
+            datosInput.chunked(chunkSize).forEach { chunk ->
+                val mutation = CreateDatosMutation(datos = chunk)
+                val response = graphQLClient.mutation(mutation).execute()
+                Log.d("Upload 4:", "${response}")
+                if (!response.data?.createDatos?.success!!) {
+                    return@withContext Result.failure(
+                        Exception(response.data?.createDatos?.message ?: "Error al enviar datos")
+                    )
+                }
             }
 
             Result.success(true)
         } catch (e: Exception) {
+            Log.d("Upload error:", "${e}")
             Result.failure(e)
         }
     }
+
     suspend fun clearDatosAndDetallesByDateAndCartillaId(fecha: String, cartillaId: Int) {
         withContext(Dispatchers.IO) {
             // Obtiene los IDs de Dato correspondientes

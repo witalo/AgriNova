@@ -40,19 +40,35 @@ interface DatoDao {
         val detallesWithDatoId = detalles.map { it.copy(datoId = datoId.toInt()) }
         insertDatoDetalles(detallesWithDatoId)
     }
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query(
-        """
-        SELECT d.id AS datoId, d.valvulaId, d.fecha, dd.muestra, dd.latitud, dd.longitud, dd.variableGrupoId
+//    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+//    @Query(
+//        """
+//        SELECT d.id AS datoId, d.valvulaId, d.fecha, dd.muestra, dd.latitud, dd.longitud, dd.variableGrupoId
+//        FROM dato d
+//        INNER JOIN datodetalle dd ON d.id = dd.datoId
+//        WHERE DATE(d.fecha) = DATE(:fecha) AND d.cartillaId = :cartillaId
+//        """
+//    )
+//    suspend fun getDatoWithDetalleByDateAndCartillaId(
+//        fecha: String,
+//        cartillaId: Int
+//    ): List<DatoWithDetalleDto>
+
+    @Transaction
+    @Query("""
+        SELECT d.*, dd.*
         FROM dato d
-        INNER JOIN datodetalle dd ON d.id = dd.datoId
-        WHERE DATE(d.fecha) = DATE(:fecha) AND d.cartillaId = :cartillaId
-        """
-    )
-    suspend fun getDatoWithDetalleByDateAndCartillaId(
-        fecha: String,
-        cartillaId: Int
-    ): List<DatoWithDetalleDto>
+        LEFT JOIN datodetalle dd ON d.id = dd.datoId
+        WHERE d.cartillaId = :cartillaId AND DATE(d.fecha) = DATE(:fecha)
+    """)
+    suspend fun getDatosWithDetalles(cartillaId: Int, fecha: String): Map<DatoEntity, List<DatoDetalleEntity>>
+    @Query("SELECT * FROM dato WHERE cartillaId = :cartillaId AND DATE(fecha) = DATE(:fecha)")
+    suspend fun getDatosByCartilla(cartillaId: Int, fecha: String): List<DatoEntity>
+
+    @Query("SELECT * FROM datodetalle WHERE datoId IN (:datoIds)")
+    suspend fun getDatoDetallesByDatoIds(datoIds: List<Int>): List<DatoDetalleEntity>
+
+
 
     // Obtiene los IDs de Dato según la fecha y cartillaId
     @Query("SELECT id FROM dato WHERE cartillaId = :cartillaId AND DATE(fecha) = DATE(:fecha)")

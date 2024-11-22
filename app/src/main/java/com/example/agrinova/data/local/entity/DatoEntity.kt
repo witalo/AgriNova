@@ -20,11 +20,18 @@ import com.example.agrinova.di.models.DatoDomainModel
             parentColumns = ["id"],
             childColumns = ["cartillaId"],
             onDelete = ForeignKey.CASCADE // Ejemplo: elimina datos si la cartilla es eliminada
+        ),
+        ForeignKey(
+            entity = UsuarioEntity::class, // Entidad relacionada con cartillaId
+            parentColumns = ["id"],
+            childColumns = ["usuarioId"],
+            onDelete = ForeignKey.CASCADE // Ejemplo: elimina datos si la cartilla es eliminada
         )
     ],
     indices = [
         Index(value = ["valvulaId"]), // Índice para optimizar consultas por valvulaId
-        Index(value = ["cartillaId"]) // Índice para optimizar consultas por cartillaId
+        Index(value = ["cartillaId"]), // Índice para optimizar consultas por cartillaId
+        Index(value = ["usuarioId"]) // Índice para optimizar consultas por usuarioId
     ]
 )
 data class DatoEntity(
@@ -32,6 +39,7 @@ data class DatoEntity(
     val id: Int = 0,
     val valvulaId: Int,
     val cartillaId: Int,
+    val usuarioId: Int,
     val fecha: String
 ) {
     fun toDomainModel(): DatoDomainModel {
@@ -39,6 +47,7 @@ data class DatoEntity(
             id = this.id,
             valvulaId = this.valvulaId,
             cartillaId = this.cartillaId,
+            usuarioId = this.usuarioId,
             fecha = this.fecha
         )
     }

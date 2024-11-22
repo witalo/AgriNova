@@ -103,6 +103,7 @@ class NewEvaluationViewModel @Inject constructor(
 
     private val _saveStatus = MutableStateFlow<Result<Unit>?>(null)
     val saveStatus: StateFlow<Result<Unit>?> = _saveStatus.asStateFlow()
+
     // Controla el estado de carga
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
@@ -221,24 +222,30 @@ class NewEvaluationViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-                val valvulaId = _selectedValvula.value?.id
-                    ?: throw IllegalStateException("No se ha seleccionado una válvula")
+                // Recolectar el userId y usarlo
+                userId.collect { user ->
+                    user?.let {
+                        val valvulaId = _selectedValvula.value?.id
+                            ?: throw IllegalStateException("No se ha seleccionado una válvula")
 
-                // Solo procesar valores que no estén vacíos y sean números válidos
-                val validValues = _variableValues.value.filter { (_, value) ->
-                    value.isNotEmpty() && value.toDoubleOrNull() != null
+                        // Solo procesar valores que no estén vacíos y sean números válidos
+                        val validValues = _variableValues.value.filter { (_, value) ->
+                            value.isNotEmpty() && value.toDoubleOrNull() != null
+                        }
+
+                        if (validValues.isEmpty()) {
+                            throw IllegalStateException("No hay valores válidos para guardar")
+                        }
+
+                        val result = empresaRepository.insertDatoWithDetalles(
+                            valvulaId = valvulaId,
+                            cartillaId = cartillaId.toInt(),
+                            usuarioId = user,
+                            variableValues = validValues
+                        )
+                        _saveStatus.value = result
+                    }
                 }
-
-                if (validValues.isEmpty()) {
-                    throw IllegalStateException("No hay valores válidos para guardar")
-                }
-
-                val result = empresaRepository.insertDatoWithDetalles(
-                    valvulaId = valvulaId,
-                    cartillaId = cartillaId.toInt(),
-                    variableValues = validValues
-                )
-                _saveStatus.value = result
             } catch (e: Exception) {
                 _saveStatus.value = Result.failure(e)
             } finally {

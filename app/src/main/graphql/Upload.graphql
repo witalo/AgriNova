@@ -1,6 +1,25 @@
-mutation CreateMuestraVGMutation($muestras: [MuestraVGInput!]!) {
-    createMuestra(muestras: $muestras) {
+#mutation CreateMuestraVGMutation($muestras: [MuestraVGInput!]!) {
+#    createMuestra(muestras: $muestras) {
+#        success
+#        message
+#    }
+#}
+mutation CreateDatos($datos: [DatoInput!]!) {
+    createDatos(datos: $datos) {
         success
         message
+#        datos {
+#            id
+#            usuarioId
+#            valvulaId
+#            fechaHora
+#            datoDetalle {
+#                id
+#                muestra
+#                latitud
+#                longitud
+#                variableGrupoId
+#            }
+#        }
     }
 }
