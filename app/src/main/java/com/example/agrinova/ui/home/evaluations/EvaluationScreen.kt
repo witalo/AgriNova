@@ -56,6 +56,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -185,6 +186,7 @@ fun EvaluationScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EvaluationCard(
@@ -204,9 +206,9 @@ fun EvaluationCard(
             .padding(5.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        )
+//        colors = CardDefaults.cardColors(
+//            containerColor = Color.White
+//        )
     ) {
         Column(
             modifier = Modifier.fillMaxSize() // Ajusta el contenido dentro del Card
@@ -237,28 +239,72 @@ fun EvaluationCard(
                             value = selectedDate, // Usa el String directamente
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Fecha") },
-                            modifier = Modifier.weight(1f),
+                            label = {
+                                Text(
+                                    text = "Fecha",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp) // Texto más pequeño
+                                )
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(60.dp), // Reduce la altura del TextField
                             trailingIcon = {
-                                IconButton(onClick = {
-                                    showDatePickerDialog(context) { calendar ->
-                                        calendar?.let {
-                                            val selectedLocalDate = it.time.toInstant()
-                                                .atZone(ZoneId.systemDefault())
-                                                .toLocalDate()
+                                IconButton(
+                                    onClick = {
+                                        showDatePickerDialog(context) { calendar ->
+                                            calendar?.let {
+                                                val selectedLocalDate = it.time.toInstant()
+                                                    .atZone(ZoneId.systemDefault())
+                                                    .toLocalDate()
 
-                                            // Llama a onDateSelected con el LocalDate
-                                            onDateSelected(selectedLocalDate)
+                                                // Llama a onDateSelected con el LocalDate
+                                                onDateSelected(selectedLocalDate)
+                                            }
                                         }
-                                    }
-                                }) {
+                                    },
+                                    modifier = Modifier.size(24.dp) // Tamaño más pequeño del botón
+                                ) {
                                     Icon(
                                         imageVector = Icons.Default.DateRange,
-                                        contentDescription = "Seleccionar fecha"
+                                        contentDescription = "Seleccionar fecha",
+                                        modifier = Modifier.size(20.dp), // Icono más pequeño
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
-                            }
+                            },
+                            textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp), // Tamaño del texto principal
+//                            colors = TextFieldDefaults.outlinedTextFieldColors( // Ajuste de colores si es necesario
+//                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+//                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+//                            )
                         )
+
+//                        OutlinedTextField(
+//                            value = selectedDate, // Usa el String directamente
+//                            onValueChange = {},
+//                            readOnly = true,
+//                            label = { Text("Fecha") },
+//                            modifier = Modifier.weight(1f),
+//                            trailingIcon = {
+//                                IconButton(onClick = {
+//                                    showDatePickerDialog(context) { calendar ->
+//                                        calendar?.let {
+//                                            val selectedLocalDate = it.time.toInstant()
+//                                                .atZone(ZoneId.systemDefault())
+//                                                .toLocalDate()
+//
+//                                            // Llama a onDateSelected con el LocalDate
+//                                            onDateSelected(selectedLocalDate)
+//                                        }
+//                                    }
+//                                }) {
+//                                    Icon(
+//                                        imageVector = Icons.Default.DateRange,
+//                                        contentDescription = "Seleccionar fecha"
+//                                    )
+//                                }
+//                            }
+//                        )
 //                        OutlinedTextField(
 //                            value = selectedDate?.toString() ?: "Fecha",
 //                            onValueChange = {},
@@ -315,56 +361,112 @@ fun EvaluationCard(
             // Cuerpo - Lista de elementos desplazable
             LazyColumn(
                 modifier = Modifier
-                    .weight(1f) // Limita la altura del cuerpo para que sea desplazable
+                    .weight(1f)
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(16.dp)
             ) {
                 items(datos, key = { it.datoId }) { dato ->
-                Row(
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp, horizontal = 16.dp), // Espaciado adicional
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .padding(vertical = 8.dp), // Espaciado entre tarjetas
+                        elevation = CardDefaults.cardElevation(4.dp), // Elevación para efecto de sombra
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
-                        // Dato ID y Lote Código
-                        Text(
-                            text = "(${dato.datoId}) ${dato.loteCodigo}",
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), // Negrita
-                            color = Color(0xFF1B87DE), // Color personalizado
-                            modifier = Modifier.padding(end = 3.dp) // Espacio entre las columnas
-                        )
+                        Column(
+                            modifier = Modifier.padding(16.dp) // Padding interno en la tarjeta
+                        ) {
+                            // Título: ID y Lote Código
+                            Text(
+                                text = "(${dato.datoId}) ${dato.loteCodigo}",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.primary
+                            )
 
-                        // Código de la válvula
-                        Text(
-                            text = dato.valvulaCodigo,
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), // Negrita
-                            color = Color(0xFF29C418), // Otro color personalizado para distinción
-                            modifier = Modifier.padding(horizontal = 3.dp) // Espacio entre columnas
-                        )
-                        val originalDate = dato.datoFecha
-                        // Extraer solo la hora, minutos y segundos
-                    val timeOnly = try {
-                        val formatter = DateTimeFormatter.ofPattern("hh:mm:ss a", Locale.getDefault())
-                        val localDateTime = LocalDateTime.parse(originalDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                        localDateTime.format(formatter)
-                    } catch (e: Exception) {
-                        originalDate // Usar texto original si falla
+                            Spacer(modifier = Modifier.height(4.dp)) // Espacio entre texto
+
+                            // Código de la válvula
+                            Text(
+                                text = dato.valvulaCodigo,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            // Fecha y hora
+                            val originalDate = dato.datoFecha
+                            val timeOnly = try {
+                                val formatter = DateTimeFormatter.ofPattern("hh:mm:ss a", Locale.getDefault())
+                                val localDateTime = LocalDateTime.parse(originalDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                                localDateTime.format(formatter)
+                            } catch (e: Exception) {
+                                originalDate // Mostrar texto original si falla
+                            }
+
+                            Text(
+                                text = timeOnly,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
                     }
-
-                        // Fecha del dato
-                        Text(
-                            text = timeOnly.toString(),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), // Negrita
-                            color = Color(0xFF0D5708), // Color personalizado
-                            modifier = Modifier.padding(start = 3.dp) // Espacio al lado izquierdo
-                        )
-                    }
-
-                    // Divider con opacidad para separar cada fila
-                    HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
                 }
             }
+
+//            LazyColumn(
+//                modifier = Modifier
+//                    .weight(1f) // Limita la altura del cuerpo para que sea desplazable
+//                    .fillMaxWidth()
+//                    .background(Color.White)
+//                    .padding(16.dp)
+//            ) {
+//                items(datos, key = { it.datoId }) { dato ->
+//                Row(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(vertical = 8.dp, horizontal = 16.dp), // Espaciado adicional
+//                        horizontalArrangement = Arrangement.SpaceBetween
+//                    ) {
+//                        // Dato ID y Lote Código
+//                        Text(
+//                            text = "(${dato.datoId}) ${dato.loteCodigo}",
+//                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), // Negrita
+//                            color = Color(0xFF1B87DE), // Color personalizado
+//                            modifier = Modifier.padding(end = 3.dp) // Espacio entre las columnas
+//                        )
+//
+//                        // Código de la válvula
+//                        Text(
+//                            text = dato.valvulaCodigo,
+//                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), // Negrita
+//                            color = Color(0xFF29C418), // Otro color personalizado para distinción
+//                            modifier = Modifier.padding(horizontal = 3.dp) // Espacio entre columnas
+//                        )
+//                        val originalDate = dato.datoFecha
+//                        // Extraer solo la hora, minutos y segundos
+//                    val timeOnly = try {
+//                        val formatter = DateTimeFormatter.ofPattern("hh:mm:ss a", Locale.getDefault())
+//                        val localDateTime = LocalDateTime.parse(originalDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+//                        localDateTime.format(formatter)
+//                    } catch (e: Exception) {
+//                        originalDate // Usar texto original si falla
+//                    }
+//
+//                        // Fecha del dato
+//                        Text(
+//                            text = timeOnly.toString(),
+//                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), // Negrita
+//                            color = Color(0xFF0D5708), // Color personalizado
+//                            modifier = Modifier.padding(start = 3.dp) // Espacio al lado izquierdo
+//                        )
+//                    }
+//
+//                    // Divider con opacidad para separar cada fila
+//                    HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
+//                }
+//            }
 
             // Pie
             Box(
@@ -425,34 +527,84 @@ fun <T> GenericSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
+//    ExposedDropdownMenuBox(
+//        expanded = expanded,
+//        onExpandedChange = { expanded = it },
+//        modifier = modifier
+//    ) {
+//        OutlinedTextField(
+//            value = selectedItem?.let { getDisplayText(it) } ?: "",
+//            onValueChange = {},
+//            readOnly = true,
+//            label = { Text(label) },
+//            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+//            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+//            textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+//            modifier = Modifier
+//                .menuAnchor()
+//                .fillMaxWidth()
+//        )
+//
+//        ExposedDropdownMenu(
+//            expanded = expanded,
+//            onDismissRequest = { expanded = false }
+//        ) {
+//            items.forEach { item ->
+//                DropdownMenuItem(
+//                    text = { Text(
+//                        text = getDisplayText(item),
+//                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp) // Ajusta el tamaño aquí
+//                    ) },
+//                    onClick = {
+//                        onItemSelected(item)
+//                        expanded = false
+//                    }
+//                )
+//            }
+//        }
+//    }
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = it },
-        modifier = modifier
+        modifier = Modifier.fillMaxWidth() // Ajusta el ancho aquí si lo deseas
     ) {
+        // Campo de texto más pequeño
         OutlinedTextField(
             value = selectedItem?.let { getDisplayText(it) } ?: "",
             onValueChange = {},
             readOnly = true,
-            label = { Text(label) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            label = {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp) // Tamaño más pequeño
+                )
+            },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-            textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
+            textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
             modifier = Modifier
                 .menuAnchor()
+                .height(68.dp) // Reduce la altura del campo de texto
                 .fillMaxWidth()
         )
 
+        // Menú más pequeño
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth() // Ajusta el ancho del menú
         ) {
             items.forEach { item ->
                 DropdownMenuItem(
-                    text = { Text(
-                        text = getDisplayText(item),
-                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp) // Ajusta el tamaño aquí
-                    ) },
+                    modifier = Modifier, // Altura de cada item
+                    text = {
+                        Text(
+                            text = getDisplayText(item),
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp) // Tamaño de fuente
+                        )
+                    },
                     onClick = {
                         onItemSelected(item)
                         expanded = false

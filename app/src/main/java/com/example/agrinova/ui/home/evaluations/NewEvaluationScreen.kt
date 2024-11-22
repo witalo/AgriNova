@@ -65,6 +65,10 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import android.Manifest
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -223,14 +227,15 @@ private fun EvaluationHeader(
                         .menuAnchor(),
                     readOnly = true,
                     value = selectedLote.value?.let { lote ->
-                        "${lote.loteCodigo}:${lote.moduloCodigo}"
+                        "${lote.moduloCodigo}:${lote.loteCodigo}"
                     } ?: "",
                     onValueChange = {},
-                    label = { Text("Lote") },
+                    label = { Text("Modulo:Lote") },
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.isCombo1Expanded.value)
                     },
-                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                    textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                 )
 
                 ExposedDropdownMenu(
@@ -239,7 +244,7 @@ private fun EvaluationHeader(
                 ) {
                     lotes.forEach { lote ->
                         DropdownMenuItem(
-                            text = { Text("${lote.loteCodigo}:${lote.moduloCodigo}") },
+                            text = { Text("${lote.moduloCodigo}:${lote.loteCodigo}") },
                             onClick = {
                                 viewModel.onLoteSelected(lote) // Actualiza el lote seleccionado en el ViewModel
                                 viewModel.isCombo1Expanded.value = false // Cierra el menú
@@ -268,7 +273,8 @@ private fun EvaluationHeader(
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.isCombo2Expanded.value)
                     },
-                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                    textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)
                 )
 
                 ExposedDropdownMenu(
@@ -356,23 +362,41 @@ private fun EvaluationHeader(
                 )
                 Text(
                     text = "GPS Automático",
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 2.dp)
                 )
             }
-            // Botón con ícono
+            // Botón más moderno con animación
             IconButton(
                 onClick = { viewModel.saveEvaluationDato() },
                 modifier = Modifier
-                    .size(48.dp)
-                    .padding(end = 8.dp)
+                    .size(56.dp) // Tamaño más grande para darle énfasis
+                    .padding(5.dp) // Espaciado más sutil
+                    .clip(CircleShape) // Forma circular
+                    .background(MaterialTheme.colorScheme.primary) // Fondo moderno
+                    .border(2.dp, MaterialTheme.colorScheme.onPrimary, CircleShape) // Borde elegante
+                    .animateContentSize() // Animación al cambiar tamaño si fuera necesario
             ) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = "Guardar",
-                    modifier = Modifier.size(35.dp),
-                    tint = Color(0xFF43BD28)
+                    modifier = Modifier.size(32.dp),
+                    tint = MaterialTheme.colorScheme.onPrimary // Color dinámico basado en el tema
                 )
             }
+
+//            IconButton(
+//                onClick = { viewModel.saveEvaluationDato() },
+//                modifier = Modifier
+//                    .size(48.dp)
+//                    .padding(end = 8.dp)
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Default.CheckCircle,
+//                    contentDescription = "Guardar",
+//                    modifier = Modifier.size(35.dp),
+//                    tint = Color(0xFF43BD28)
+//                )
+//            }
 
         }
     }
@@ -421,9 +445,9 @@ private fun GrupoVariableCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 6.dp, vertical = 3.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFFFFF)
-        ),
+//        colors = CardDefaults.cardColors(
+//            containerColor = Color(0xFFFFFFFF)
+//        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -492,7 +516,7 @@ private fun GrupoVariableCard(
                                 fontSize = 18.sp // Aumentar el tamaño del texto
                             ),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
-                                containerColor = Color(0xFFFFFFFF), // Fondo del cuadro de texto (rosa claro)
+//                                containerColor = Color(0xFFFFFFFF), // Fondo del cuadro de texto (rosa claro)
                                 focusedBorderColor = Color(0xFF2970EA), // Borde azul al enfocarse
                                 unfocusedBorderColor = Color.Gray, // Borde gris sin enfoque
                                 errorBorderColor = Color.Red // Borde rojo en caso de error
