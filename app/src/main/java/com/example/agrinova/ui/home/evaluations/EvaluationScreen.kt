@@ -205,7 +205,7 @@ fun EvaluationCard(
             .fillMaxSize() // Ocupa todo el ancho y alto del dispositivo
             .padding(5.dp),
         elevation = CardDefaults.cardElevation(4.dp),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(16.dp),
 //        colors = CardDefaults.cardColors(
 //            containerColor = Color.White
 //        )
@@ -232,7 +232,7 @@ fun EvaluationCard(
                     // Campo de fecha y botón en la misma fila
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         OutlinedTextField(
@@ -364,7 +364,7 @@ fun EvaluationCard(
                     .weight(1f)
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(16.dp)
+                    .padding(5.dp)
             ) {
                 items(datos, key = { it.datoId }) { dato ->
                     Card(
@@ -375,25 +375,25 @@ fun EvaluationCard(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         Column(
-                            modifier = Modifier.padding(16.dp) // Padding interno en la tarjeta
+                            modifier = Modifier.padding(8.dp) // Padding interno en la tarjeta
                         ) {
                             // Título: ID y Lote Código
                             Text(
-                                text = "(${dato.datoId}) ${dato.loteCodigo}",
+                                text = "(${dato.datoId}) ${dato.loteCodigo} : ${dato.valvulaCodigo}",
                                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.primary
                             )
 
-                            Spacer(modifier = Modifier.height(4.dp)) // Espacio entre texto
+                            Spacer(modifier = Modifier.height(2.dp)) // Espacio entre texto
 
                             // Código de la válvula
-                            Text(
-                                text = dato.valvulaCodigo,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-
-                            Spacer(modifier = Modifier.height(4.dp))
+//                            Text(
+//                                text = dato.valvulaCodigo,
+//                                style = MaterialTheme.typography.bodyMedium,
+//                                color = MaterialTheme.colorScheme.secondary
+//                            )
+//
+//                            Spacer(modifier = Modifier.height(4.dp))
 
                             // Fecha y hora
                             val originalDate = dato.datoFecha
