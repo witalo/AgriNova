@@ -224,13 +224,15 @@ private fun EvaluationHeader(
                 OutlinedTextField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .menuAnchor(),
+                        .menuAnchor()
+                        .padding(0.dp)
+                    ,
                     readOnly = true,
                     value = selectedLote.value?.let { lote ->
                         "${lote.moduloCodigo}:${lote.loteCodigo}"
                     } ?: "",
                     onValueChange = {},
-                    label = { Text("Modulo:Lote") },
+                    label = { Text("Modulo:Lote",  style = TextStyle(fontSize = 12.sp)) },
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.isCombo1Expanded.value)
                     },
@@ -269,7 +271,7 @@ private fun EvaluationHeader(
                     readOnly = true,
                     value = selectedValvula.value?.codigo ?: "",
                     onValueChange = {},
-                    label = { Text("Valvula") },
+                    label = { Text("Valvula", style = TextStyle(fontSize = 12.sp)) },
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.isCombo2Expanded.value)
                     },
@@ -369,18 +371,22 @@ private fun EvaluationHeader(
             IconButton(
                 onClick = { viewModel.saveEvaluationDato() },
                 modifier = Modifier
-                    .size(56.dp) // Tamaño más grande para darle énfasis
-                    .padding(5.dp) // Espaciado más sutil
+                    .size(56.dp) // Tamaño del botón
+                    .padding(5.dp) // Margen interior
                     .clip(CircleShape) // Forma circular
-                    .background(MaterialTheme.colorScheme.primary) // Fondo moderno
-                    .border(2.dp, MaterialTheme.colorScheme.onPrimary, CircleShape) // Borde elegante
-                    .animateContentSize() // Animación al cambiar tamaño si fuera necesario
+                    .background(Color(0xFF1976D2)) // Fondo personalizado (azul intenso)
+                    .border(
+                        width = 2.dp,
+                        color = Color(0xFFBBDEFB), // Color de borde (azul claro)
+                        shape = CircleShape
+                    )
+                    .animateContentSize() // Animación fluida
             ) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = "Guardar",
-                    modifier = Modifier.size(32.dp),
-                    tint = MaterialTheme.colorScheme.onPrimary // Color dinámico basado en el tema
+                    modifier = Modifier.size(32.dp), // Tamaño del icono
+                    tint = Color(0xFFFFFFFF) // Color del icono (blanco)
                 )
             }
 
@@ -431,6 +437,9 @@ private fun EvaluationBody(
     }
 }
 
+
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GrupoVariableCard(
@@ -444,11 +453,12 @@ private fun GrupoVariableCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 6.dp, vertical = 3.dp),
-//        colors = CardDefaults.cardColors(
-//            containerColor = Color(0xFFFFFFFF)
-//        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .padding(horizontal = 4.dp, vertical = 2.dp), // Más compacto
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface, // Fondo adaptable
+            contentColor = MaterialTheme.colorScheme.onSurface // Texto adaptable
+        ),
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // Cabecera del grupo (siempre visible)
@@ -456,7 +466,7 @@ private fun GrupoVariableCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onExpandClick() }
-                    .padding(16.dp),
+                    .padding(vertical = 8.dp, horizontal = 12.dp), // Compactación
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -470,7 +480,8 @@ private fun GrupoVariableCard(
                     } else {
                         Icons.Default.KeyboardArrowDown
                     },
-                    contentDescription = if (isExpanded) "Contraer" else "Expandir"
+                    contentDescription = if (isExpanded) "Contraer" else "Expandir",
+                    tint = MaterialTheme.colorScheme.primary // Ícono del color primario
                 )
             }
 
@@ -480,7 +491,7 @@ private fun GrupoVariableCard(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = 12.dp, vertical = 2.dp), // Más compacto
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
@@ -491,39 +502,38 @@ private fun GrupoVariableCard(
                         OutlinedTextField(
                             value = variableValues[variable.id] ?: "",
                             onValueChange = { value ->
-                                // Validación: Aceptar solo valores decimales o un campo vacío
                                 if (value.isEmpty() || value.toDoubleOrNull() != null) {
                                     onVariableValueChange(variable.id, value)
                                 }
                             },
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(horizontal = 4.dp, vertical = 4.dp),
+                                .padding(horizontal = 4.dp),
                             label = {
                                 Text(
                                     text = "Valor",
-                                    fontSize = 12.sp,
-                                    color = Color(0xFF2A69D5)
+                                    style = MaterialTheme.typography.labelSmall.copy( // Etiqueta compacta
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
                                 )
                             },
                             keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Decimal // Teclado de números con punto decimal
+                                keyboardType = KeyboardType.Decimal
                             ),
-                            textStyle = TextStyle(
-//                                background = Color(0xFFFFFFFF), // Fondo del texto (color azul claro)
-                                color = Color(0xFF2A69D5), // Color del texto azul (tema primario)
-                                textAlign = TextAlign.End, // Texto alineado a la derecha
-                                fontSize = 18.sp // Aumentar el tamaño del texto
+                            textStyle = MaterialTheme.typography.bodyLarge.copy( // Texto principal
+                                color = MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.End
                             ),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
-//                                containerColor = Color(0xFFFFFFFF), // Fondo del cuadro de texto (rosa claro)
-                                focusedBorderColor = Color(0xFF2970EA), // Borde azul al enfocarse
-                                unfocusedBorderColor = Color.Gray, // Borde gris sin enfoque
-                                errorBorderColor = Color.Red // Borde rojo en caso de error
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+//                                textColor = MaterialTheme.colorScheme.onSurface,
+                                cursorColor = MaterialTheme.colorScheme.primary
                             ),
                             singleLine = true,
-                            shape = RoundedCornerShape(30.dp),
-                            isError = variableValues[variable.id]?.toDoubleOrNull() == null && variableValues[variable.id]?.isNotEmpty() == true
+                            shape = RoundedCornerShape(12.dp), // Bordes más suaves
+                            isError = variableValues[variable.id]?.toDoubleOrNull() == null &&
+                                    variableValues[variable.id]?.isNotEmpty() == true
                         )
                     }
                 }
@@ -531,3 +541,104 @@ private fun GrupoVariableCard(
         }
     }
 }
+
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//private fun GrupoVariableCard(
+//    grupo: GrupoVariableDomainModel,
+//    isExpanded: Boolean,
+//    variables: List<VariableGrupoDomainModel>,
+//    variableValues: Map<Int, String>,
+//    onExpandClick: () -> Unit,
+//    onVariableValueChange: (Int, String) -> Unit
+//) {
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(horizontal = 6.dp, vertical = 3.dp),
+////        colors = CardDefaults.cardColors(
+////            containerColor = Color(0xFFFFFFFF)
+////        ),
+//        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+//    ) {
+//        Column(modifier = Modifier.fillMaxWidth()) {
+//            // Cabecera del grupo (siempre visible)
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .clickable { onExpandClick() }
+//                    .padding(16.dp),
+//                horizontalArrangement = Arrangement.SpaceBetween,
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//                Text(
+//                    text = grupo.grupoNombre,
+//                    style = MaterialTheme.typography.titleMedium
+//                )
+//                Icon(
+//                    imageVector = if (isExpanded) {
+//                        Icons.Default.KeyboardArrowUp
+//                    } else {
+//                        Icons.Default.KeyboardArrowDown
+//                    },
+//                    contentDescription = if (isExpanded) "Contraer" else "Expandir"
+//                )
+//            }
+//
+//            // Contenido expandible (variables)
+//            if (isExpanded) {
+//                variables.forEach { variable ->
+//                    Row(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(horizontal = 16.dp, vertical = 8.dp),
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        Text(
+//                            text = variable.variableEvaluacionNombre,
+//                            modifier = Modifier.weight(1f),
+//                            style = MaterialTheme.typography.bodyMedium
+//                        )
+//                        OutlinedTextField(
+//                            value = variableValues[variable.id] ?: "",
+//                            onValueChange = { value ->
+//                                // Validación: Aceptar solo valores decimales o un campo vacío
+//                                if (value.isEmpty() || value.toDoubleOrNull() != null) {
+//                                    onVariableValueChange(variable.id, value)
+//                                }
+//                            },
+//                            modifier = Modifier
+//                                .weight(1f)
+//                                .padding(horizontal = 4.dp, vertical = 4.dp),
+//                            label = {
+//                                Text(
+//                                    text = "Valor",
+//                                    fontSize = 12.sp,
+//                                    color = Color(0xFF2A69D5)
+//                                )
+//                            },
+//                            keyboardOptions = KeyboardOptions(
+//                                keyboardType = KeyboardType.Decimal // Teclado de números con punto decimal
+//                            ),
+//                            textStyle = TextStyle(
+////                                background = Color(0xFFFFFFFF), // Fondo del texto (color azul claro)
+//                                color = Color(0xFF2A69D5), // Color del texto azul (tema primario)
+//                                textAlign = TextAlign.End, // Texto alineado a la derecha
+//                                fontSize = 18.sp // Aumentar el tamaño del texto
+//                            ),
+//                            colors = TextFieldDefaults.outlinedTextFieldColors(
+////                                containerColor = Color(0xFFFFFFFF), // Fondo del cuadro de texto (rosa claro)
+//                                focusedBorderColor = Color(0xFF2970EA), // Borde azul al enfocarse
+//                                unfocusedBorderColor = Color.Gray, // Borde gris sin enfoque
+//                                errorBorderColor = Color.Red // Borde rojo en caso de error
+//                            ),
+//                            singleLine = true,
+//                            shape = RoundedCornerShape(30.dp),
+//                            isError = variableValues[variable.id]?.toDoubleOrNull() == null && variableValues[variable.id]?.isNotEmpty() == true
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}

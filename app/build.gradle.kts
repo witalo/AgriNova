@@ -93,6 +93,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.3.0")
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
+
+    implementation("androidx.compose.material:material-icons-extended:1.7.5")
 }
 kapt {
     correctErrorTypes = true
