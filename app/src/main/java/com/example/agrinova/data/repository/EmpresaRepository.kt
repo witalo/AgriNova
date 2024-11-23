@@ -409,6 +409,7 @@ class EmpresaRepository(
         usuarioId: Int,
         variableValues: Map<Int, String>
     ): Result<Unit> = runCatching {
+        Log.d("Detalles i:", variableValues.toString())
         val fechaActual = LocalDateTime.now()
         val formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         val fechaFormateada = fechaActual.format(formato)

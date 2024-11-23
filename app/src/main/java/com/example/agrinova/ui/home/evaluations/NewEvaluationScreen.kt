@@ -418,7 +418,10 @@ private fun EvaluationBody(
     val variables by viewModel.variables.collectAsState()
     val expandedGroups by viewModel.expandedGroups.collectAsState()
     val variableValues by viewModel.variableValues.collectAsState()
-
+    Log.d("Detalles grupos:", grupos.toString())
+    Log.d("Detalles expandedGroups:", expandedGroups.toString())
+    Log.d("Detalles variables:", variables.toString())
+    Log.d("Detalles variableValues:", variableValues.toString())
     LazyColumn(
         modifier = modifier.background(MaterialTheme.colorScheme.background)
     ) {

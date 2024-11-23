@@ -226,6 +226,7 @@ class NewEvaluationViewModel @Inject constructor(
                     user?.let {
                         val valvulaId = _selectedValvula.value?.id
                             ?: throw IllegalStateException("No se ha seleccionado una válvula")
+                        Log.d("Detalles view:", _variableValues.value.toString())
 
                         // Enviar directamente los valores sin procesar
                         val result = empresaRepository.insertDatoWithDetalles(
