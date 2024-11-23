@@ -410,10 +410,9 @@ class EmpresaRepository(
         variableValues: Map<Int, String>
     ): Result<Unit> = runCatching {
         val fechaActual = LocalDateTime.now()
-        // Formatear fecha y hora
-        val formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // Ajusta el formato si es necesario
+        val formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         val fechaFormateada = fechaActual.format(formato)
-        // Crear la entidad DatoEntity
+
         val datoEntity = DatoEntity(
             valvulaId = valvulaId,
             cartillaId = cartillaId,
@@ -421,25 +420,59 @@ class EmpresaRepository(
             fecha = fechaFormateada
         )
 
-        // Mapear los valores válidos a DatoDetalleEntity
-        val detalles = variableValues.mapNotNull { (variableId, valor) ->
-            valor.toFloatOrNull()?.let { floatValue ->
-                DatoDetalleEntity(
-                    muestra = floatValue,       // Ejemplo: usando el valor como "muestra"
-                    latitud = 0f,              // Placeholder (reemplaza con valor real si es necesario)
-                    longitud = 0f,             // Placeholder (reemplaza con valor real si es necesario)
-                    datoId = 0,                // Temporal, se asignará después
-                    variableGrupoId = variableId
-                )
-            }
+        // Procesar todos los valores, convirtiendo vacíos a 0
+        val detalles = variableValues.map { (variableId, valor) ->
+            DatoDetalleEntity(
+                muestra = when {
+                    valor.isBlank() -> 0f
+                    valor.toFloatOrNull() != null -> valor.toFloat()
+                    else -> 0f
+                },
+                latitud = 0f,
+                longitud = 0f,
+                datoId = 0,
+                variableGrupoId = variableId
+            )
         }
-        // Verifica si hay detalles válidos para insertar
-        if (detalles.isEmpty()) {
-            throw IllegalStateException("No hay valores válidos para guardar")
-        }
-        // Llama al método DAO para insertar el dato y sus detalles
         datoDao.insertDatoWithDetalles(datoEntity, detalles)
     }
+//    suspend fun insertDatoWithDetalles(
+//        valvulaId: Int,
+//        cartillaId: Int,
+//        usuarioId: Int,
+//        variableValues: Map<Int, String>
+//    ): Result<Unit> = runCatching {
+//        val fechaActual = LocalDateTime.now()
+//        // Formatear fecha y hora
+//        val formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // Ajusta el formato si es necesario
+//        val fechaFormateada = fechaActual.format(formato)
+//        // Crear la entidad DatoEntity
+//        val datoEntity = DatoEntity(
+//            valvulaId = valvulaId,
+//            cartillaId = cartillaId,
+//            usuarioId = usuarioId,
+//            fecha = fechaFormateada
+//        )
+//
+//        // Mapear los valores válidos a DatoDetalleEntity
+//        val detalles = variableValues.mapNotNull { (variableId, valor) ->
+//            valor.toFloatOrNull()?.let { floatValue ->
+//                DatoDetalleEntity(
+//                    muestra = floatValue,       // Ejemplo: usando el valor como "muestra"
+//                    latitud = 0f,              // Placeholder (reemplaza con valor real si es necesario)
+//                    longitud = 0f,             // Placeholder (reemplaza con valor real si es necesario)
+//                    datoId = 0,                // Temporal, se asignará después
+//                    variableGrupoId = variableId
+//                )
+//            }
+//        }
+//        // Verifica si hay detalles válidos para insertar
+//        if (detalles.isEmpty()) {
+//            throw IllegalStateException("No hay valores válidos para guardar")
+//        }
+//        // Llama al método DAO para insertar el dato y sus detalles
+//        datoDao.insertDatoWithDetalles(datoEntity, detalles)
+//    }
 //    suspend fun uploadMuestraData(fecha: String, cartillaId: Int): Result<Boolean> {
 //        return try {
 //            val datosLocales = datoDao.getDatoWithDetalleByDateAndCartillaId(fecha, cartillaId)

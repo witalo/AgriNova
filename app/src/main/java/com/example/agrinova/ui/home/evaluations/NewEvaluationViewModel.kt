@@ -222,26 +222,17 @@ class NewEvaluationViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-                // Recolectar el userId y usarlo
                 userId.collect { user ->
                     user?.let {
                         val valvulaId = _selectedValvula.value?.id
                             ?: throw IllegalStateException("No se ha seleccionado una válvula")
 
-                        // Solo procesar valores que no estén vacíos y sean números válidos
-                        val validValues = _variableValues.value.filter { (_, value) ->
-                            value.isNotEmpty() && value.toDoubleOrNull() != null
-                        }
-
-                        if (validValues.isEmpty()) {
-                            throw IllegalStateException("No hay valores válidos para guardar")
-                        }
-
+                        // Enviar directamente los valores sin procesar
                         val result = empresaRepository.insertDatoWithDetalles(
                             valvulaId = valvulaId,
                             cartillaId = cartillaId.toInt(),
                             usuarioId = user,
-                            variableValues = validValues
+                            variableValues = _variableValues.value
                         )
                         _saveStatus.value = result
                     }
@@ -253,6 +244,46 @@ class NewEvaluationViewModel @Inject constructor(
             }
         }
     }
+//    @RequiresApi(Build.VERSION_CODES.O)
+//    fun saveEvaluationDato() {
+//        viewModelScope.launch {
+//            try {
+//                _isLoading.value = true
+//                // Recolectar el userId y usarlo
+//                userId.collect { user ->
+//                    user?.let {
+//                        val valvulaId = _selectedValvula.value?.id
+//                            ?: throw IllegalStateException("No se ha seleccionado una válvula")
+//
+//                        // Solo procesar valores que no estén vacíos y sean números válidos
+////                        val validValues = _variableValues.value.filter { (_, value) ->
+////                            value.isNotEmpty() && value.toDoubleOrNull() != null
+////                        }
+//                        // Convertir valores vacíos a "0" y mantener los valores válidos
+//                        val processedValues = _variableValues.value.mapValues { (_, value) ->
+//                            if (value.isEmpty()) "0" else value
+//                        }
+//
+//                        if (processedValues.isEmpty()) {
+//                            throw IllegalStateException("No hay valores válidos para guardar")
+//                        }
+//
+//                        val result = empresaRepository.insertDatoWithDetalles(
+//                            valvulaId = valvulaId,
+//                            cartillaId = cartillaId.toInt(),
+//                            usuarioId = user,
+//                            variableValues = processedValues
+//                        )
+//                        _saveStatus.value = result
+//                    }
+//                }
+//            } catch (e: Exception) {
+//                _saveStatus.value = Result.failure(e)
+//            } finally {
+//                _isLoading.value = false
+//            }
+//        }
+//    }
 
 
 }
