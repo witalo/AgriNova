@@ -473,6 +473,8 @@ input DatoInput {
 
   valvulaId: Int!
 
+  cartillaId: Int!
+
   fechaHora: String!
 
   datoDetalle: [DatoDetalleInput]!

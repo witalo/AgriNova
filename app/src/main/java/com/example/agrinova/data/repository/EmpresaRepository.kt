@@ -506,25 +506,22 @@ class EmpresaRepository(
 //        }
 //    }
     suspend fun uploadDatos(fecha: String, cartillaId: Int): Result<Boolean> = withContext(Dispatchers.IO) {
-        Log.d("Upload 1:", "${fecha}::${cartillaId}")
         try {
             // 1. Obtener datos locales de manera eficiente
             val datos = datoDao.getDatosByCartilla(cartillaId, fecha)
             if (datos.isEmpty()) {
                 return@withContext Result.success(true) // No hay datos para enviar
             }
-
             // 2. Obtener detalles en batch
             val detalles = datoDao.getDatoDetallesByDatoIds(datos.map { it.id })
-            Log.d("Upload 2:", "${detalles}")
             // 3. Agrupar detalles por datoId eficientemente
             val detallesPorDato = detalles.groupBy { it.datoId }
-
             // 4. Construir los inputs para la mutación
             val datosInput = datos.map { dato ->
                 DatoInput(
                     usuarioId = dato.usuarioId,
                     valvulaId = dato.valvulaId,
+                    cartillaId = dato.cartillaId,
                     fechaHora = dato.fecha,
                     datoDetalle = detallesPorDato[dato.id]?.map { detalle ->
                         DatoDetalleInput(

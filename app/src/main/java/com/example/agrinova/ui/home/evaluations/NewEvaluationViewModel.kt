@@ -3,6 +3,7 @@ package com.example.agrinova.ui.home.evaluations
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -222,12 +223,17 @@ class NewEvaluationViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _isLoading.value = true
+                // Validar si _variableValues.value tiene valores
+                if (_variableValues.value.isNullOrEmpty()) {
+                    _isLoading.value = false
+                    Toast.makeText(context, "Debe ingresar al menos un valor.", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
                 userId.collect { user ->
                     user?.let {
                         val valvulaId = _selectedValvula.value?.id
                             ?: throw IllegalStateException("No se ha seleccionado una válvula")
-                        Log.d("Detalles view:", _variableValues.value.toString())
-
                         // Enviar directamente los valores sin procesar
                         val result = empresaRepository.insertDatoWithDetalles(
                             valvulaId = valvulaId,
@@ -245,6 +251,7 @@ class NewEvaluationViewModel @Inject constructor(
             }
         }
     }
+
 //    @RequiresApi(Build.VERSION_CODES.O)
 //    fun saveEvaluationDato() {
 //        viewModelScope.launch {
