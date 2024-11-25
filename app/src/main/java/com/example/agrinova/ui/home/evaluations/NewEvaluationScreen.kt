@@ -67,6 +67,8 @@ import android.Manifest
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.Button
@@ -383,36 +385,37 @@ private fun EvaluationHeader(
                     text = "GPS Automático",
                     modifier = Modifier.padding(start = 2.dp)
                 )
-                // Botón circular con ícono de GPS
-                IconButton(
-                    onClick = {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            val location = viewModel.getCurrentLocation()
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(
-                                    context,
-                                    "Lat: ${location.latitude}, Lon: ${location.longitude}",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                        }
-                    },
-                    modifier = Modifier
-                        .size(32.dp) // Tamaño del botón circular
-                        .padding(5.dp) // Margen interior
-                        .background(
-                            color = Color(0xFF43BD28), // Color del botón
-                            shape = CircleShape
-                        )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MyLocation, // Ícono de GPS
-                        modifier = Modifier.size(32.dp),
-                        contentDescription = "Obtener Ubicación",
-                        tint = Color.White // Color del ícono
-                    )
-                }
             }
+            // Botón circular con ícono de GPS
+            IconButton(
+                onClick = {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val location = viewModel.getCurrentLocation()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                context,
+                                "Lat: ${location.latitude}, Lon: ${location.longitude}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .size(30.dp) // Tamaño del botón circular
+                    .padding(5.dp) // Margen interior
+                    .background(
+                        color = Color(0xFF43BD28), // Color del botón
+                        shape = CircleShape
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MyLocation, // Ícono de GPS
+                    modifier = Modifier.size(32.dp),
+                    contentDescription = "Obtener Ubicación",
+                    tint = Color.White // Color del ícono
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
             // Botón más moderno con animación
             IconButton(
                 onClick = { viewModel.saveEvaluationDato() },
@@ -435,21 +438,6 @@ private fun EvaluationHeader(
                     tint = Color(0xFFFFFFFF) // Color del icono (blanco)
                 )
             }
-
-//            IconButton(
-//                onClick = { viewModel.saveEvaluationDato() },
-//                modifier = Modifier
-//                    .size(48.dp)
-//                    .padding(end = 8.dp)
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.CheckCircle,
-//                    contentDescription = "Guardar",
-//                    modifier = Modifier.size(35.dp),
-//                    tint = Color(0xFF43BD28)
-//                )
-//            }
-
         }
     }
 }
