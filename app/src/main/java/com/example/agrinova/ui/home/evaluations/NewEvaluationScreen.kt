@@ -68,6 +68,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.draw.clip
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -78,7 +79,9 @@ fun NewEvaluationScreen(
     viewModel: NewEvaluationViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
-    val isGpsEnabled by viewModel.isGpsEnabled.collectAsState()
+//    val isGpsEnabled by viewModel.isGpsEnabled.collectAsState()
+//    val locationData by viewModel.locationData.collectAsState()
+    val isGpsEnabled by rememberSaveable { mutableStateOf(false) }
     val locationData by viewModel.locationData.collectAsState()
     // Show location when captured
     locationData?.let { location ->
@@ -89,11 +92,19 @@ fun NewEvaluationScreen(
         ).show()
     }
 
+//    val saveStatus by viewModel.saveStatus.collectAsState()
+//    var showSuccessDialog by remember { mutableStateOf(false) }
+//    var showErrorDialog by remember { mutableStateOf(false) }
+//    var errorMessage by remember { mutableStateOf("") }
+
+    // Usar rememberSaveable para mantener el estado a través de recreaciones
+    var showSuccessDialog by rememberSaveable { mutableStateOf(false) }
+    var showErrorDialog by rememberSaveable { mutableStateOf(false) }
+    var errorMessage by rememberSaveable { mutableStateOf("") }
+    // Otros estados ya gestionados por el ViewModel
     val saveStatus by viewModel.saveStatus.collectAsState()
-    var showSuccessDialog by remember { mutableStateOf(false) }
-    var showErrorDialog by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
-    // Monitor save status
+
+    // Evitar reiniciar el estado en cada rotación
     LaunchedEffect(saveStatus) {
         saveStatus?.fold(
             onSuccess = {
@@ -544,104 +555,3 @@ private fun GrupoVariableCard(
         }
     }
 }
-
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//private fun GrupoVariableCard(
-//    grupo: GrupoVariableDomainModel,
-//    isExpanded: Boolean,
-//    variables: List<VariableGrupoDomainModel>,
-//    variableValues: Map<Int, String>,
-//    onExpandClick: () -> Unit,
-//    onVariableValueChange: (Int, String) -> Unit
-//) {
-//    Card(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(horizontal = 6.dp, vertical = 3.dp),
-////        colors = CardDefaults.cardColors(
-////            containerColor = Color(0xFFFFFFFF)
-////        ),
-//        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-//    ) {
-//        Column(modifier = Modifier.fillMaxWidth()) {
-//            // Cabecera del grupo (siempre visible)
-//            Row(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .clickable { onExpandClick() }
-//                    .padding(16.dp),
-//                horizontalArrangement = Arrangement.SpaceBetween,
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                Text(
-//                    text = grupo.grupoNombre,
-//                    style = MaterialTheme.typography.titleMedium
-//                )
-//                Icon(
-//                    imageVector = if (isExpanded) {
-//                        Icons.Default.KeyboardArrowUp
-//                    } else {
-//                        Icons.Default.KeyboardArrowDown
-//                    },
-//                    contentDescription = if (isExpanded) "Contraer" else "Expandir"
-//                )
-//            }
-//
-//            // Contenido expandible (variables)
-//            if (isExpanded) {
-//                variables.forEach { variable ->
-//                    Row(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(horizontal = 16.dp, vertical = 8.dp),
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        Text(
-//                            text = variable.variableEvaluacionNombre,
-//                            modifier = Modifier.weight(1f),
-//                            style = MaterialTheme.typography.bodyMedium
-//                        )
-//                        OutlinedTextField(
-//                            value = variableValues[variable.id] ?: "",
-//                            onValueChange = { value ->
-//                                // Validación: Aceptar solo valores decimales o un campo vacío
-//                                if (value.isEmpty() || value.toDoubleOrNull() != null) {
-//                                    onVariableValueChange(variable.id, value)
-//                                }
-//                            },
-//                            modifier = Modifier
-//                                .weight(1f)
-//                                .padding(horizontal = 4.dp, vertical = 4.dp),
-//                            label = {
-//                                Text(
-//                                    text = "Valor",
-//                                    fontSize = 12.sp,
-//                                    color = Color(0xFF2A69D5)
-//                                )
-//                            },
-//                            keyboardOptions = KeyboardOptions(
-//                                keyboardType = KeyboardType.Decimal // Teclado de números con punto decimal
-//                            ),
-//                            textStyle = TextStyle(
-////                                background = Color(0xFFFFFFFF), // Fondo del texto (color azul claro)
-//                                color = Color(0xFF2A69D5), // Color del texto azul (tema primario)
-//                                textAlign = TextAlign.End, // Texto alineado a la derecha
-//                                fontSize = 18.sp // Aumentar el tamaño del texto
-//                            ),
-//                            colors = TextFieldDefaults.outlinedTextFieldColors(
-////                                containerColor = Color(0xFFFFFFFF), // Fondo del cuadro de texto (rosa claro)
-//                                focusedBorderColor = Color(0xFF2970EA), // Borde azul al enfocarse
-//                                unfocusedBorderColor = Color.Gray, // Borde gris sin enfoque
-//                                errorBorderColor = Color.Red // Borde rojo en caso de error
-//                            ),
-//                            singleLine = true,
-//                            shape = RoundedCornerShape(30.dp),
-//                            isError = variableValues[variable.id]?.toDoubleOrNull() == null && variableValues[variable.id]?.isNotEmpty() == true
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}

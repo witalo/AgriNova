@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
 class NewEvaluationViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -108,6 +107,15 @@ class NewEvaluationViewModel @Inject constructor(
     // Controla el estado de carga
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
+
+//    ------------------------------------------------------------------------------------------
+    private val _showSuccessDialog = MutableStateFlow(false)
+    val showSuccessDialog: StateFlow<Boolean> get() = _showSuccessDialog
+
+    fun onSaveSuccess() {
+        _showSuccessDialog.value = true
+    }
+//    ------------------------------------------------------------------------------------------
 
     init {
         viewModelScope.launch {
