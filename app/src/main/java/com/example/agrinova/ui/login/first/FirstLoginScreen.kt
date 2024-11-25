@@ -29,7 +29,7 @@ fun FirstLoginScreen(
 ) {
     var ruc by remember { mutableStateOf("20498655468") }
     var correo by remember { mutableStateOf("alozada@fundoamerica.com.pe") }
-    var password by remember { mutableStateOf("america") }
+    var password by remember { mutableStateOf("america2025") }
     var isLoading by remember { mutableStateOf(false) }
 
     // Para mostrar mensajes de error en Snackbar
@@ -157,41 +157,15 @@ fun FirstLoginScreen(
                         message = errorMessage,
                         duration = SnackbarDuration.Long
                     )
+                    isLoading = false // Asegúrate de resetear el estado de carga
                 }
-                else -> { /* No action needed */ }
+                is LoginState.Loading -> {
+                    isLoading = true // Bloquea el botón mientras se carga
+                }
+                else -> {
+                    isLoading = false // Asegúrate de que el botón esté habilitado en otros casos
+                }
             }
         }
-
-        // Observa el estado de autenticación
-//        val loginState by viewModel.loginState.collectAsState()
-//        when (loginState) {
-//            is LoginState.Success -> {
-//                val companyName = (loginState as LoginState.Success).companyName
-//                val companyId = (loginState as LoginState.Success).companyId
-//                LaunchedEffect(Unit) {
-//                    onLoginSuccess(companyName, companyId.toInt())
-//                    // Limpiar los campos después del inicio de sesión exitoso
-//                    ruc = ""
-//                    correo = ""
-//                    password = ""
-//                    isLoading = false // Reiniciar la carga
-//                }
-//            }
-//            is LoginState.Error -> {
-//                isLoading = false // Reiniciar la carga
-//                val errorMessage = (loginState as LoginState.Error).message
-//                LaunchedEffect(errorMessage) {
-//                    coroutineScope.launch {
-//                        snackbarHostState.showSnackbar(errorMessage)
-//                    }
-//                }
-//            }
-//            is LoginState.Loading -> {
-//                CircularProgressIndicator()
-//            }
-//            is LoginState.Idle -> {
-//                // Puedes manejar el estado Idle si lo deseas
-//            }
-//        }
     }
 }
