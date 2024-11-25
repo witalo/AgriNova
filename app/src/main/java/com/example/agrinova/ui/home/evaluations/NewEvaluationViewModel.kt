@@ -63,6 +63,24 @@ class NewEvaluationViewModel @Inject constructor(
             }
         }
     }
+    suspend fun getCurrentLocation(): LocationModel {
+        return try {
+            val gpsEnabled = locationHelper.checkAndEnableGPS()
+            if (gpsEnabled) {
+                locationHelper.getCurrentLocation()?.let { location ->
+                    LocationModel(
+                        latitude = location.first,
+                        longitude = location.second
+                    )
+                } ?: LocationModel(0.0, 0.0) // Si no se encuentra ubicación
+            } else {
+                LocationModel(0.0, 0.0) // GPS no habilitado
+            }
+        } catch (e: Exception) {
+            Log.e("GPS_ERROR", "Error al obtener ubicación: ${e.message}")
+            LocationModel(0.0, 0.0) // Error general
+        }
+    }
 
     val cartillaId: String = savedStateHandle["cartillaId"] ?: ""
     val userId: Flow<Int?> = usePreferences.userId

@@ -68,8 +68,13 @@ import androidx.activity.ComponentActivity
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.draw.clip
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -79,9 +84,9 @@ fun NewEvaluationScreen(
     viewModel: NewEvaluationViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
-//    val isGpsEnabled by viewModel.isGpsEnabled.collectAsState()
+    val isGpsEnabled by viewModel.isGpsEnabled.collectAsState()
 //    val locationData by viewModel.locationData.collectAsState()
-    val isGpsEnabled by rememberSaveable { mutableStateOf(false) }
+//    val isGpsEnabled by rememberSaveable { mutableStateOf(false) }
     val locationData by viewModel.locationData.collectAsState()
     // Show location when captured
     locationData?.let { location ->
@@ -377,6 +382,28 @@ private fun EvaluationHeader(
                     text = "GPS Automático",
                     modifier = Modifier.padding(start = 2.dp)
                 )
+                Button(
+                    onClick = {
+                        // Ejecutar en un coroutine scope para llamadas suspendidas
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val location = viewModel.getCurrentLocation()
+                            withContext(Dispatchers.Main) {
+                                if (location != null) {
+                                    Toast.makeText(
+                                        context,
+                                        "Lat: ${location.latitude}, Lon: ${location.longitude}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                } else {
+                                    Toast.makeText(context, "No se pudo obtener la ubicación", Toast.LENGTH_LONG)
+                                        .show()
+                                }
+                            }
+                        }
+                    }
+                ) {
+                    Text("Obtener Ubicación")
+                }
             }
             // Botón más moderno con animación
             IconButton(
