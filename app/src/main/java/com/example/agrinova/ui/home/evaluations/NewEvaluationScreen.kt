@@ -399,6 +399,7 @@ private fun EvaluationHeader(
                     },
                     modifier = Modifier
                         .size(32.dp) // Tamaño del botón circular
+                        .padding(5.dp) // Margen interior
                         .background(
                             color = Color(0xFF43BD28), // Color del botón
                             shape = CircleShape
@@ -406,6 +407,7 @@ private fun EvaluationHeader(
                 ) {
                     Icon(
                         imageVector = Icons.Default.MyLocation, // Ícono de GPS
+                        modifier = Modifier.size(32.dp),
                         contentDescription = "Obtener Ubicación",
                         tint = Color.White // Color del ícono
                     )
