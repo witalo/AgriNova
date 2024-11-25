@@ -68,6 +68,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.Button
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.draw.clip
@@ -382,27 +383,32 @@ private fun EvaluationHeader(
                     text = "GPS Automático",
                     modifier = Modifier.padding(start = 2.dp)
                 )
-                Button(
+                // Botón circular con ícono de GPS
+                IconButton(
                     onClick = {
-                        // Ejecutar en un coroutine scope para llamadas suspendidas
                         CoroutineScope(Dispatchers.IO).launch {
                             val location = viewModel.getCurrentLocation()
                             withContext(Dispatchers.Main) {
-                                if (location != null) {
-                                    Toast.makeText(
-                                        context,
-                                        "Lat: ${location.latitude}, Lon: ${location.longitude}",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                } else {
-                                    Toast.makeText(context, "No se pudo obtener la ubicación", Toast.LENGTH_LONG)
-                                        .show()
-                                }
+                                Toast.makeText(
+                                    context,
+                                    "Lat: ${location.latitude}, Lon: ${location.longitude}",
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
                         }
-                    }
+                    },
+                    modifier = Modifier
+                        .size(48.dp) // Tamaño del botón circular
+                        .background(
+                            color = Color(0xFF43BD28), // Color del botón
+                            shape = CircleShape
+                        )
                 ) {
-                    Text("Obtener Ubicación")
+                    Icon(
+                        imageVector = Icons.Default.MyLocation, // Ícono de GPS
+                        contentDescription = "Obtener Ubicación",
+                        tint = Color.White // Color del ícono
+                    )
                 }
             }
             // Botón más moderno con animación
