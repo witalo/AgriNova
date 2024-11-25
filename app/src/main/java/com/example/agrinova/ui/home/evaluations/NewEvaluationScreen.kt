@@ -322,7 +322,7 @@ private fun EvaluationHeader(
 
             // Checkbox
             Row(
-                modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.weight(1f).padding(end = 3.dp), verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
                     checked = isChecked,
@@ -398,7 +398,7 @@ private fun EvaluationHeader(
                         }
                     },
                     modifier = Modifier
-                        .size(48.dp) // Tamaño del botón circular
+                        .size(40.dp) // Tamaño del botón circular
                         .background(
                             color = Color(0xFF43BD28), // Color del botón
                             shape = CircleShape
