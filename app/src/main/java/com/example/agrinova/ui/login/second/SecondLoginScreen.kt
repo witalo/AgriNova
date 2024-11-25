@@ -89,9 +89,9 @@ fun SecondLoginScreen(
     var selectedModulo by remember { mutableStateOf<ModuloDomainModel?>(null) }
     val modules = remember {
         listOf(
-            ModuloDomainModel(1, "SANIDAD"),
-            ModuloDomainModel(2, "CALIDAD"),
-            ModuloDomainModel(3, "FERTIRRIEGO")
+            ModuloDomainModel(1, "Sanidad"),
+            ModuloDomainModel(2, "Calidad"),
+            ModuloDomainModel(3, "Fertirriego")
         )
     }
 
@@ -328,8 +328,10 @@ fun SecondLoginScreen(
 
                 is ValidationState.Invalid -> {
                     Text(
-                        "Usuario no válido. Verifique datos.",
-                        color = MaterialTheme.colorScheme.error
+                        text = "Usuario no válido. Verifique los datos.",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall, // Texto más pequeño
+                        textAlign = TextAlign.Center // Centra el texto
                     )
                 }
 

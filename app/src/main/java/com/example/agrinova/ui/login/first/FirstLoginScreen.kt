@@ -29,7 +29,7 @@ fun FirstLoginScreen(
 ) {
     var ruc by remember { mutableStateOf("20498655468") }
     var correo by remember { mutableStateOf("alozada@fundoamerica.com.pe") }
-    var password by remember { mutableStateOf("america2025") }
+    var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
     // Para mostrar mensajes de error en Snackbar
