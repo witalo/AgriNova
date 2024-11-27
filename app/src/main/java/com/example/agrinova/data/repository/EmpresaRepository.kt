@@ -18,6 +18,7 @@ import com.example.agrinova.data.remote.model.ZonaDataModel
 import com.example.agrinova.data.remote.model.FundoDataModel
 import com.example.agrinova.GetEmpresaDataQuery
 import com.example.agrinova.data.dto.DatoValvulaDto
+import com.example.agrinova.data.dto.LocationModel
 import com.example.agrinova.data.dto.LoteModuloDto
 import com.example.agrinova.data.local.AppDatabase
 import com.example.agrinova.data.local.dao.CampaniaDao
@@ -407,9 +408,10 @@ class EmpresaRepository(
         valvulaId: Int,
         cartillaId: Int,
         usuarioId: Int,
-        variableValues: Map<Int, String>
+        variableValues: Map<Int, String>,
+        locationDetails: Map<Int, LocationModel>
     ): Result<Unit> = runCatching {
-        Log.d("Detalles i:", variableValues.toString())
+        Log.d("GPS:", locationDetails.toString())
         val fechaActual = LocalDateTime.now()
         val formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         val fechaFormateada = fechaActual.format(formato)
@@ -421,16 +423,31 @@ class EmpresaRepository(
             fecha = fechaFormateada
         )
 
+//        // Procesar todos los valores, convirtiendo vacíos a 0
+//        val detalles = variableValues.map { (variableId, valor) ->
+//            DatoDetalleEntity(
+//                muestra = when {
+//                    valor.isBlank() -> 0f
+//                    valor.toFloatOrNull() != null -> valor.toFloat()
+//                    else -> 0f
+//                },
+//                latitud = 0f,
+//                longitud = 0f,
+//                datoId = 0,
+//                variableGrupoId = variableId
+//            )
+//        }
         // Procesar todos los valores, convirtiendo vacíos a 0
         val detalles = variableValues.map { (variableId, valor) ->
+            val location = locationDetails[variableId] ?: LocationModel(0.0, 0.0)
             DatoDetalleEntity(
                 muestra = when {
                     valor.isBlank() -> 0f
                     valor.toFloatOrNull() != null -> valor.toFloat()
                     else -> 0f
                 },
-                latitud = 0f,
-                longitud = 0f,
+                latitud = location.latitude.toFloat(),
+                longitud = location.longitude.toFloat(),
                 datoId = 0,
                 variableGrupoId = variableId
             )

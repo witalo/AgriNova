@@ -67,16 +67,21 @@ import android.Manifest
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.Button
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.draw.clip
+import com.example.agrinova.data.dto.LocationModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -317,42 +322,38 @@ private fun EvaluationHeader(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween // Espaciado entre los elementos
+                .padding(vertical = 8.dp), // Ajusta el espacio vertical
+            verticalAlignment = Alignment.CenterVertically // Centra verticalmente el contenido dentro de la fila
         ) {
-
-            // Checkbox
+            // Primera columna: Checkbox y texto
             Row(
-                modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 4.dp), // Espaciado lateral
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
                     checked = isChecked,
                     onCheckedChange = { checked ->
                         if (checked) {
-                            // Verificar y solicitar permisos
+                            Log.d("GPS if:", checked.toString())
                             when {
                                 ContextCompat.checkSelfPermission(
                                     context,
                                     Manifest.permission.ACCESS_FINE_LOCATION
                                 ) == PackageManager.PERMISSION_GRANTED -> {
-                                    // Ya tenemos permisos, proceder
-                                    onCheckedChange(true)
+                                    onCheckedChange(true) // Activa GPS
                                 }
-
                                 activity?.shouldShowRequestPermissionRationale(
                                     Manifest.permission.ACCESS_FINE_LOCATION
                                 ) == true -> {
-                                    // Mostrar explicación de por qué necesitamos el permiso
                                     Toast.makeText(
                                         context,
                                         "Se necesita acceso a la ubicación para esta función",
                                         Toast.LENGTH_LONG
                                     ).show()
                                 }
-
                                 else -> {
-                                    // Solicitar permisos
                                     permissionLauncher.launch(
                                         arrayOf(
                                             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -362,83 +363,47 @@ private fun EvaluationHeader(
                                 }
                             }
                         } else {
-                            onCheckedChange(false)
+                            Log.d("GPS else:", checked.toString())
+                            onCheckedChange(false) // Desactiva GPS
                         }
-                        // Check permissions before changing state
-//                        if (ContextCompat.checkSelfPermission(
-//                                context,
-//                                Manifest.permission.ACCESS_FINE_LOCATION
-//                            ) != PackageManager.PERMISSION_GRANTED
-//                        ) {
-//                            // Request permission
-//                            launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-//                        } else {
-//                            // Permissions already granted, proceed
-//                            onCheckedChange(it)
-//                        }
                     },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = Color(0xFF43BD28)
-                    )
+                    colors = CheckboxDefaults.colors(checkedColor = Color(0xFF43BD28))
                 )
                 Text(
-                    text = "GPS Automático",
-                    modifier = Modifier.padding(start = 2.dp)
+                    text = "Activar(GPS)",
+                    modifier = Modifier.padding(start = 1.dp) // Espaciado entre checkbox y texto
                 )
             }
-            // Botón circular con ícono de GPS
-            IconButton(
-                onClick = {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val location = viewModel.getCurrentLocation()
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(
-                                context,
-                                "Lat: ${location.latitude}, Lon: ${location.longitude}",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
-                },
+
+            // Segunda columna: Botón centrado
+            Box(
                 modifier = Modifier
-                    .size(30.dp) // Tamaño del botón circular
-                    .padding(5.dp) // Margen interior
-                    .background(
-                        color = Color(0xFF43BD28), // Color del botón
-                        shape = CircleShape
-                    )
+                    .weight(1f), // Distribución igual con la primera columna
+                contentAlignment = Alignment.Center // Centra el botón horizontal y verticalmente
             ) {
-                Icon(
-                    imageVector = Icons.Default.MyLocation, // Ícono de GPS
-                    modifier = Modifier.size(32.dp),
-                    contentDescription = "Obtener Ubicación",
-                    tint = Color.White // Color del ícono
-                )
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            // Botón más moderno con animación
-            IconButton(
-                onClick = { viewModel.saveEvaluationDato() },
-                modifier = Modifier
-                    .size(56.dp) // Tamaño del botón
-                    .padding(5.dp) // Margen interior
-                    .clip(CircleShape) // Forma circular
-                    .background(Color(0xFF1976D2)) // Fondo personalizado (azul intenso)
-                    .border(
-                        width = 2.dp,
-                        color = Color(0xFFBBDEFB), // Color de borde (azul claro)
-                        shape = CircleShape
+                IconButton(
+                    onClick = { viewModel.saveEvaluationDato() },
+                    modifier = Modifier
+                        .size(45.dp) // Tamaño del botón
+                        .clip(CircleShape) // Forma circular
+                        .background(Color(0xFF1976D2)) // Fondo personalizado (azul intenso)
+                        .border(
+                            width = 2.dp,
+                            color = Color(0xFFD6ECFD), // Color del borde (azul claro)
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Guardar",
+                        modifier = Modifier.size(30.dp), // Tamaño del ícono
+                        tint = Color(0xFFFFFFFF) // Color del ícono (blanco)
                     )
-                    .animateContentSize() // Animación fluida
-            ) {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Guardar",
-                    modifier = Modifier.size(32.dp), // Tamaño del icono
-                    tint = Color(0xFFFFFFFF) // Color del icono (blanco)
-                )
+                }
             }
         }
+
+
     }
 }
 
@@ -452,22 +417,31 @@ private fun EvaluationBody(
     val variables by viewModel.variables.collectAsState()
     val expandedGroups by viewModel.expandedGroups.collectAsState()
     val variableValues by viewModel.variableValues.collectAsState()
-    Log.d("Detalles grupos:", grupos.toString())
-    Log.d("Detalles expandedGroups:", expandedGroups.toString())
-    Log.d("Detalles variables:", variables.toString())
-    Log.d("Detalles variableValues:", variableValues.toString())
     LazyColumn(
         modifier = modifier.background(MaterialTheme.colorScheme.background)
     ) {
+//        items(grupos) { grupo ->
+//            GrupoVariableCard(
+//                grupo = grupo,
+//                isExpanded = expandedGroups.contains(grupo.id),
+//                variables = variables.filter { it.grupoVariableId == grupo.id },
+//                variableValues = variableValues,
+//                onExpandClick = { viewModel.toggleGroupExpansion(grupo.id) },
+//                onVariableValueChange = { variableId, value ->
+//                    viewModel.updateVariableValue(variableId, value)
+//                }
+//            )
+//        }
         items(grupos) { grupo ->
             GrupoVariableCard(
                 grupo = grupo,
                 isExpanded = expandedGroups.contains(grupo.id),
                 variables = variables.filter { it.grupoVariableId == grupo.id },
-                variableValues = variableValues,
+                variableValues = variableValues.mapValues { it.value.first },
+                viewModel = viewModel, // Add viewModel
                 onExpandClick = { viewModel.toggleGroupExpansion(grupo.id) },
-                onVariableValueChange = { variableId, value ->
-                    viewModel.updateVariableValue(variableId, value)
+                onVariableValueChange = { variableId, value, location ->
+                    viewModel.updateVariableValue(variableId, value, location)
                 }
             )
         }
@@ -485,7 +459,9 @@ private fun GrupoVariableCard(
     variables: List<VariableGrupoDomainModel>,
     variableValues: Map<Int, String>,
     onExpandClick: () -> Unit,
-    onVariableValueChange: (Int, String) -> Unit
+//    onVariableValueChange: (Int, String) -> Unit
+    onVariableValueChange: (Int, String, LocationModel?) -> Unit, // Modified to include LocationModel
+    viewModel: NewEvaluationViewModel // Add ViewModel parameter
 ) {
     Card(
         modifier = Modifier
@@ -538,9 +514,22 @@ private fun GrupoVariableCard(
                         )
                         OutlinedTextField(
                             value = variableValues[variable.id] ?: "",
+//                            onValueChange = { value ->
+//                                if (value.isEmpty() || value.toDoubleOrNull() != null) {
+//                                    onVariableValueChange(variable.id, value)
+//                                }
+//                            },
                             onValueChange = { value ->
                                 if (value.isEmpty() || value.toDoubleOrNull() != null) {
-                                    onVariableValueChange(variable.id, value)
+                                    // Obtiene la ubicación actual al cambiar el valor
+                                    val currentLocation = runBlocking {
+                                        viewModel.getCurrentGPS()
+                                    }
+                                    onVariableValueChange(
+                                        variable.id,
+                                        value,
+                                        currentLocation
+                                    )
                                 }
                             },
                             modifier = Modifier

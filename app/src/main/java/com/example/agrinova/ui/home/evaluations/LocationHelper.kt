@@ -6,8 +6,11 @@ import android.location.LocationManager
 import android.provider.Settings
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.os.Looper
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.*
+
 
 class LocationHelper(private val context: Context) {
     private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -51,30 +54,12 @@ class LocationHelper(private val context: Context) {
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
     }
+    fun isGPSEnabled(): Boolean {
+        return try {
+            locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        } catch (e: Exception) {
+            Log.e("GPS_ERROR", "Error checking GPS state: ${e.message}")
+            false
+        }
+    }
 }
-//class LocationHelper(private val context: Context) {
-//    private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-//
-//    fun checkAndEnableGPS(): Boolean {
-//        return if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-//            // Open GPS settings
-//            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-//            context.startActivity(intent)
-//            false
-//        } else {
-//            true
-//        }
-//    }
-//
-//    @SuppressLint("MissingPermission")
-//    fun getCurrentLocation(): Pair<Double, Double>? {
-//        return try {
-//            val location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-//            location?.let {
-//                Pair(it.latitude, it.longitude)
-//            }
-//        } catch (e: Exception) {
-//            null
-//        }
-//    }
-//}

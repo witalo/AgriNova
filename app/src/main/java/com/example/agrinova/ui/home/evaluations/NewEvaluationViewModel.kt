@@ -63,18 +63,19 @@ class NewEvaluationViewModel @Inject constructor(
             }
         }
     }
-    suspend fun getCurrentLocation(): LocationModel {
+    suspend fun getCurrentGPS(): LocationModel {
         return try {
-            val gpsEnabled = locationHelper.checkAndEnableGPS()
+            // Solo verifica si el GPS está habilitado
+            val gpsEnabled = locationHelper.isGPSEnabled()
             if (gpsEnabled) {
                 locationHelper.getCurrentLocation()?.let { location ->
                     LocationModel(
                         latitude = location.first,
                         longitude = location.second
                     )
-                } ?: LocationModel(0.0, 0.0) // Si no se encuentra ubicación
+                } ?: LocationModel(0.0, 0.0) // No se encontró ubicación
             } else {
-                LocationModel(0.0, 0.0) // GPS no habilitado
+                LocationModel(0.0, 0.0) // GPS desactivado
             }
         } catch (e: Exception) {
             Log.e("GPS_ERROR", "Error al obtener ubicación: ${e.message}")
@@ -116,8 +117,11 @@ class NewEvaluationViewModel @Inject constructor(
     val expandedGroups: StateFlow<Set<Int>> = _expandedGroups.asStateFlow()
 
     // Estado para almacenar los valores ingresados en los TextFields
-    private val _variableValues = MutableStateFlow<Map<Int, String>>(emptyMap())
-    val variableValues: StateFlow<Map<Int, String>> = _variableValues.asStateFlow()
+//    private val _variableValues = MutableStateFlow<Map<Int, String>>(emptyMap())
+//    val variableValues: StateFlow<Map<Int, String>> = _variableValues.asStateFlow()
+    // Update the variableValues state to include location
+    private val _variableValues = MutableStateFlow<Map<Int, Pair<String, LocationModel?>>>(emptyMap())
+    val variableValues: StateFlow<Map<Int, Pair<String, LocationModel?>>> = _variableValues.asStateFlow()
 
     private val _saveStatus = MutableStateFlow<Result<Unit>?>(null)
     val saveStatus: StateFlow<Result<Unit>?> = _saveStatus.asStateFlow()
@@ -239,17 +243,54 @@ class NewEvaluationViewModel @Inject constructor(
     }
 
     // Función para actualizar el valor de una variable
-    fun updateVariableValue(variableId: Int, value: String) {
-        _variableValues.value += (variableId to value)
+//    fun updateVariableValue(variableId: Int, value: String) {
+//        _variableValues.value += (variableId to value)
+//    }
+    // Modify the updateVariableValue function
+    fun updateVariableValue(variableId: Int, value: String, location: LocationModel?) {
+        _variableValues.value += (variableId to (value to location))
     }
 
     // Función para guardar la evaluación
+//    @RequiresApi(Build.VERSION_CODES.O)
+//    fun saveEvaluationDato() {
+//        viewModelScope.launch {
+//            try {
+//                _isLoading.value = true
+//                // Validar si _variableValues.value tiene valores
+//                if (_variableValues.value.isNullOrEmpty()) {
+//                    _isLoading.value = false
+//                    Toast.makeText(context, "Debe ingresar al menos un valor.", Toast.LENGTH_SHORT).show()
+//                    return@launch
+//                }
+//
+//                userId.collect { user ->
+//                    user?.let {
+//                        val valvulaId = _selectedValvula.value?.id
+//                            ?: throw IllegalStateException("No se ha seleccionado una válvula")
+//                        // Enviar directamente los valores sin procesar
+//                        val result = empresaRepository.insertDatoWithDetalles(
+//                            valvulaId = valvulaId,
+//                            cartillaId = cartillaId.toInt(),
+//                            usuarioId = user,
+//                            variableValues = _variableValues.value
+//                        )
+//                        _saveStatus.value = result
+//                    }
+//                }
+//            } catch (e: Exception) {
+//                _saveStatus.value = Result.failure(e)
+//            } finally {
+//                _isLoading.value = false
+//            }
+//        }
+//    }
+// Update the saveEvaluationDato function to handle location
     @RequiresApi(Build.VERSION_CODES.O)
     fun saveEvaluationDato() {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-                // Validar si _variableValues.value tiene valores
                 if (_variableValues.value.isNullOrEmpty()) {
                     _isLoading.value = false
                     Toast.makeText(context, "Debe ingresar al menos un valor.", Toast.LENGTH_SHORT).show()
@@ -260,12 +301,23 @@ class NewEvaluationViewModel @Inject constructor(
                     user?.let {
                         val valvulaId = _selectedValvula.value?.id
                             ?: throw IllegalStateException("No se ha seleccionado una válvula")
-                        // Enviar directamente los valores sin procesar
+
+                        // Convert to the format expected by insertDatoWithDetalles
+                        val processedValues = _variableValues.value.mapValues { (_, pair) ->
+                            pair.first
+                        }
+
+                        // Prepare location details
+                        val locationDetails = _variableValues.value.mapValues { (_, pair) ->
+                            pair.second ?: LocationModel(0.0, 0.0)
+                        }
+
                         val result = empresaRepository.insertDatoWithDetalles(
                             valvulaId = valvulaId,
                             cartillaId = cartillaId.toInt(),
                             usuarioId = user,
-                            variableValues = _variableValues.value
+                            variableValues = processedValues,
+                            locationDetails = locationDetails
                         )
                         _saveStatus.value = result
                     }
@@ -277,7 +329,6 @@ class NewEvaluationViewModel @Inject constructor(
             }
         }
     }
-
 //    @RequiresApi(Build.VERSION_CODES.O)
 //    fun saveEvaluationDato() {
 //        viewModelScope.launch {

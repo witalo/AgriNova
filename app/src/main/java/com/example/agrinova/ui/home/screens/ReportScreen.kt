@@ -27,7 +27,7 @@ fun ReportScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Reportes",
+            text = "En proceso de desarrollo",
             style = MaterialTheme.typography.headlineMedium
         )
     }

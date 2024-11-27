@@ -59,7 +59,7 @@ fun HomeScreen(
                         brush = Brush.linearGradient(
                             colors = listOf(
                                 Color(0xFF43BD28), // Color inicial
-                                Color(0xFF148102)  // Color final
+                                Color(0xFF106901)  // Color final
                             )
                         )
                     )
@@ -69,7 +69,7 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier
                                 .background(
-                                    color = Color(0xFF1976D2), // Fondo azul personalizado
+                                    color = Color(0xFF0D7BD2), // Fondo azul personalizado
                                     shape = RoundedCornerShape(6.dp) // Bordes redondeados
                                 )
                                 .border(
@@ -102,7 +102,7 @@ fun HomeScreen(
                                 .size(50.dp) // Tamaño adecuado para un botón prominente
                                 .padding(8.dp) // Espaciado interno para evitar que el ícono quede pegado al borde
                                 .clip(CircleShape) // Forma circular
-                                .background(Color(0xFF1976D2)) // Fondo azul personalizado
+                                .background(Color(0xFF0D7BD2)) // Fondo azul personalizado
                                 .border(2.dp, Color(0xFFBBDEFB), CircleShape) // Borde de color claro
                                 .animateContentSize() // Animación fluida al interactuar
                         ) {
@@ -123,8 +123,8 @@ fun HomeScreen(
                                 .size(50.dp) // Tamaño prominente
                                 .padding(8.dp) // Espaciado interno
                                 .clip(CircleShape) // Forma circular
-                                .background(Color(0xFFD32F2F)) // Fondo rojo para cerrar sesión (puedes cambiar)
-                                .border(2.dp, Color(0xFFFFCDD2), CircleShape) // Borde rojo claro para contraste
+                                .background(Color(0xFF0D7BD2)) // Fondo rojo para cerrar sesión (puedes cambiar)
+                                .border(2.dp, Color(0xFFFFFFFF), CircleShape) // Borde rojo claro para contraste
                                 .animateContentSize() // Animación fluida
                         ) {
                             Icon(
