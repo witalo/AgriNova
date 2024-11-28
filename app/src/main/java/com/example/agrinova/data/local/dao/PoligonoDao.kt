@@ -24,4 +24,7 @@ interface PoligonoDao {
 
     @Query("DELETE FROM poligono")
     suspend fun clearAll()
+
+    @Query("SELECT * FROM poligono WHERE valvulaId = :valvulaId ORDER BY id")
+    suspend fun getPoligonosByValvulaId(valvulaId: Int): List<PoligonoEntity>
 }
