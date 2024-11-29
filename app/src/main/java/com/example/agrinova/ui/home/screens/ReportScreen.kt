@@ -2,6 +2,7 @@ package com.example.agrinova.ui.home.screens
 
 import android.Manifest
 import android.location.LocationProvider
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -23,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,181 +42,244 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import com.example.agrinova.di.LocationHandlerRural
 import com.example.agrinova.di.models.ValvulaDomainModel
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Polygon
 import com.google.maps.android.compose.*
+import kotlinx.coroutines.delay
 
 @Composable
 fun ReportScreen(
     viewModel: ReportViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
-    val locationHandler = remember { LocationHandlerRural() }
-
+    // Default location (e.g., Lima, Peru)
+    val defaultLatitud = -16.409047
+    val defaultLongitud = -71.536960
     // Estados para manejar la ubicación
-    var latitud by remember { mutableStateOf(0.0) }
-    var longitud by remember { mutableStateOf(0.0) }
-    var mensajeError by remember { mutableStateOf("") }
+    // Use viewModel states instead of local states
+    val latitud by viewModel.latitud
+    val longitud by viewModel.longitud
+    val mensajeError by viewModel.mensajeError
 
+    // Estados del ViewModel
+    val polygonCoordinates by viewModel.polygonCoordinates
+    val closestValvulaNombre by viewModel.closestValvulaNombre
+    // Posición inicial de la cámara
+    // Initial camera position state with default location
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(defaultLatitud, defaultLongitud),
+            12f
+        )
+    }
+
+    // Set initial coordinates in ViewModel
+    LaunchedEffect(Unit) {
+        viewModel.setInitialLocation(defaultLatitud, defaultLongitud)
+    }
     // Launcher para solicitar permisos
     val permisoUbicacionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { permisoConcedido ->
         if (permisoConcedido) {
-            // Permisos concedidos, obtener ubicación
-            locationHandler.obtenerUbicacionRural(
+            viewModel.obtenerUbicacion(
                 context,
-                onUbicacionObtenida = { lat, lon ->
-                    latitud = lat
-                    longitud = lon
+                onPermisoDenegado = {
+                    viewModel.setError("Permisos de ubicación denegados")
                 },
-                onError = { error ->
-                    mensajeError = error
+                onUbicacionObtenida = { lat, lon ->
+                    // Mover la cámara si es necesario
+                    cameraPositionState.move(
+                        CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 18f)
+                    )
                 }
             )
         } else {
-            mensajeError = "Permisos de ubicación denegados"
+            viewModel.setError("Permisos de ubicación denegados")
         }
     }
 
-    Column {
-        Button(
-            onClick = {
-                // Solicitar permisos si no están concedidos
-                if (!locationHandler.verificarPermisos(context)) {
-                    permisoUbicacionLauncher.launch(
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    )
-                } else {
-                    // Si ya tiene permisos, obtener ubicación directamente
-                    locationHandler.obtenerUbicacionRural(
-                        context,
-                        onUbicacionObtenida = { lat, lon ->
-                            latitud = lat
-                            longitud = lon
-                        },
-                        onError = { error ->
-                            mensajeError = error
-                        }
+//    -----------------------------------------------------------------------------------------------
+    LaunchedEffect(Unit) {
+        while(true) {
+            viewModel.obtenerUbicacion(
+                context,
+                onPermisoDenegado = {
+                    permisoUbicacionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                },
+                onUbicacionObtenida = { lat, lon ->
+                    cameraPositionState.move(
+                        CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 18f)
                     )
                 }
+            )
+            delay(60000) // Espera 1 minuto (60000 milisegundos)
+        }
+    }
+//    -----------------------------------------------------------------------------------------------
+//   Estructura del Card
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(2.dp)
+            .shadow(8.dp, shape = RoundedCornerShape(16.dp)), // Sombra para destacar el Card
+        elevation = CardDefaults.cardElevation(8.dp),
+        shape = RoundedCornerShape(16.dp),
+//        backgroundColor = Color(0xFFF5F5F5) // Fondo gris claro
+    ) {
+        Column {
+            // Card Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(0.dp)
+                    .background(Color(0xFF0573CB)) // Fondo azul
+                    .clip(RoundedCornerShape(30.dp)), // Espaciado interno
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
+                        viewModel.obtenerUbicacion(
+                            context,
+                            onPermisoDenegado = {
+                                // Solicitar permisos si no están concedidos
+                                permisoUbicacionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                            },
+                            onUbicacionObtenida = { lat, lon ->
+                                // Opcional: Mover la cámara a la ubicación
+                                cameraPositionState.move(
+                                    CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 18f)
+                                )
+                            }
+                        )
+                    }
+                    ) {
+                    Icon(
+                        imageVector = Icons.Default.MyLocation, // Ícono GPS moderno
+                        contentDescription = "Ir a mi ubicación",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp) // Tamaño del ícono
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                // Mostrar coordenadas o mensaje de error
+                // Conditional text rendering
+                Text(
+                    text = when {
+                        mensajeError.isNotEmpty() -> mensajeError
+                        latitud != 0.0 && longitud != 0.0 -> "Lat: $latitud Long: $longitud"
+                        else -> "Lat: ${viewModel.latitud.value} Long: ${viewModel.longitud.value}"
+                    },
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                if (mensajeError.isNotEmpty()) {
+                    Text(
+                        mensajeError,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+
             }
-        ) {
-            Text("Obtener Ubicación Rural")
-        }
 
-        // Mostrar coordenadas o mensaje de error
-        if (latitud != 0.0 && longitud != 0.0) {
-            Text("Latitud: $latitud")
-            Text("Longitud: $longitud")
-        }
+            // Card Body (Mapa con zoom y borde)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight() // Altura ajustada para el mapa
+                    .clip(
+                        RoundedCornerShape(
+                            bottomStart = 16.dp,
+                            bottomEnd = 16.dp
+                        )
+                    ) // Bordes redondeados
+                    .border(
+                        1.dp,
+                        Color.LightGray,
+                        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+                    )
+            ) {
+                // Configuración de Google Maps
+                GoogleMap(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraPositionState = cameraPositionState,
+                    // ... otros ajustes
+                ) {
+                    if (polygonCoordinates.isNotEmpty()) {
+                        // Dibujar polígono de la válvula más cercana
+                        Polygon(
+                            points = polygonCoordinates,
+                            strokeColor = Color(0xFFFF5722),
+                            fillColor = Color(0x33FF5722),
+                            strokeWidth = 5f,
+                            clickable = true
+                        )
 
-        if (mensajeError.isNotEmpty()) {
-            Text("Error: $mensajeError")
+                        // Calcular centro del polígono
+                        val polygonCenter = calculatePolygonCenter(polygonCoordinates)
+
+                        // Marker en el centro con nombre de la válvula
+                        Marker(
+                            state = MarkerState(position = polygonCenter),
+                            title = "Válvula: $closestValvulaNombre",
+                            snippet = "Válvula más cercana"
+                        )
+                    }
+                }
+            }
         }
     }
+}
 
-//     Coordenadas del polígono
-    val polygonCoordinates = listOf(
-        LatLng(19.4326, -99.1332),  // Ciudad de México (ejemplo)
-        LatLng(19.4420, -99.1670),
-        LatLng(19.4280, -99.1490),
-        LatLng(19.4180, -99.1230)
-    )
-    // Calcular el centroide del polígono
-    val polygonCenter = calculatePolygonCenter(polygonCoordinates)
-    // Posición inicial de la cámara
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(polygonCoordinates.first(), 12f)
-    }
-
-    // Estructura del Card
-//    Card(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(2.dp)
-//            .shadow(8.dp, shape = RoundedCornerShape(16.dp)), // Sombra para destacar el Card
-//        elevation = CardDefaults.cardElevation(8.dp),
-//        shape = RoundedCornerShape(16.dp),
-////        backgroundColor = Color(0xFFF5F5F5) // Fondo gris claro
-//    ) {
-//        Column {
-//            // Card Header
-//            Row(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(16.dp)
-//                    .background(Color(0xFF3F51B5)) // Fondo azul
-//                    .padding(5.dp), // Espaciado interno
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.Map,
-//                    contentDescription = "Mapa",
-//                    tint = Color.White,
-//                    modifier = Modifier.size(24.dp)
-//                )
-//                Spacer(modifier = Modifier.width(8.dp))
-//                Text(
-//                    text = "Mapa de Polígonos",
-//                    style = MaterialTheme.typography.titleSmall.copy(color = Color.White),
-//                    modifier = Modifier.weight(1f)
-//                )
-//                IconButton(onClick = { /* Acción adicional si se requiere */ }) {
-//                    Icon(
-//                        imageVector = Icons.Default.MoreVert,
-//                        contentDescription = "Más opciones",
-//                        tint = Color.White
+fun calculatePolygonCenter(coordinates: List<LatLng>): LatLng {
+    val centerLat = coordinates.map { it.latitude }.average()
+    val centerLng = coordinates.map { it.longitude }.average()
+    return LatLng(centerLat, centerLng)
+}
+//    Column {
+//        Button(
+//            onClick = {
+//                // Solicitar permisos si no están concedidos
+//                if (!locationHandler.verificarPermisos(context)) {
+//                    permisoUbicacionLauncher.launch(
+//                        Manifest.permission.ACCESS_FINE_LOCATION
 //                    )
-//                }
-//            }
-//
-//            // Card Body (Mapa con zoom y borde)
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .fillMaxHeight() // Altura ajustada para el mapa
-//                    .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)) // Bordes redondeados
-//                    .border(1.dp, Color.LightGray, shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
-//            ) {
-//                // Configuración de Google Maps
-//                GoogleMap(
-//                    modifier = Modifier.fillMaxSize(),
-//                    cameraPositionState = cameraPositionState,
-//                    uiSettings = MapUiSettings(
-//                        zoomControlsEnabled = true, // Habilitar controles de zoom
-//                        compassEnabled = true       // Habilitar brújula
-//                    )
-//                ) {
-//                    // Dibujar polígono
-//                    Polygon(
-//                        points = polygonCoordinates,
-//                        strokeColor = Color(0xFFFF5722),  // Naranja vibrante
-//                        fillColor = Color(0x33FF5722),    // Naranja transparente
-//                        strokeWidth = 5f,
-//                        clickable = true,
-//                        onClick = {
-//                            // Acción al hacer clic en el polígono
+//                } else {
+//                    // Si ya tiene permisos, obtener ubicación directamente
+//                    locationHandler.obtenerUbicacionRural(
+//                        context,
+//                        onUbicacionObtenida = { lat, lon ->
+//                            latitud = lat
+//                            longitud = lon
+//                        },
+//                        onError = { error ->
+//                            mensajeError = error
 //                        }
 //                    )
-//                    // Etiqueta en el centro del polígono
-//                    Marker(
-//                        state = MarkerState(position = polygonCenter),
-//                        title = "Centro del Polígono",
-//                        snippet = "Etiqueta personalizada"
-//                    )
 //                }
 //            }
+//        ) {
+//            Text("Obtener Ubicación Rural")
+//        }
+//
+//        // Mostrar coordenadas o mensaje de error
+//        if (latitud != 0.0 && longitud != 0.0) {
+//            Text("Latitud: $latitud")
+//            Text("Longitud: $longitud")
+//        }
+//
+//        if (mensajeError.isNotEmpty()) {
+//            Text("Error: $mensajeError")
 //        }
 //    }
-}
-// Función para calcular el centroide del polígono
-fun calculatePolygonCenter(points: List<LatLng>): LatLng {
-    val latitudeSum = points.sumOf { it.latitude }
-    val longitudeSum = points.sumOf { it.longitude }
-    return LatLng(latitudeSum / points.size, longitudeSum / points.size)
-}

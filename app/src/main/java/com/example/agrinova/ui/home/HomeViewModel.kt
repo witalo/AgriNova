@@ -48,7 +48,7 @@ sealed class BottomNavItem(
 ) {
     object Home : BottomNavItem("home", "Inicio", Icons.Default.Home)
     object Profile : BottomNavItem("profile", "Perfil", Icons.Default.Person)
-    object Report : BottomNavItem("report", "Reporte", Icons.Default.Settings)
+    object Report : BottomNavItem("Mapas", "Ubicación", Icons.Default.Settings)
     object Evaluation : BottomNavItem("evaluation", "Evaluaciones", Icons.Default.List)
     data class NewEvaluation(val cartillaId: String) : BottomNavItem(
         "newEvaluation/$cartillaId",

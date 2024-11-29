@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.example.agrinova.data.dto.PoligonoWithValvula
 import com.example.agrinova.data.local.entity.PoligonoEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -27,4 +28,11 @@ interface PoligonoDao {
 
     @Query("SELECT * FROM poligono WHERE valvulaId = :valvulaId ORDER BY id")
     suspend fun getPoligonosByValvulaId(valvulaId: Int): List<PoligonoEntity>
+
+    @Query("""
+        SELECT p.latitud, p.longitud, v.codigo AS valvulaCodigo 
+        FROM poligono p 
+        INNER JOIN valvula v ON p.valvulaId = v.id
+    """)
+    suspend fun getPoligonoWithValvula(): List<PoligonoWithValvula>
 }

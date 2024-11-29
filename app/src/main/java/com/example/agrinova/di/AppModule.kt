@@ -162,6 +162,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideLocationHandlerRural(): LocationHandlerRural {
+        return LocationHandlerRural()
+    }
+
+    @Provides
+    @Singleton
     fun provideUserPreferences(@ApplicationContext context: Context): UsePreferences {
         return UsePreferences(context)
     }
