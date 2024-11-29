@@ -181,15 +181,15 @@ fun ReportScreen(
                         fontWeight = FontWeight.Bold
                     )
                 )
-                if (mensajeError.isNotEmpty()) {
-                    Text(
-                        mensajeError,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
+//                if (mensajeError.isNotEmpty()) {
+//                    Text(
+//                        mensajeError,
+//                        style = MaterialTheme.typography.bodySmall.copy(
+//                            color = Color.White,
+//                            fontWeight = FontWeight.Bold
+//                        )
+//                    )
+//                }
 
             }
 
@@ -214,6 +214,7 @@ fun ReportScreen(
                 GoogleMap(
                     modifier = Modifier.fillMaxSize(),
                     cameraPositionState = cameraPositionState,
+                    properties = MapProperties(mapType = MapType.SATELLITE), // Cambiar tipo de mapa
                     // ... otros ajustes
                 ) {
                     if (polygonCoordinates.isNotEmpty()) {
