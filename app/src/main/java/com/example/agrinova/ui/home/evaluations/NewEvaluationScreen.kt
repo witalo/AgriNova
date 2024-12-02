@@ -93,23 +93,18 @@ fun NewEvaluationScreen(
 ) {
     val context = LocalContext.current
     val isGpsEnabled by viewModel.isGpsEnabled.collectAsState()
-//    val locationData by viewModel.locationData.collectAsState()
-//    val isGpsEnabled by rememberSaveable { mutableStateOf(false) }
-    val locationData by viewModel.locationData.collectAsState()
-    // Show location when captured
-    locationData?.let { location ->
-        Toast.makeText(
-            context,
-            "Lat: ${location.latitude}, Lon: ${location.longitude}",
-            Toast.LENGTH_LONG
-        ).show()
+    // Create permission launcher at this level
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val locationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (locationGranted) {
+            viewModel.onGpsCheckboxChanged(true)
+        } else {
+            Toast.makeText(context, "Se requieren permisos de ubicación", Toast.LENGTH_SHORT).show()
+        }
     }
-
-//    val saveStatus by viewModel.saveStatus.collectAsState()
-//    var showSuccessDialog by remember { mutableStateOf(false) }
-//    var showErrorDialog by remember { mutableStateOf(false) }
-//    var errorMessage by remember { mutableStateOf("") }
-
     // Usar rememberSaveable para mantener el estado a través de recreaciones
     var showSuccessDialog by rememberSaveable { mutableStateOf(false) }
     var showErrorDialog by rememberSaveable { mutableStateOf(false) }
@@ -129,6 +124,32 @@ fun NewEvaluationScreen(
             }
         )
     }
+    // Método para cambiar el estado del GPS
+    fun handleGpsToggle(checked: Boolean) {
+        if (checked) {
+            // Solicitar permisos si no están concedidos
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // Lanzar solicitud de permisos
+                permissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            } else {
+                // Permisos ya concedidos, activar GPS
+                viewModel.onGpsCheckboxChanged(true)
+            }
+        } else {
+            // Desactivar GPS
+            viewModel.onGpsCheckboxChanged(false)
+        }
+    }
+
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -140,9 +161,8 @@ fun NewEvaluationScreen(
 //                .padding(0.dp),
             viewModel = viewModel,
             isChecked = isGpsEnabled,
-            onCheckedChange = {
-                viewModel.onGpsCheckboxChanged(it)
-            })
+            onCheckedChange = { handleGpsToggle(it) }
+        )
 
         // Cuerpo scrollable con grupos y variables
         EvaluationBody(
@@ -209,17 +229,6 @@ private fun EvaluationHeader(
             Toast.makeText(context, "Se requieren permisos de ubicación", Toast.LENGTH_SHORT).show()
         }
     }
-    // Check and request location permissions if not granted
-//    val launcher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.RequestPermission()
-//    ) { isGranted: Boolean ->
-//        if (isGranted) {
-//            onCheckedChange(true)
-//        } else {
-//            // Handle permission denial
-//            Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
-//        }
-//    }
     val lotes by viewModel.lotes.collectAsState()
     val selectedLote = viewModel.selectedLote.collectAsState()
 
@@ -420,18 +429,6 @@ private fun EvaluationBody(
     LazyColumn(
         modifier = modifier.background(MaterialTheme.colorScheme.background)
     ) {
-//        items(grupos) { grupo ->
-//            GrupoVariableCard(
-//                grupo = grupo,
-//                isExpanded = expandedGroups.contains(grupo.id),
-//                variables = variables.filter { it.grupoVariableId == grupo.id },
-//                variableValues = variableValues,
-//                onExpandClick = { viewModel.toggleGroupExpansion(grupo.id) },
-//                onVariableValueChange = { variableId, value ->
-//                    viewModel.updateVariableValue(variableId, value)
-//                }
-//            )
-//        }
         items(grupos) { grupo ->
             GrupoVariableCard(
                 grupo = grupo,
@@ -459,10 +456,10 @@ private fun GrupoVariableCard(
     variables: List<VariableGrupoDomainModel>,
     variableValues: Map<Int, String>,
     onExpandClick: () -> Unit,
-//    onVariableValueChange: (Int, String) -> Unit
-    onVariableValueChange: (Int, String, LocationModel?) -> Unit, // Modified to include LocationModel
+    onVariableValueChange: (Int, String, LocationModel?) -> Unit,
     viewModel: NewEvaluationViewModel // Add ViewModel parameter
 ) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -514,22 +511,29 @@ private fun GrupoVariableCard(
                         )
                         OutlinedTextField(
                             value = variableValues[variable.id] ?: "",
-//                            onValueChange = { value ->
-//                                if (value.isEmpty() || value.toDoubleOrNull() != null) {
-//                                    onVariableValueChange(variable.id, value)
-//                                }
-//                            },
                             onValueChange = { value ->
+                                // Primero, actualiza el valor con una ubicación por defecto inválida
+                                onVariableValueChange(
+                                    variable.id,
+                                    value,
+                                    LocationModel() // Crea una instancia con lat y long en 0, isValid = false
+                                )
+
+                                // Valida si el valor es numérico
                                 if (value.isEmpty() || value.toDoubleOrNull() != null) {
-                                    // Obtiene la ubicación actual al cambiar el valor
-                                    val currentLocation = runBlocking {
-                                        viewModel.getCurrentGPS()
+                                    // Captura la ubicación en segundo plano
+                                    viewModel.captureLocationAsync(context) { lat, lon ->
+                                        // Si la captura es exitosa, actualiza con coordenadas válidas
+                                        onVariableValueChange(
+                                            variable.id,
+                                            value,
+                                            LocationModel(
+                                                latitude = lat,
+                                                longitude = lon,
+                                                isValid = true
+                                            )
+                                        )
                                     }
-                                    onVariableValueChange(
-                                        variable.id,
-                                        value,
-                                        currentLocation
-                                    )
                                 }
                             },
                             modifier = Modifier

@@ -1,27 +1,36 @@
 package com.example.agrinova.ui.home.evaluations
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agrinova.data.dto.LocationModel
 import com.example.agrinova.data.dto.LoteModuloDto
 import com.example.agrinova.data.repository.EmpresaRepository
+import com.example.agrinova.di.LocationHandlerRural
 import com.example.agrinova.di.UsePreferences
 import com.example.agrinova.di.models.GrupoVariableDomainModel
 import com.example.agrinova.di.models.ValvulaDomainModel
 import com.example.agrinova.di.models.VariableGrupoDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,57 +40,8 @@ class NewEvaluationViewModel @Inject constructor(
     private val empresaRepository: EmpresaRepository,
     private val context: Context
 ) : ViewModel() {
-    private val locationHelper = LocationHelper(context)
-
     private val _isGpsEnabled = MutableStateFlow(false)
     val isGpsEnabled: StateFlow<Boolean> = _isGpsEnabled.asStateFlow()
-
-    private val _locationData = MutableStateFlow<LocationModel?>(null)
-    val locationData: StateFlow<LocationModel?> = _locationData.asStateFlow()
-    fun onGpsCheckboxChanged(isChecked: Boolean) {
-        viewModelScope.launch {
-            try {
-                if (isChecked) {
-                    val gpsEnabled = locationHelper.checkAndEnableGPS()
-                    _isGpsEnabled.value = gpsEnabled
-
-                    if (gpsEnabled) {
-                        locationHelper.getCurrentLocation()?.let { location ->
-                            _locationData.value = LocationModel(
-                                latitude = location.first,
-                                longitude = location.second
-                            )
-                        }
-                    }
-                } else {
-                    _isGpsEnabled.value = false
-                    _locationData.value = null
-                }
-            } catch (e: Exception) {
-                Log.e("GPS_ERROR", "Error: ${e.message}")
-                _isGpsEnabled.value = false
-            }
-        }
-    }
-    suspend fun getCurrentGPS(): LocationModel {
-        return try {
-            // Solo verifica si el GPS está habilitado
-            val gpsEnabled = locationHelper.isGPSEnabled()
-            if (gpsEnabled) {
-                locationHelper.getCurrentLocation()?.let { location ->
-                    LocationModel(
-                        latitude = location.first,
-                        longitude = location.second
-                    )
-                } ?: LocationModel(0.0, 0.0) // No se encontró ubicación
-            } else {
-                LocationModel(0.0, 0.0) // GPS desactivado
-            }
-        } catch (e: Exception) {
-            Log.e("GPS_ERROR", "Error al obtener ubicación: ${e.message}")
-            LocationModel(0.0, 0.0) // Error general
-        }
-    }
 
     val cartillaId: String = savedStateHandle["cartillaId"] ?: ""
     val userId: Flow<Int?> = usePreferences.userId
@@ -117,11 +77,10 @@ class NewEvaluationViewModel @Inject constructor(
     val expandedGroups: StateFlow<Set<Int>> = _expandedGroups.asStateFlow()
 
     // Estado para almacenar los valores ingresados en los TextFields
-//    private val _variableValues = MutableStateFlow<Map<Int, String>>(emptyMap())
-//    val variableValues: StateFlow<Map<Int, String>> = _variableValues.asStateFlow()
-    // Update the variableValues state to include location
-    private val _variableValues = MutableStateFlow<Map<Int, Pair<String, LocationModel?>>>(emptyMap())
-    val variableValues: StateFlow<Map<Int, Pair<String, LocationModel?>>> = _variableValues.asStateFlow()
+    private val _variableValues =
+        MutableStateFlow<Map<Int, Pair<String, LocationModel?>>>(emptyMap())
+    val variableValues: StateFlow<Map<Int, Pair<String, LocationModel?>>> =
+        _variableValues.asStateFlow()
 
     private val _saveStatus = MutableStateFlow<Result<Unit>?>(null)
     val saveStatus: StateFlow<Result<Unit>?> = _saveStatus.asStateFlow()
@@ -130,7 +89,7 @@ class NewEvaluationViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
-//    ------------------------------------------------------------------------------------------
+    //    ------------------------------------------------------------------------------------------
     private val _showSuccessDialog = MutableStateFlow(false)
     val showSuccessDialog: StateFlow<Boolean> get() = _showSuccessDialog
 
@@ -242,50 +201,12 @@ class NewEvaluationViewModel @Inject constructor(
         }
     }
 
-    // Función para actualizar el valor de una variable
-//    fun updateVariableValue(variableId: Int, value: String) {
-//        _variableValues.value += (variableId to value)
-//    }
     // Modify the updateVariableValue function
     fun updateVariableValue(variableId: Int, value: String, location: LocationModel?) {
         _variableValues.value += (variableId to (value to location))
     }
 
-    // Función para guardar la evaluación
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    fun saveEvaluationDato() {
-//        viewModelScope.launch {
-//            try {
-//                _isLoading.value = true
-//                // Validar si _variableValues.value tiene valores
-//                if (_variableValues.value.isNullOrEmpty()) {
-//                    _isLoading.value = false
-//                    Toast.makeText(context, "Debe ingresar al menos un valor.", Toast.LENGTH_SHORT).show()
-//                    return@launch
-//                }
-//
-//                userId.collect { user ->
-//                    user?.let {
-//                        val valvulaId = _selectedValvula.value?.id
-//                            ?: throw IllegalStateException("No se ha seleccionado una válvula")
-//                        // Enviar directamente los valores sin procesar
-//                        val result = empresaRepository.insertDatoWithDetalles(
-//                            valvulaId = valvulaId,
-//                            cartillaId = cartillaId.toInt(),
-//                            usuarioId = user,
-//                            variableValues = _variableValues.value
-//                        )
-//                        _saveStatus.value = result
-//                    }
-//                }
-//            } catch (e: Exception) {
-//                _saveStatus.value = Result.failure(e)
-//            } finally {
-//                _isLoading.value = false
-//            }
-//        }
-//    }
-// Update the saveEvaluationDato function to handle location
+    // Update the saveEvaluationDato function to handle location
     @RequiresApi(Build.VERSION_CODES.O)
     fun saveEvaluationDato() {
         viewModelScope.launch {
@@ -293,7 +214,8 @@ class NewEvaluationViewModel @Inject constructor(
                 _isLoading.value = true
                 if (_variableValues.value.isNullOrEmpty()) {
                     _isLoading.value = false
-                    Toast.makeText(context, "Debe ingresar al menos un valor.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Debe ingresar al menos un valor.", Toast.LENGTH_SHORT)
+                        .show()
                     return@launch
                 }
 
@@ -329,46 +251,79 @@ class NewEvaluationViewModel @Inject constructor(
             }
         }
     }
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    fun saveEvaluationDato() {
-//        viewModelScope.launch {
-//            try {
-//                _isLoading.value = true
-//                // Recolectar el userId y usarlo
-//                userId.collect { user ->
-//                    user?.let {
-//                        val valvulaId = _selectedValvula.value?.id
-//                            ?: throw IllegalStateException("No se ha seleccionado una válvula")
-//
-//                        // Solo procesar valores que no estén vacíos y sean números válidos
-////                        val validValues = _variableValues.value.filter { (_, value) ->
-////                            value.isNotEmpty() && value.toDoubleOrNull() != null
-////                        }
-//                        // Convertir valores vacíos a "0" y mantener los valores válidos
-//                        val processedValues = _variableValues.value.mapValues { (_, value) ->
-//                            if (value.isEmpty()) "0" else value
-//                        }
-//
-//                        if (processedValues.isEmpty()) {
-//                            throw IllegalStateException("No hay valores válidos para guardar")
-//                        }
-//
-//                        val result = empresaRepository.insertDatoWithDetalles(
-//                            valvulaId = valvulaId,
-//                            cartillaId = cartillaId.toInt(),
-//                            usuarioId = user,
-//                            variableValues = processedValues
-//                        )
-//                        _saveStatus.value = result
-//                    }
-//                }
-//            } catch (e: Exception) {
-//                _saveStatus.value = Result.failure(e)
-//            } finally {
-//                _isLoading.value = false
-//            }
-//        }
-//    }
 
+    private lateinit var locationHandler: LocationHandlerRural
 
+    init {
+        // Inicializar el LocationHandlerRural
+        locationHandler = LocationHandlerRural()
+    }
+
+    fun captureLocation(context: Context, onLocationCaptured: (Double, Double) -> Unit) {
+        if (isGpsEnabled.value) {
+            locationHandler.obtenerUbicacionRural(
+                context,
+                onUbicacionObtenida = { lat, lon ->
+                    // Llamar al callback con la ubicación
+                    onLocationCaptured(lat, lon)
+                },
+                onError = { errorMessage ->
+                    // Manejar errores de ubicación
+                    // Puedes agregar un método para manejar errores si lo deseas
+                    Log.e("LocationCapture", errorMessage)
+                    // En caso de error, devolver coordenadas por defecto
+                    onLocationCaptured(0.0, 0.0)
+                }
+            )
+        } else {
+            // Si el GPS no está habilitado, devolver coordenadas por defecto
+            onLocationCaptured(0.0, 0.0)
+        }
+    }
+    fun onGpsCheckboxChanged(isEnabled: Boolean) {
+        _isGpsEnabled.value = isEnabled
+    }
+    fun captureLocationAsync(
+        context: Context,
+        onLocationCaptured: (Double, Double) -> Unit
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val location = obtenerUbicacionActual(context)
+                withContext(Dispatchers.Main) {
+                    // Solo llama al callback si se obtiene una ubicación válida
+                    if (location != null) {
+                        onLocationCaptured(location.latitude, location.longitude)
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e("LocationCapture", "Error al obtener ubicación", e)
+                    // Podrías mostrar un mensaje al usuario si lo deseas
+                }
+            }
+        }
+    }
+    private fun obtenerUbicacionActual(context: Context): Location? {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        // Verificar permisos
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return null
+        }
+
+        // Intentar obtener la última ubicación conocida
+        val providers = listOf(
+            LocationManager.GPS_PROVIDER,
+            LocationManager.NETWORK_PROVIDER
+        )
+
+        return providers.firstNotNullOfOrNull { provider ->
+            locationManager.getLastKnownLocation(provider)
+        }
+    }
 }
