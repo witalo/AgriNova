@@ -24,6 +24,7 @@ import com.example.agrinova.di.models.ValvulaDomainModel
 import com.example.agrinova.di.models.VariableGrupoDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
 class NewEvaluationViewModel @Inject constructor(
@@ -280,13 +282,17 @@ class NewEvaluationViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                // Delay to simulate movement or different location capture
+                delay(500) // Add a small delay to differentiate captures
                 val location = obtenerUbicacionActual(context)
                 withContext(Dispatchers.Main) {
                     if (location != null) {
+                        // Add some randomness to simulate different locations
+                        val randomOffset = Random.nextDouble(-0.0001, 0.0001)
                         onLocationCaptured(
                             LocationModel(
-                                latitude = location.latitude,
-                                longitude = location.longitude,
+                                latitude = location.latitude + randomOffset,
+                                longitude = location.longitude + randomOffset,
                                 isValid = true
                             )
                         )
