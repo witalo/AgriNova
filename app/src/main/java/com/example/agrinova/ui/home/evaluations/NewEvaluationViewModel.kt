@@ -10,14 +10,12 @@ import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agrinova.data.dto.LocationModel
 import com.example.agrinova.data.dto.LoteModuloDto
-import com.example.agrinova.data.local.entity.roundTo2Decimals
 import com.example.agrinova.data.repository.EmpresaRepository
 import com.example.agrinova.di.LocationHandlerRural
 import com.example.agrinova.di.UsePreferences
@@ -205,9 +203,10 @@ class NewEvaluationViewModel @Inject constructor(
     // Modify the updateVariableValue function
     fun updateVariableValue(variableId: Int, value: String, location: LocationModel?) {
         val formattedValue = try {
-            value.toFloat().roundTo2Decimals()
-        } catch (e: NumberFormatException) {
-            0f
+            // Formatear con dos decimales de manera más precisa
+            "%.2f".format(value.toFloatOrNull() ?: 0f)
+        } catch (e: Exception) {
+            "0.00"
         }
         _variableValues.value += (variableId to (formattedValue.toString() to location))
     }
@@ -218,7 +217,7 @@ class NewEvaluationViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-                if (_variableValues.value.isNullOrEmpty()) {
+                if (_variableValues.value.isEmpty()) {
                     _isLoading.value = false
                     Toast.makeText(context, "Debe ingresar al menos un valor.", Toast.LENGTH_SHORT)
                         .show()
@@ -232,7 +231,7 @@ class NewEvaluationViewModel @Inject constructor(
 
                         // Convert to the format expected by insertDatoWithDetalles
                         val processedValues = _variableValues.value.mapValues { (_, pair) ->
-                            pair.first
+                            "%.2f".format(pair.first.toFloatOrNull() ?: 0f)
                         }
 
                         // Prepare location details
@@ -258,7 +257,7 @@ class NewEvaluationViewModel @Inject constructor(
         }
     }
 
-    private lateinit var locationHandler: LocationHandlerRural
+    private var locationHandler: LocationHandlerRural
 
     init {
         // Inicializar el LocationHandlerRural
@@ -273,7 +272,7 @@ class NewEvaluationViewModel @Inject constructor(
         variableId: Int,
         onLocationCaptured: (LocationModel) -> Unit
     ) {
-        // Only attempt location capture if GPS is enabled
+        // Solo intentar capturar ubicación si el GPS está habilitado
         if (!isGpsEnabled.value) {
             onLocationCaptured(LocationModel(0.0, 0.0))
             return

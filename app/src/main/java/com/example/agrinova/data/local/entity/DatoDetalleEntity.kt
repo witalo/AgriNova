@@ -41,15 +41,11 @@ data class DatoDetalleEntity(
     fun toDomainModel(): DatoDetalleDomainModel {
         return DatoDetalleDomainModel(
             id = this.id,
-            muestra = this.muestra.roundTo2Decimals(),
+            muestra = this.muestra,
             latitud = this.latitud,
             longitud = this.longitud,
             datoId = this.datoId,
             variableGrupoId = this.variableGrupoId
         )
     }
-}
-// Extensión para redondear Float a 2 decimales
-fun Float.roundTo2Decimals(): Float {
-    return (this * 100).roundToInt() / 100f
 }

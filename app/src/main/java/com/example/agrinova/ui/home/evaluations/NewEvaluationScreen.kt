@@ -531,34 +531,37 @@ private fun GrupoVariableCard(
                         OutlinedTextField(
                             value = variableValues[variable.id] ?: "",
                             onValueChange = { value ->
-                                // Immediately update the value with an initial invalid location
-                                onVariableValueChange(
-                                    variable.id,
-                                    value,
-                                    LocationModel() // Default invalid location
-                                )
-
-                                // Only capture location if:
-                                // 1. GPS checkbox is checked
-                                // 2. Value is numeric or empty
-                                if (viewModel.isGpsEnabled.value &&
-                                    (value.isEmpty() || value.toDoubleOrNull() != null)) {
-
-                                    viewModel.captureLocationAsync(context, variable.id) { locationModel ->
-                                        // Update with the captured location
-                                        onVariableValueChange(
-                                            variable.id,
-                                            value,
-                                            locationModel
-                                        )
+                                // Permitir solo entrada numérica con hasta dos decimales
+                                val filteredValue = value.replace(",", ".") // Reemplazar comas por puntos
+                                    .filter { it.isDigit() || it == '.' }
+                                    .let { input ->
+                                        // Limitar a un punto decimal
+                                        val parts = input.split('.')
+                                        if (parts.size > 2) {
+                                            parts.first() + "." + parts[1].take(2)
+                                        } else {
+                                            input
+                                        }
                                     }
-                                } else {
-                                    // If GPS is not enabled, use (0,0) location
+
+                                // Capturar ubicación solo si es numérico
+                                if (filteredValue.isEmpty() || filteredValue.toDoubleOrNull() != null) {
                                     onVariableValueChange(
                                         variable.id,
-                                        value,
-                                        LocationModel(0.0, 0.0)
+                                        filteredValue,
+                                        if (viewModel.isGpsEnabled.value) null else LocationModel(0.0, 0.0)
                                     )
+
+                                    // Capturar ubicación si está habilitado
+                                    if (viewModel.isGpsEnabled.value) {
+                                        viewModel.captureLocationAsync(context, variable.id) { locationModel ->
+                                            onVariableValueChange(
+                                                variable.id,
+                                                filteredValue,
+                                                locationModel
+                                            )
+                                        }
+                                    }
                                 }
                             },
                             modifier = Modifier
