@@ -416,7 +416,7 @@ fun EvaluationCard(
                                 Text(
                                     text = "Hora: $timeOnly",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.inversePrimary
+                                    color = Color(0xFF0981E0)
                                 )
                             }
                         }
