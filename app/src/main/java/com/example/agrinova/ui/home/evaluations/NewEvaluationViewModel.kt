@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.agrinova.data.dto.LocationModel
 import com.example.agrinova.data.dto.LoteModuloDto
+import com.example.agrinova.data.local.entity.roundTo2Decimals
 import com.example.agrinova.data.repository.EmpresaRepository
 import com.example.agrinova.di.LocationHandlerRural
 import com.example.agrinova.di.UsePreferences
@@ -203,7 +204,12 @@ class NewEvaluationViewModel @Inject constructor(
 
     // Modify the updateVariableValue function
     fun updateVariableValue(variableId: Int, value: String, location: LocationModel?) {
-        _variableValues.value += (variableId to (value to location))
+        val formattedValue = try {
+            value.toFloat().roundTo2Decimals()
+        } catch (e: NumberFormatException) {
+            0f
+        }
+        _variableValues.value += (variableId to (formattedValue.toString() to location))
     }
 
     // Update the saveEvaluationDato function to handle location
@@ -259,47 +265,40 @@ class NewEvaluationViewModel @Inject constructor(
         locationHandler = LocationHandlerRural()
     }
 
-    fun captureLocation(context: Context, onLocationCaptured: (Double, Double) -> Unit) {
-        if (isGpsEnabled.value) {
-            locationHandler.obtenerUbicacionRural(
-                context,
-                onUbicacionObtenida = { lat, lon ->
-                    // Llamar al callback con la ubicación
-                    onLocationCaptured(lat, lon)
-                },
-                onError = { errorMessage ->
-                    // Manejar errores de ubicación
-                    // Puedes agregar un método para manejar errores si lo deseas
-                    Log.e("LocationCapture", errorMessage)
-                    // En caso de error, devolver coordenadas por defecto
-                    onLocationCaptured(0.0, 0.0)
-                }
-            )
-        } else {
-            // Si el GPS no está habilitado, devolver coordenadas por defecto
-            onLocationCaptured(0.0, 0.0)
-        }
-    }
     fun onGpsCheckboxChanged(isEnabled: Boolean) {
         _isGpsEnabled.value = isEnabled
     }
     fun captureLocationAsync(
         context: Context,
-        onLocationCaptured: (Double, Double) -> Unit
+        variableId: Int,
+        onLocationCaptured: (LocationModel) -> Unit
     ) {
+        // Only attempt location capture if GPS is enabled
+        if (!isGpsEnabled.value) {
+            onLocationCaptured(LocationModel(0.0, 0.0))
+            return
+        }
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val location = obtenerUbicacionActual(context)
                 withContext(Dispatchers.Main) {
-                    // Solo llama al callback si se obtiene una ubicación válida
                     if (location != null) {
-                        onLocationCaptured(location.latitude, location.longitude)
+                        onLocationCaptured(
+                            LocationModel(
+                                latitude = location.latitude,
+                                longitude = location.longitude,
+                                isValid = true
+                            )
+                        )
+                    } else {
+                        onLocationCaptured(LocationModel(0.0, 0.0))
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e("LocationCapture", "Error al obtener ubicación", e)
-                    // Podrías mostrar un mensaje al usuario si lo deseas
+                    onLocationCaptured(LocationModel(0.0, 0.0))
                 }
             }
         }

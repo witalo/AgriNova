@@ -64,6 +64,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.location.LocationManager
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
@@ -83,7 +86,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-
+import android.provider.Settings
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NewEvaluationScreen(
@@ -218,13 +221,23 @@ private fun EvaluationHeader(
 ) {
     val context = LocalContext.current
     val activity = context as? ComponentActivity
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val locationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
         if (locationGranted) {
-            onCheckedChange(true)
+            // Check if GPS is actually enabled
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                onCheckedChange(true)
+            } else {
+                // Prompt user to enable GPS
+                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                context.startActivity(intent)
+            }
         } else {
             Toast.makeText(context, "Se requieren permisos de ubicación", Toast.LENGTH_SHORT).show()
         }
@@ -345,13 +358,20 @@ private fun EvaluationHeader(
                     checked = isChecked,
                     onCheckedChange = { checked ->
                         if (checked) {
-                            Log.d("GPS if:", checked.toString())
+                            // First, check permissions
                             when {
                                 ContextCompat.checkSelfPermission(
                                     context,
                                     Manifest.permission.ACCESS_FINE_LOCATION
                                 ) == PackageManager.PERMISSION_GRANTED -> {
-                                    onCheckedChange(true) // Activa GPS
+                                    // Check if GPS is enabled
+                                    if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                                        onCheckedChange(true)
+                                    } else {
+                                        // Redirect to GPS settings
+                                        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                                        context.startActivity(intent)
+                                    }
                                 }
                                 activity?.shouldShowRequestPermissionRationale(
                                     Manifest.permission.ACCESS_FINE_LOCATION
@@ -372,8 +392,7 @@ private fun EvaluationHeader(
                                 }
                             }
                         } else {
-                            Log.d("GPS else:", checked.toString())
-                            onCheckedChange(false) // Desactiva GPS
+                            onCheckedChange(false)
                         }
                     },
                     colors = CheckboxDefaults.colors(checkedColor = Color(0xFF43BD28))
@@ -512,28 +531,34 @@ private fun GrupoVariableCard(
                         OutlinedTextField(
                             value = variableValues[variable.id] ?: "",
                             onValueChange = { value ->
-                                // Primero, actualiza el valor con una ubicación por defecto inválida
+                                // Immediately update the value with an initial invalid location
                                 onVariableValueChange(
                                     variable.id,
                                     value,
-                                    LocationModel() // Crea una instancia con lat y long en 0, isValid = false
+                                    LocationModel() // Default invalid location
                                 )
 
-                                // Valida si el valor es numérico
-                                if (value.isEmpty() || value.toDoubleOrNull() != null) {
-                                    // Captura la ubicación en segundo plano
-                                    viewModel.captureLocationAsync(context) { lat, lon ->
-                                        // Si la captura es exitosa, actualiza con coordenadas válidas
+                                // Only capture location if:
+                                // 1. GPS checkbox is checked
+                                // 2. Value is numeric or empty
+                                if (viewModel.isGpsEnabled.value &&
+                                    (value.isEmpty() || value.toDoubleOrNull() != null)) {
+
+                                    viewModel.captureLocationAsync(context, variable.id) { locationModel ->
+                                        // Update with the captured location
                                         onVariableValueChange(
                                             variable.id,
                                             value,
-                                            LocationModel(
-                                                latitude = lat,
-                                                longitude = lon,
-                                                isValid = true
-                                            )
+                                            locationModel
                                         )
                                     }
+                                } else {
+                                    // If GPS is not enabled, use (0,0) location
+                                    onVariableValueChange(
+                                        variable.id,
+                                        value,
+                                        LocationModel(0.0, 0.0)
+                                    )
                                 }
                             },
                             modifier = Modifier

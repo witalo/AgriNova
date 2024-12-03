@@ -5,6 +5,8 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.agrinova.di.models.DatoDetalleDomainModel
+import java.util.Locale
+import kotlin.math.roundToInt
 
 @Entity(
     tableName = "datodetalle",
@@ -39,11 +41,15 @@ data class DatoDetalleEntity(
     fun toDomainModel(): DatoDetalleDomainModel {
         return DatoDetalleDomainModel(
             id = this.id,
-            muestra = this.muestra,
+            muestra = this.muestra.roundTo2Decimals(),
             latitud = this.latitud,
             longitud = this.longitud,
             datoId = this.datoId,
             variableGrupoId = this.variableGrupoId
         )
     }
+}
+// Extensión para redondear Float a 2 decimales
+fun Float.roundTo2Decimals(): Float {
+    return (this * 100).roundToInt() / 100f
 }
