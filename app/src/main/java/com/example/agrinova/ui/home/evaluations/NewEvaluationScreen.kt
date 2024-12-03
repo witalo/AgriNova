@@ -87,6 +87,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import android.provider.Settings
+import androidx.compose.material3.CircularProgressIndicator
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NewEvaluationScreen(
@@ -222,6 +224,7 @@ private fun EvaluationHeader(
     val context = LocalContext.current
     val activity = context as? ComponentActivity
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    val isLoading by viewModel.isLoading.collectAsState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -410,23 +413,42 @@ private fun EvaluationHeader(
                 contentAlignment = Alignment.Center // Centra el botón horizontal y verticalmente
             ) {
                 IconButton(
-                    onClick = { viewModel.saveEvaluationDato() },
+                    onClick = { // Solo permite click si no está cargando
+                        if (!isLoading) {
+                            viewModel.saveEvaluationDato()
+                        }
+                    },
+                    enabled = !isLoading, // Deshabilita el botón durante la carga
                     modifier = Modifier
                         .size(45.dp) // Tamaño del botón
                         .clip(CircleShape) // Forma circular
-                        .background(Color(0xFF1976D2)) // Fondo personalizado (azul intenso)
+                        .background(
+                            color = if (isLoading)
+                                Color(0xFF1976D2).copy(alpha = 0.5f)
+                            else
+                                Color(0xFF1976D2)
+                        )
                         .border(
                             width = 2.dp,
                             color = Color(0xFFD6ECFD), // Color del borde (azul claro)
                             shape = CircleShape
                         )
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Guardar",
-                        modifier = Modifier.size(30.dp), // Tamaño del ícono
-                        tint = Color(0xFFFFFFFF) // Color del ícono (blanco)
-                    )
+                    if (isLoading) {
+                        // Mostrar un CircularProgressIndicator cuando está cargando
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(30.dp),
+                            color = Color.White,
+                            strokeWidth = 3.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "Guardar",
+                            modifier = Modifier.size(30.dp),
+                            tint = Color(0xFFFFFFFF)
+                        )
+                    }
                 }
             }
         }

@@ -52,6 +52,8 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -366,54 +368,109 @@ fun EvaluationCard(
                     .background(MaterialTheme.colorScheme.background)
                     .padding(5.dp)
             ) {
-                items(datos, key = { it.datoId }) { dato ->
+                itemsIndexed(datos, key = { index, dato -> dato.datoId }) { index, dato ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp), // Espaciado entre tarjetas
-                        elevation = CardDefaults.cardElevation(4.dp), // Elevación para efecto de sombra
+                            .padding(vertical = 8.dp),
+                        elevation = CardDefaults.cardElevation(4.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(8.dp) // Padding interno en la tarjeta
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Título: ID y Lote Código
-                            Text(
-                                text = "(${dato.datoId}) ${dato.loteCodigo} : ${dato.valvulaCodigo}",
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.primary
+                            // Ícono de check
+                            Icon(
+                                imageVector = Icons.Default.Adjust,
+                                contentDescription = "Registro completado",
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .padding(end = 8.dp),
+                                tint = Color(0xFF4CAF50)
                             )
 
-                            Spacer(modifier = Modifier.height(2.dp)) // Espacio entre texto
+                            // Columna con la información
+                            Column {
+                                // Título: índice, Lote Código y Válvula Código
+                                Text(
+                                    text = "(${index + 1}) ${dato.loteCodigo} : ${dato.valvulaCodigo}",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
 
-                            // Código de la válvula
-//                            Text(
-//                                text = dato.valvulaCodigo,
-//                                style = MaterialTheme.typography.bodyMedium,
-//                                color = MaterialTheme.colorScheme.secondary
-//                            )
-//
-//                            Spacer(modifier = Modifier.height(4.dp))
+                                Spacer(modifier = Modifier.height(2.dp))
 
-                            // Fecha y hora
-                            val originalDate = dato.datoFecha
-                            val timeOnly = try {
-                                val formatter = DateTimeFormatter.ofPattern("hh:mm:ss a", Locale.getDefault())
-                                val localDateTime = LocalDateTime.parse(originalDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                                localDateTime.format(formatter)
-                            } catch (e: Exception) {
-                                originalDate // Mostrar texto original si falla
+                                // Fecha y hora
+                                val originalDate = dato.datoFecha
+                                val timeOnly = try {
+                                    val formatter = DateTimeFormatter.ofPattern("hh:mm:ss a", Locale.getDefault())
+                                    val localDateTime = LocalDateTime.parse(originalDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                                    localDateTime.format(formatter)
+                                } catch (e: Exception) {
+                                    originalDate // Mostrar texto original si falla
+                                }
+
+                                Text(
+                                    text = "Hora: $timeOnly",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.inversePrimary
+                                )
                             }
-
-                            Text(
-                                text = timeOnly,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.tertiary
-                            )
                         }
                     }
                 }
             }
+//                items(datos, key = { it.datoId }) { dato ->
+//                    Card(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(vertical = 8.dp), // Espaciado entre tarjetas
+//                        elevation = CardDefaults.cardElevation(4.dp), // Elevación para efecto de sombra
+//                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+//                    ) {
+//                        Column(
+//                            modifier = Modifier.padding(8.dp) // Padding interno en la tarjeta
+//                        ) {
+//                            // Título: ID y Lote Código
+//                            Text(
+//                                text = "(${dato.datoId}) ${dato.loteCodigo} : ${dato.valvulaCodigo}",
+//                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+//                                color = MaterialTheme.colorScheme.primary
+//                            )
+//
+//                            Spacer(modifier = Modifier.height(2.dp)) // Espacio entre texto
+//
+//                            // Código de la válvula
+////                            Text(
+////                                text = dato.valvulaCodigo,
+////                                style = MaterialTheme.typography.bodyMedium,
+////                                color = MaterialTheme.colorScheme.secondary
+////                            )
+////
+////                            Spacer(modifier = Modifier.height(4.dp))
+//
+//                            // Fecha y hora
+//                            val originalDate = dato.datoFecha
+//                            val timeOnly = try {
+//                                val formatter = DateTimeFormatter.ofPattern("hh:mm:ss a", Locale.getDefault())
+//                                val localDateTime = LocalDateTime.parse(originalDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+//                                localDateTime.format(formatter)
+//                            } catch (e: Exception) {
+//                                originalDate // Mostrar texto original si falla
+//                            }
+//
+//                            Text(
+//                                text = timeOnly,
+//                                style = MaterialTheme.typography.bodySmall,
+//                                color = MaterialTheme.colorScheme.tertiary
+//                            )
+//                        }
+//                    }
+//                }
+//            }
 
 //            LazyColumn(
 //                modifier = Modifier

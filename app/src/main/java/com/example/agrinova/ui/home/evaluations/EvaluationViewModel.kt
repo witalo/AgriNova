@@ -97,6 +97,7 @@ class EvaluationViewModel @Inject constructor(
 
                 result.fold(
                     onSuccess = {
+                        Log.d("Subir__", _uploadStatus.value.toString())
                         _uploadStatus.value = UploadState.Success("Datos subidos exitosamente")
                         // Limpiar los datos de esa fecha y cartillaId
                         empresaRepository.clearDatosAndDetallesByDateAndCartillaId(fecha, cartillaId)
