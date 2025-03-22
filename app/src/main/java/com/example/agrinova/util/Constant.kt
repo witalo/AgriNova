@@ -3,7 +3,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object Constants {
-    const val GRAPHQL_URL = "http://167.250.207.140:3389/graphql" /*"TU_URL_BASE_GRAPHQL"*/
+    const val GRAPHQL_URL = "http://190.119.143.147/graphql" /*"TU_URL_BASE_GRAPHQL"*/
 //    const val GRAPHQL_URL = "http://192.168.1.5:9000/graphql" /*"TU_URL_BASE_GRAPHQL"*/
 //    const val GRAPHQL_URL = "http://192.168.1.245:9000/graphql" /*"TU_URL_BASE_GRAPHQL"*/
     const val DATABASE_NAME = "db_agrinova"/*"app_database"*/
